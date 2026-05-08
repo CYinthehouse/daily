@@ -883,9 +883,6 @@ body { zoom: var(--app-zoom, 1); }
       <div class="login-err" id="signupErr"></div>
       <button class="btn btn-gold btn-lg sparkle-btn" style="width:100%;" onclick="doSignup()">★ CREATE ACCOUNT</button>
     </div>
-    <div style="margin-top:22px;text-align:center;">
-      <button onclick="devResetAllAccounts()" style="background:transparent;border:1px dashed rgba(255,255,255,0.15);color:#555;font-size:10px;font-family:monospace;padding:6px 14px;border-radius:4px;cursor:pointer;letter-spacing:1px;" onmouseover="this.style.color='#888';this.style.borderColor='rgba(255,255,255,0.3)';" onmouseout="this.style.color='#555';this.style.borderColor='rgba(255,255,255,0.15)';">⚙ dev: reset all to first-login</button>
-    </div>
   </div>
 </div>
 
@@ -953,9 +950,6 @@ body { zoom: var(--app-zoom, 1); }
       <span class="menu-count" id="countShowcase">0 cards</span>
     </div>
   </div>
-  <div style="margin-top:28px;text-align:center;">
-    <button onclick="devAddPoints()" style="background:transparent;border:1px dashed rgba(255,255,255,0.15);color:#555;font-size:10px;font-family:monospace;padding:6px 14px;border-radius:4px;cursor:pointer;letter-spacing:1px;" onmouseover="this.style.color='#888';this.style.borderColor='rgba(255,255,255,0.3)';" onmouseout="this.style.color='#555';this.style.borderColor='rgba(255,255,255,0.15)';">⚙ dev: +1000 pts</button>
-  </div>
 </div>
 
 <!-- ═══ DAILY ═══ -->
@@ -972,9 +966,8 @@ body { zoom: var(--app-zoom, 1); }
 
 <!-- ═══ DAILY: READING ═══ -->
 <div id="dailyReadingScreen" class="sub-screen hidden">
-  <div class="back-row" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+  <div class="back-row">
     <button class="btn btn-ghost btn-sm" onclick="_dailyShowPicker()">← BACK TO ACTIVITIES</button>
-    <button id="drDevResetBtn" class="btn btn-ghost btn-sm" style="display:none;border:1px solid #ef4444;color:#ff8a8a;" onclick="_drDevResetToday()">🔧 DEV: RESET TODAY</button>
   </div>
   <div class="section-head daily">
     <div class="sh-title">📖 TEAMWORK READING</div>
@@ -983,11 +976,10 @@ body { zoom: var(--app-zoom, 1); }
   <div id="dailyReadingHost"></div>
 </div>
 
-<!-- ═══ DAILY: LISTENING (placeholder) ═══ -->
+<!-- ═══ DAILY: SOLO READING ═══ -->
 <div id="dailyListeningScreen" class="sub-screen hidden">
-  <div class="back-row" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+  <div class="back-row">
     <button class="btn btn-ghost btn-sm" onclick="_dailyShowPicker()">← BACK TO ACTIVITIES</button>
-    <button id="dlDevResetBtn" class="btn btn-ghost btn-sm" style="display:none;border:1px solid #ef4444;color:#ff8a8a;" onclick="_dlDevResetToday()">🔧 DEV: RESET TODAY</button>
   </div>
   <div class="section-head daily">
     <div class="sh-title">🎤 SOLO READING</div>
@@ -997,11 +989,9 @@ body { zoom: var(--app-zoom, 1); }
 </div>
 
 <!-- ═══ DAILY: ADVANCED TEAMWORK ═══ -->
-<!-- ═══ DAILY: ADVANCED TEAMWORK ═══ -->
 <div id="dailyAdvancedScreen" class="sub-screen hidden">
-  <div class="back-row" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+  <div class="back-row">
     <button class="btn btn-ghost btn-sm" onclick="_dailyShowPicker()">← BACK TO ACTIVITIES</button>
-    <button id="advDevResetBtn" class="btn btn-ghost btn-sm" style="display:none;border:1px solid #ef4444;color:#ff8a8a;" onclick="_advDevResetToday()">🔧 DEV: RESET TODAY</button>
   </div>
   <div class="section-head daily">
     <div class="sh-title">🏆 ADVANCED TEAMWORK</div>
@@ -1723,71 +1713,6 @@ function switchTab(tab){
 }
 window.switchTab = switchTab;
 
-/* ═══ DEV: RESET ALL ACCOUNTS TO FIRST-LOGIN STATE ═══ */
-async function devResetAllAccounts(){
-  if (!confirm('Reset ALL accounts so they see the 5-egg welcome next time they log in?\n\nThis will:\n• Set freeEggsUsed = false\n• Ensure gachaRolls is at least 5\n• Clamp negative points to 0\n• NOT touch gachaCollection, passwords, or other data\n\nProceed?')) return;
-  var btn = event && event.target;
-  if (btn){ btn.disabled = true; btn.textContent = 'Working…'; }
-  try {
-    var snap = await db.collection(TC).get();
-    var updates = [];
-    snap.forEach(function(doc){
-      var d = doc.data();
-      var changes = {};
-      if (d.freeEggsUsed !== false) changes.freeEggsUsed = false;
-      var rolls = typeof d.gachaRolls === 'number' ? d.gachaRolls : 0;
-      if (rolls < SIGNUP_BONUS_ROLLS) changes.gachaRolls = SIGNUP_BONUS_ROLLS;
-      var pts = typeof d.points === 'number' ? d.points : 0;
-      if (pts < 0) changes.points = 0;
-      if (Object.keys(changes).length) updates.push({ id: doc.id, changes: changes });
-    });
-    if (!updates.length){
-      alert('Nothing to update — all accounts already in first-login state.');
-      if (btn){ btn.disabled = false; btn.textContent = '⚙ dev: reset all to first-login'; }
-      return;
-    }
-    // Commit in batches of 400 (Firestore max is 500)
-    var done = 0;
-    for (var i = 0; i < updates.length; i += 400){
-      var batch = db.batch();
-      var slice = updates.slice(i, i + 400);
-      slice.forEach(function(u){
-        batch.update(db.collection(TC).doc(u.id), u.changes);
-      });
-      await batch.commit();
-      done += slice.length;
-    }
-    alert('✓ Reset ' + done + ' account(s). Log in now to see your 5-egg welcome!');
-  } catch(e){
-    alert('Error: ' + e.message + '\n\nCheck that Firestore rules allow updates to tevello_accounts.');
-  }
-  if (btn){ btn.disabled = false; btn.textContent = '⚙ dev: reset all to first-login'; }
-}
-window.devResetAllAccounts = devResetAllAccounts;
-
-/* ═══ DEV: ADD 1000 POINTS TO CURRENT USER ═══ */
-async function devAddPoints(){
-  if (!user){ toast('Not logged in.', 'var(--pink)'); return; }
-  if (!confirm('Add 1000 points to your account?')) return;
-  try {
-    await db.collection(TC).doc(user.id).update({
-      points: firebase.firestore.FieldValue.increment(1000)
-    });
-    user.points = (user.points || 0) + 1000;
-    toast('+1000 PTS', 'var(--gold)');
-    playSfx(SOUND_WIN, 0.8);
-    updateTopBar();
-    updateCounts();
-    // If they're sitting on the shop screen, refresh it so locks/prices update
-    var shopOpen = !$('shopScreen').classList.contains('hidden');
-    if (shopOpen) _drawShop();
-  } catch(e){
-    toast('Error: ' + e.message, 'var(--pink)');
-    console.error('devAddPoints:', e);
-  }
-}
-window.devAddPoints = devAddPoints;
-
 /* ═══ LOGIN ═══
  * Hybrid flow:
  *  1. Try Firebase Auth signInWithEmailAndPassword.
@@ -2260,20 +2185,14 @@ function _dailyOpen(which){
   if (which === 'reading'){
     showFade('dailyReadingScreen');
     _setBgmForScreen('dailyReadingScreen');
-    var devBtn = document.getElementById('drDevResetBtn');
-    if (devBtn) devBtn.style.display = (user && user.isAdmin) ? '' : 'none';
     _drRender();
   } else if (which === 'listening'){
     showFade('dailyListeningScreen');
     _setBgmForScreen('dailyListeningScreen');
-    var dlBtn = document.getElementById('dlDevResetBtn');
-    if (dlBtn) dlBtn.style.display = (user && user.isAdmin) ? '' : 'none';
     _dlRender();
   } else if (which === 'advanced'){
     showFade('dailyAdvancedScreen');
     _setBgmForScreen('dailyAdvancedScreen');
-    var advBtn = document.getElementById('advDevResetBtn');
-    if (advBtn) advBtn.style.display = (user && user.isAdmin) ? '' : 'none';
     _advRender();
   }
   try { window.scrollTo(0, 0); } catch(e){}
@@ -3012,81 +2931,6 @@ async function _drCommitParticipation(audioUrl, audioPath, audioMime){
 }
 window._drRender = _drRender;
 
-/* ─── DEV: RESET TODAY ───
- * Admin-only button on the reading activity. Wipes today's state for everyone
- * so admin can test the recording flow repeatedly. Specifically:
- *   1. Clears `dailyReadingDoneFor` from EVERY user account (so anyone can
- *      record again today)
- *   2. Resets every pair on the currently-live passage to 'open' and nukes
- *      audio/name/photo fields
- *   3. Re-renders the activity (auto-claims a fresh slot for the admin)
- *
- * NOT admin-gated server-side — the Firestore rules still allow any signed-in
- * user to write tevello_accounts/{uid} for their OWN uid only. So the wipe of
- * other users' dailyReadingDoneFor will silently succeed for the admin's own
- * doc and SILENTLY FAIL for others. To make it work across all users you'd
- * need a Cloud Function or admin custom claim. For now this resets EVERYONE
- * who's signed in if rules were relaxed; otherwise only the admin's own state.
- */
-async function _drDevResetToday(){
-  if (!user || !user.isAdmin){ alert('Admins only.'); return; }
-  if (!confirm('DEV: Reset today\'s reading for everyone?\n\nThis will:\n• Clear "done today" status for all users\n• Reset all pairs to open\n• Wipe all recordings on the current passage\n\nProceed?')) return;
-  var btn = document.getElementById('drDevResetBtn');
-  if (btn){ btn.disabled = true; btn.textContent = '⏳ Resetting...'; }
-  try {
-    // 1. Clear dailyReadingDoneFor on every user account doc we can write to.
-    //    Per Firestore rules, only the admin's own doc is writable client-side
-    //    unless rules are relaxed, but we attempt all to be thorough.
-    var userSnap = await db.collection(TC).get();
-    var batch = db.batch();
-    var batchCount = 0;
-    userSnap.forEach(function(doc){
-      var d = doc.data();
-      if (d.dailyReadingDoneFor){
-        batch.update(doc.ref, { dailyReadingDoneFor: null });
-        batchCount++;
-        // Firestore batches cap at 500 writes; 99% of cases we're fine
-      }
-    });
-    if (batchCount > 0){
-      try { await batch.commit(); }
-      catch(e){
-        console.warn('DEV reset: bulk user wipe failed (likely permission). Falling back to self-only.', e);
-        // Fallback: at least clear our own doc
-        await db.collection(TC).doc(user.id).update({ dailyReadingDoneFor: null });
-      }
-    }
-    user.dailyReadingDoneFor = null;
-
-    // 2. Reset all pairs on the live passage. Find the live passage first.
-    var liveSnap = await db.collection(DR_PASSAGES_COLLECTION).where('status','==','live').get();
-    var passageDocs = [];
-    liveSnap.forEach(function(d){ passageDocs.push(d); });
-    for (var i = 0; i < passageDocs.length; i++){
-      var pdoc = passageDocs[i];
-      var pairs = await pdoc.ref.collection('pairs').get();
-      var b2 = db.batch();
-      pairs.forEach(function(pr){
-        b2.update(pr.ref, {
-          reader1Uid: null, reader1Name: null, reader1Photo: null, reader1At: null, reader1Audio: null,
-          reader2Uid: null, reader2Name: null, reader2Photo: null, reader2At: null, reader2Audio: null,
-          status: 'open'
-        });
-      });
-      await b2.commit();
-    }
-
-    // 3. Re-render the activity — this will auto-claim a fresh slot for admin
-    if (btn){ btn.disabled = false; btn.textContent = '🔧 DEV: RESET TODAY'; }
-    await _drRender();
-  } catch(e){
-    console.error('DEV reset:', e);
-    alert('Reset failed: ' + (e.message || e));
-    if (btn){ btn.disabled = false; btn.textContent = '🔧 DEV: RESET TODAY'; }
-  }
-}
-window._drDevResetToday = _drDevResetToday;
-
 /* ═══════════════════════════════════════════════════════ */
 /* DAILY LISTENING — recitation activity (4 levels)        */
 /* ═══════════════════════════════════════════════════════ */
@@ -3623,54 +3467,6 @@ function _dlRenderFeedCard(rec){
   '</div>';
 }
 
-// ─── DEV reset for listening (admins only) ───
-async function _dlDevResetToday(){
-  if (!user || !user.isAdmin){ alert('Admins only.'); return; }
-  if (!confirm('DEV: Reset today\'s SOLO READING activity for everyone?\n\nThis will:\n• Clear all users\' daily progress\n• Wipe all recording subcollection docs on the live solo-reading passage\n\nProceed?')) return;
-  var btn = document.getElementById('dlDevResetBtn');
-  if (btn){ btn.disabled = true; btn.textContent = '⏳ Resetting...'; }
-  try {
-    // 1) Wipe dailyListeningLevels on every user we can write to (mostly only own doc per rules)
-    var userSnap = await db.collection(TC).get();
-    var batch = db.batch();
-    var batchCount = 0;
-    userSnap.forEach(function(doc){
-      var d = doc.data();
-      if (d.dailyListeningLevels){
-        batch.update(doc.ref, { dailyListeningLevels: null });
-        batchCount++;
-      }
-    });
-    if (batchCount > 0){
-      try { await batch.commit(); }
-      catch(e){
-        console.warn('DL reset: bulk wipe failed (likely permission). Falling back to self-only.', e);
-        await db.collection(TC).doc(user.id).update({ dailyListeningLevels: null });
-      }
-    }
-    user.dailyListeningLevels = null;
-
-    // 2) Delete all recording subcollection docs on the live listening passage
-    var liveSnap = await db.collection(DR_PASSAGES_COLLECTION).where('status','==','live').get();
-    for (var i = 0; i < liveSnap.docs.length; i++){
-      var d = liveSnap.docs[i];
-      if ((d.data().activityType || 'reading-pair') !== 'listening') continue;
-      var recs = await d.ref.collection('recordings').get();
-      var b2 = db.batch();
-      recs.forEach(function(r){ b2.delete(r.ref); });
-      await b2.commit();
-    }
-
-    if (btn){ btn.disabled = false; btn.textContent = '🔧 DEV: RESET TODAY'; }
-    await _dlRender();
-  } catch(e){
-    console.error('DL DEV reset:', e);
-    alert('Reset failed: ' + (e.message || e));
-    if (btn){ btn.disabled = false; btn.textContent = '🔧 DEV: RESET TODAY'; }
-  }
-}
-window._dlDevResetToday = _dlDevResetToday;
-
 /* ═══════════════════════════════════════════════════════ */
 /* DAILY ADVANCED TEAMWORK — 40-conjugation drill         */
 /* ═══════════════════════════════════════════════════════ */
@@ -4183,51 +3979,6 @@ function _advRenderFeedCard(sub){
     audio +
   '</div>';
 }
-
-// DEV reset — admin only
-async function _advDevResetToday(){
-  if (!user || !user.isAdmin){ alert('Admins only.'); return; }
-  if (!confirm('DEV: Reset today\'s ADVANCED TEAMWORK activity?\n\nThis will:\n• Clear all users\' daily advanced flags\n• Wipe all submission docs on the live activity\n\nProceed?')) return;
-  var btn = document.getElementById('advDevResetBtn');
-  if (btn){ btn.disabled = true; btn.textContent = '⏳ Resetting...'; }
-  try {
-    // Clear flags on every user
-    var userSnap = await db.collection(TC).get();
-    var batch = db.batch();
-    var count = 0;
-    userSnap.forEach(function(doc){
-      var d = doc.data();
-      if (d.dailyAdvancedSubmittedFor || d.dailyAdvancedBonusFor){
-        batch.update(doc.ref, { dailyAdvancedSubmittedFor: null, dailyAdvancedBonusFor: null });
-        count++;
-      }
-    });
-    if (count > 0){
-      try { await batch.commit(); }
-      catch(e){
-        await db.collection(TC).doc(user.id).update({ dailyAdvancedSubmittedFor: null, dailyAdvancedBonusFor: null });
-      }
-    }
-    user.dailyAdvancedSubmittedFor = null;
-    user.dailyAdvancedBonusFor = null;
-    // Wipe submissions on live activity
-    var liveSnap = await db.collection(ADV_COLLECTION).where('status','==','live').get();
-    for (var i = 0; i < liveSnap.docs.length; i++){
-      var d = liveSnap.docs[i];
-      var subs = await d.ref.collection('submissions').get();
-      var b2 = db.batch();
-      subs.forEach(function(s){ b2.delete(s.ref); });
-      await b2.commit();
-    }
-    if (btn){ btn.disabled = false; btn.textContent = '🔧 DEV: RESET TODAY'; }
-    await _advRender();
-  } catch(e){
-    console.error('Adv DEV reset:', e);
-    alert('Reset failed: ' + (e.message || e));
-    if (btn){ btn.disabled = false; btn.textContent = '🔧 DEV: RESET TODAY'; }
-  }
-}
-window._advDevResetToday = _advDevResetToday;
 
 /* ═══════════════════════════════════════════════════════ */
 /* DAILY READING — admin manager (passage publishing)     */
