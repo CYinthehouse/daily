@@ -24,7 +24,7 @@
 }
 html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt);overflow-x:hidden;font-size:18px;line-height:1.6;}
 .bg-stars{position:fixed;top:0;left:0;width:100%;height:100%;background-color:var(--bg);background-image:linear-gradient(rgba(65,192,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(65,192,255,0.03) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;z-index:0;}
-#app{position:relative;z-index:1;min-height:100vh;}
+#app{position:relative;z-index:1;min-height:calc(100vh / 1.2);}
 
 .ps-shadow{text-shadow:var(--ps-outline);}
 .ps-shadow-sm{text-shadow:var(--ps-outline-sm);}
@@ -73,14 +73,10 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .grad-purple{background-image:linear-gradient(180deg,#e0ccff 0%,#a855f7 100%);}
 
 /* ── LOGIN SCREEN ── */
-/* Override the body-level zoom on the login screen so it centers cleanly.
- * `zoom` interacts badly with `min-height:100vh` + flex centering, throwing
- * off the horizontal alignment. Login is a one-time screen so it doesn't
- * need the scaled-up readability bump anyway. The value here is the inverse
- * of APP_ZOOM_DEFAULT (1.2) so the screen renders at effective 1.0×. If
- * APP_ZOOM_DEFAULT ever changes, update this number too (1 / new_default).
- */
-#loginScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;zoom:0.833;}
+/* min-height is divided by the app zoom so that after scaling, the screen
+ * fills exactly one viewport height. Without this it renders at 120vh and
+ * overflows downward, breaking the visual centering. */
+#loginScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh / 1.2);padding:24px;}
 .login-logo{font-family:var(--ps);font-size:clamp(16px,3.5vw,24px);color:var(--cyan);text-shadow:var(--ps-outline);margin-bottom:10px;text-align:center;}
 .login-sub{font-family:var(--ps);font-size:clamp(8px,1.5vw,10px);color:var(--gold);text-shadow:var(--ps-outline-sm);margin-bottom:44px;text-align:center;letter-spacing:3px;}
 .login-box{width:100%;max-width:400px;background:#0d0d1f;border:2px solid rgba(255,255,255,0.3);border-radius:2px;padding:28px;box-shadow:4px 4px 0 rgba(0,0,0,0.8);}
@@ -339,7 +335,17 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
  * Applied at body level so modals (which sit at the body level, outside #app)
  * scale along with everything else.
  */
-body { zoom: var(--app-zoom, 1.2); }
+/* Apply the app-wide zoom to every top-level child of <body> instead of to
+ * <body> itself. Zooming the body throws off `vh` units (used by #app,
+ * #loginScreen, fixed overlays) because vh reports the unzoomed viewport
+ * height while content renders at the zoomed scale — breaking centering.
+ *
+ * Zooming each top-level child instead keeps the body at native scale (vh
+ * accurate) while scaling everything the user sees: #app, the background
+ * grid, the toast, and any modal overlays the JS appends to <body> at
+ * runtime (policy modal, ea-modal date/level pickers, drm modals,
+ * freeEggsScreen, etc.) */
+body > div { zoom: var(--app-zoom, 1.2); }
 
 /* ═══════════════════════════════════════════════════════════
  * ADMIN PAGE REDESIGN — readability-first hierarchy
