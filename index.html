@@ -9434,17 +9434,8 @@ var YODA_GRAD_DAYS = 35;
  * see it, or an empty string if not. Triggers when EITHER:
  *   - they've completed Yodafication YODA_GRAD_COMPLETIONS+ times, OR
  *   - their account is YODA_GRAD_DAYS+ days old.
- *
- * TEMPORARY: forced ON for everyone so Calvin can see the styling.
- * To revert, delete the next two lines (the early `return` and its comment).
  */
 function _yodaGradBannerHtml(){
-  // TEMP: always show — remove this return to restore threshold logic.
-  return '<div class="yoda-grad-banner">' +
-    '<div class="big">⚠️ TIME TO LEVEL UP</div>' +
-    '<div class="sub">After 30 days, please focus on more difficult activities. We must spread our wings and move to the harder activities now.</div>' +
-  '</div>';
-  /* eslint-disable-next-line no-unreachable */
   if (!user) return '';
   var completions = user.yodaCompletionCount || 0;
   var daysOld = 0;
