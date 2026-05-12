@@ -334,232 +334,481 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
  */
 body { zoom: var(--app-zoom, 1.2); }
 
-/* ─── DAILY READING ADMIN MANAGER ═══ */
-/* Admin-scoped readability override: force Noto Sans (bold) for everything inside
- * the admin screen and the admin-only modal. The retro Press Start 2P font is
- * fun but tough on the eyes for admin work where there's a lot of text to scan.
- * EXCEPTIONS: keep .section-head (page-level + collapsible section headers) on
- * the original Press Start 2P font for visual hierarchy.
+/* ═══════════════════════════════════════════════════════════
+ * ADMIN PAGE REDESIGN — readability-first hierarchy
+ * ═══════════════════════════════════════════════════════════
+ * Design principles:
+ *   - One pixel-font moment: the page title "ENROLLMENT ADMIN" only.
+ *     Everything else inside admin uses Noto Sans for scannability.
+ *   - Three type sizes only: page title (pixel), section heading (18px Noto
+ *     bold), body (14px Noto). No more "everywhere is bold" or per-element
+ *     font swaps.
+ *   - Sentence case for section/subsection headings — not ALL CAPS.
+ *     ALL CAPS reserved for short status badges only.
+ *   - Color hierarchy:
+ *       primary actions  → cyan
+ *       neutral / secondary → muted gray
+ *       danger            → red (sparingly)
+ *       status: live      → soft green + dot
+ *       status: draft     → muted gray
+ *       metadata badges   → low-saturation slate
+ *   - Contrast tiers: page (#0a0a15) → section panel (#10162a) → card
+ *     (#161e34). Rely on background contrast and spacing, not borders.
+ *   - Removed: left-stripe button accents, chunky purple date pills,
+ *     neon LIVE pill, oversized white chevrons, double borders.
  */
+
+/* ─── 1. TYPOGRAPHY BASELINE ─── */
 #adminScreen, #adminScreen *,
 #drmStoryModal, #drmStoryModal *,
 #drmScheduleModal, #drmScheduleModal * {
   font-family: 'Noto Sans', 'Noto Sans KR', sans-serif !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  text-shadow: none !important;
+}
+#adminScreen, #adminScreen *,
+#drmStoryModal, #drmStoryModal *,
+#drmScheduleModal, #drmScheduleModal * {
+  color: #e6ebf5 !important;
+}
+
+/* ─── 2. PAGE TITLE — only place pixel font lives in admin ─── */
+#adminScreen .section-head {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 12px 0 24px 0 !important;
+  margin-bottom: 20px !important;
+}
+#adminScreen .section-head::before { display: none !important; }
+#adminScreen .section-head .sh-title {
+  font-family: var(--ps) !important;
+  font-size: 18px !important;
+  color: #ff7777 !important;
+  text-shadow: var(--ps-outline-sm) !important;
+  letter-spacing: normal !important;
+  margin-bottom: 10px !important;
+}
+#adminScreen .section-head .sh-sub {
+  font-size: 14px !important;
+  color: #94a3b8 !important;
+  font-weight: 400 !important;
+}
+
+/* ─── 3. SECTION HEADINGS (Class Manager, Daily Reading Manager, etc.) ─── */
+#adminScreen .admin-section {
+  background: #10162a !important;
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 0 !important;
+  margin-bottom: 14px !important;
+  overflow: hidden !important;
+  box-shadow: none !important;
+}
+#adminScreen .admin-section-head {
+  padding: 14px 18px !important;
+  background: transparent !important;
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+  cursor: pointer; user-select: none;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: background 0.12s !important;
+}
+#adminScreen .admin-section.collapsed .admin-section-head {
+  border-bottom-color: transparent !important;
+}
+#adminScreen .admin-section-head:hover { background: rgba(255,255,255,0.03) !important; }
+#adminScreen .admin-section-title {
+  font-family: 'Noto Sans', sans-serif !important;
+  font-size: 16px !important;
   font-weight: 700 !important;
+  color: #e6ebf5 !important;
+  text-shadow: none !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+/* Subtler chevron — small and dimmed */
+#adminScreen .admin-section-head .chev {
+  font-size: 10px !important;
+  color: #64748b !important;
+  transition: transform 0.2s !important;
+}
+#adminScreen .admin-section.collapsed .admin-section-head .chev {
+  transform: rotate(-90deg) !important;
+}
+#adminScreen .admin-section-body { padding: 16px 18px 18px !important; }
+#adminScreen .admin-section.collapsed .admin-section-body { display: none !important; }
+
+/* ─── 4. NESTED SECTIONS inside Daily Reading Manager ("Generate with AI", "Live", "Drafts") ─── */
+.drm-section {
+  background: rgba(255,255,255,0.02) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 14px 16px !important;
+  margin-bottom: 12px !important;
+}
+.drm-section.collapsed { padding-bottom: 10px !important; }
+.drm-section.collapsed .drm-section-body { display: none !important; }
+.drm-head {
+  font-family: 'Noto Sans', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: #cbd5e1 !important;
+  text-shadow: none !important;
+  margin-bottom: 12px !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+.drm-head.toggle {
+  cursor: pointer; user-select: none;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.drm-head.toggle:hover { color: #fff !important; }
+.drm-section.collapsed .drm-head.toggle { margin-bottom: 0 !important; padding-bottom: 0 !important; }
+.drm-head .chev {
+  font-size: 9px !important;
+  color: #64748b !important;
+  transition: transform 0.2s !important;
+}
+.drm-section.collapsed .drm-head .chev { transform: rotate(-90deg) !important; }
+#adminScreen .drm-head span:first-child {
+  font-family: 'Noto Sans', sans-serif !important;
+  font-weight: 700 !important;
+  color: #cbd5e1 !important;
+  text-shadow: none !important;
+  font-size: 14px !important;
+}
+.drm-master-toggle { cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+.drm-master-toggle:hover { color: #fff !important; }
+.drm-master-toggle .chev { font-size: 10px !important; color: #64748b !important; margin-left: auto; padding-left: 12px; transition: transform 0.2s; }
+.drm-master-toggle.collapsed .chev { transform: rotate(-90deg); }
+
+/* ─── 5. CARDS (passage rows, drill rows) ─── */
+.drm-list { display: flex; flex-direction: column; gap: 8px; }
+.drm-row {
+  background: #161e34 !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 14px 16px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+#adminScreen .drm-row { background: #161e34 !important; }
+.drm-row-title,
+#adminScreen .drm-row-title {
+  font-family: 'Noto Sans', 'Noto Sans KR', sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #f1f5f9 !important;
+  text-shadow: none !important;
+  margin-bottom: 2px !important;
   letter-spacing: 0 !important;
 }
-/* Exception: section headers retain the retro pixel font + outline shadow */
-#adminScreen .section-head,
-#adminScreen .section-head * {
-  font-family: var(--ps) !important;
+.drm-row-meta,
+#adminScreen .drm-row-meta {
+  font-family: 'Noto Sans', sans-serif !important;
+  font-size: 13px !important;
   font-weight: 400 !important;
-  letter-spacing: normal !important;
+  color: #94a3b8 !important;
+  margin-bottom: 0 !important;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
 }
-#adminScreen .section-head .sh-title { text-shadow: var(--ps-outline-sm) !important; }
-/* Sub-text under a section header reads better in Noto */
-#adminScreen .section-head .sh-sub {
-  font-family: 'Noto Sans', 'Noto Sans KR', sans-serif !important;
-  font-weight: 600 !important;
-  text-shadow: none !important;
+/* Inline separator dot between meta items */
+.drm-row-meta > *:not(:last-child)::after {
+  content: '·';
+  margin-left: 8px;
+  color: #475569;
 }
-/* Strip pixel-font shadow from non-header admin text where it would look weird */
-#adminScreen *:not(.section-head):not(.section-head *),
-#drmStoryModal *,
-#drmScheduleModal * {
-  text-shadow: none !important;
+.drm-row-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 4px;
 }
-/* Keep textareas/inputs at normal weight inside admin so user typing isn't ALL BOLD */
-#adminScreen textarea, #adminScreen input,
-#drmStoryModal textarea, #drmStoryModal input,
-#drmScheduleModal textarea, #drmScheduleModal input {
-  font-weight: 400 !important;
-}
-/* Restore back-row link weight */
-#adminScreen .back-row .btn { font-weight: 700 !important; }
 
-/* ─── UNIFIED ADMIN BUTTON STYLE ───
- * Standardize EVERY button inside the admin screen to one visual language.
- * Single neutral fill, single text color, intent communicated by left-border
- * accent color. This kills the kaleidoscope of cyan/pink/gold/purple/ghost
- * buttons that made the page hard to scan.
- */
+/* ─── 6. STATUS BADGES — flat, low-saturation, sentence case ─── */
+#adminScreen .drm-row-meta .badge,
+#adminScreen .badge,
+.drm-row-meta .badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  padding: 2px 8px !important;
+  border-radius: 4px !important;
+  font-family: 'Noto Sans', sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  margin: 0 !important;
+  text-shadow: none !important;
+}
+/* Status: live — soft green dot + text, not a full-fill pill */
+.drm-row-meta .badge.live,
+#adminScreen .badge.live {
+  color: #4ade80 !important;
+  background: transparent !important;
+}
+.drm-row-meta .badge.live::before,
+#adminScreen .badge.live::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 6px rgba(34,197,94,0.6);
+}
+/* Status: draft — muted gray */
+.drm-row-meta .badge.draft,
+#adminScreen .badge.draft {
+  color: #94a3b8 !important;
+  background: transparent !important;
+}
+/* Status: archived — same muted gray */
+.drm-row-meta .badge.archived,
+#adminScreen .badge.archived {
+  color: #64748b !important;
+  background: transparent !important;
+}
+/* Status: expired — soft red */
+.drm-row-meta .badge.expired,
+#adminScreen .badge.expired {
+  color: #f87171 !important;
+  background: transparent !important;
+}
+.drm-row-meta .badge.expired::before,
+#adminScreen .badge.expired::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ef4444;
+}
+/* Status: scheduled — small muted-blue chip with calendar emoji */
+.drm-row-meta .badge.scheduled,
+#adminScreen .badge.scheduled {
+  background: rgba(168,85,247,0.12) !important;
+  color: #c4b5fd !important;
+  padding: 2px 8px !important;
+  border-radius: 4px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+/* Activity-type badges (Teamwork Reading, Solo Reading) — muted slate */
+#adminScreen .badge.activity-reading-pair,
+.drm-row-meta .badge.activity-reading-pair {
+  background: rgba(65,192,255,0.10) !important;
+  color: #7dd3fc !important;
+  border: none !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+#adminScreen .badge.activity-listening,
+.drm-row-meta .badge.activity-listening {
+  background: rgba(255,140,60,0.10) !important;
+  color: #fdba74 !important;
+  border: none !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+/* ─── 7. BUTTONS — one consistent visual language ─── */
+/* Default (secondary): muted slate */
 #adminScreen .btn,
 #adminScreen a.btn,
 #drmStoryModal .btn,
 #drmScheduleModal .btn {
   background: #1e293b !important;
-  color: #e8eaf2 !important;
-  border: 2px solid transparent !important;
-  border-left-width: 6px !important;
-  border-left-color: #64748b !important;
+  color: #e2e8f0 !important;
+  border: 1px solid #2a3650 !important;
   border-radius: 6px !important;
-  padding: 11px 18px !important;
+  padding: 8px 14px !important;
   font-size: 13px !important;
   font-family: 'Noto Sans', sans-serif !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   text-shadow: none !important;
   text-decoration: none !important;
   cursor: pointer !important;
-  transition: background 0.15s, border-color 0.15s !important;
+  transition: background 0.12s, border-color 0.12s !important;
   display: inline-flex !important;
   align-items: center !important;
   gap: 6px !important;
   line-height: 1.2 !important;
   box-shadow: none !important;
-}
-/* Neutralize size modifiers — admin uses one consistent button size */
-#adminScreen .btn-xs, #adminScreen .btn-sm, #adminScreen .btn-md, #adminScreen .btn-lg {
-  padding: 11px 18px !important;
-  font-size: 13px !important;
-}
-/* Back-row button is the one exception — keep it small/quiet */
-#adminScreen .back-row .btn {
-  padding: 6px 10px !important;
-  font-size: 11px !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
 }
 #adminScreen .btn:hover,
 #adminScreen a.btn:hover,
 #drmStoryModal .btn:hover,
 #drmScheduleModal .btn:hover {
-  background: #2d3a52 !important;
+  background: #283449 !important;
+  border-color: #3a4a6a !important;
   transform: none !important;
 }
+#adminScreen .btn-xs, #adminScreen .btn-sm, #adminScreen .btn-md, #adminScreen .btn-lg {
+  padding: 8px 14px !important;
+  font-size: 13px !important;
+}
+/* Primary action — cyan fill (used for the main action per section) */
+#adminScreen .btn-cyan,    #drmStoryModal .btn-cyan,    #drmScheduleModal .btn-cyan,
+#adminScreen .btn-pink,    #drmStoryModal .btn-pink,    #drmScheduleModal .btn-pink {
+  background: #0891b2 !important;
+  color: #fff !important;
+  border-color: #0891b2 !important;
+}
+#adminScreen .btn-cyan:hover, #adminScreen .btn-pink:hover,
+#drmStoryModal .btn-cyan:hover, #drmStoryModal .btn-pink:hover,
+#drmScheduleModal .btn-cyan:hover, #drmScheduleModal .btn-pink:hover {
+  background: #0e7490 !important;
+  border-color: #0e7490 !important;
+}
+/* Purple → keep slightly distinct for "schedule" since it's a different action */
+#adminScreen .btn-purple, #drmStoryModal .btn-purple, #drmScheduleModal .btn-purple {
+  background: #1e293b !important;
+  color: #c4b5fd !important;
+  border-color: #4c1d95 !important;
+}
+#adminScreen .btn-purple:hover { background: #2a1f4a !important; }
+/* Gold / Green → just neutral, no special treatment */
+#adminScreen .btn-gold, #adminScreen .btn-green,
+#drmStoryModal .btn-gold, #drmStoryModal .btn-green,
+#drmScheduleModal .btn-gold, #drmScheduleModal .btn-green {
+  background: #1e293b !important;
+  color: #e2e8f0 !important;
+  border-color: #2a3650 !important;
+}
+/* Ghost → quieter, lower contrast */
+#adminScreen .btn-ghost, #drmStoryModal .btn-ghost, #drmScheduleModal .btn-ghost {
+  background: transparent !important;
+  color: #94a3b8 !important;
+  border-color: #2a3650 !important;
+}
+#adminScreen .btn-ghost:hover { background: rgba(255,255,255,0.03) !important; color: #cbd5e1 !important; }
+/* Danger */
+#adminScreen .btn-danger, #drmStoryModal .btn-danger, #drmScheduleModal .btn-danger {
+  background: transparent !important;
+  color: #f87171 !important;
+  border-color: rgba(239,68,68,0.4) !important;
+}
+#adminScreen .btn-danger:hover { background: rgba(239,68,68,0.08) !important; color: #fca5a5 !important; }
+/* Disabled */
 #adminScreen .btn:disabled,
 #drmStoryModal .btn:disabled,
 #drmScheduleModal .btn:disabled {
-  opacity: 0.5 !important;
+  opacity: 0.4 !important;
   cursor: not-allowed !important;
 }
-/* Intent accents via left-border color. The COLOR class on the button is
- * preserved (.btn-cyan / .btn-pink / etc.) so existing markup keeps working —
- * we just remap their meaning to a left-border tint. */
-#adminScreen .btn-cyan,    #drmStoryModal .btn-cyan,    #drmScheduleModal .btn-cyan    { border-left-color: #41c0ff !important; }
-#adminScreen .btn-pink,    #drmStoryModal .btn-pink,    #drmScheduleModal .btn-pink    { border-left-color: #ff7777 !important; }
-#adminScreen .btn-gold,    #drmStoryModal .btn-gold,    #drmScheduleModal .btn-gold    { border-left-color: #FFD700 !important; }
-#adminScreen .btn-purple,  #drmStoryModal .btn-purple,  #drmScheduleModal .btn-purple  { border-left-color: #a855f7 !important; }
-#adminScreen .btn-green,   #drmStoryModal .btn-green,   #drmScheduleModal .btn-green   { border-left-color: #39ff14 !important; }
-#adminScreen .btn-ghost,   #drmStoryModal .btn-ghost,   #drmScheduleModal .btn-ghost   { border-left-color: #64748b !important; opacity: 0.85 !important; }
-/* Danger accent (used for cancel-enrollment / delete) */
-#adminScreen .btn-danger,  #drmStoryModal .btn-danger,  #drmScheduleModal .btn-danger  { border-left-color: #ef4444 !important; }
-
-/* Section panels in the admin screen — readable bg + clear borders */
-#adminScreen .drm-section,
-#adminScreen .admin-section {
-  background: #0f1729 !important;
+/* Back-row link — quietest */
+#adminScreen .back-row .btn {
+  padding: 6px 10px !important;
+  font-size: 12px !important;
+  background: transparent !important;
   border: 1px solid #2a3650 !important;
-  box-shadow: none !important;
+  color: #94a3b8 !important;
 }
-/* Drm row → match admin panel readability */
-#adminScreen .drm-row {
-  background: rgba(255,255,255,0.03) !important;
-  border: 1px solid #2a3650 !important;
-}
-#adminScreen .drm-row-meta { color: #ffffff !important; font-weight: 600 !important; }
-#adminScreen .drm-row-meta .badge { font-family: var(--ps) !important; font-size: 9px !important; font-weight: 400 !important; }
-#adminScreen .drm-help { color: #ffffff !important; font-weight: 700 !important; font-style: normal !important; }
-#adminScreen .drm-row-title { font-family: var(--ps) !important; font-weight: 400 !important; font-size: 11px !important; color: #ffd078 !important; text-shadow: var(--ps-outline-sm) !important; }
-#adminScreen .drm-head span:first-child { font-family: var(--ps) !important; font-weight: 400 !important; text-shadow: var(--ps-outline-sm) !important; }
+#adminScreen .back-row .btn:hover { color: #cbd5e1 !important; border-color: #3a4a6a !important; }
 
-/* ─── ADMIN: NO GRAY TEXT ───
- * Force white as the baseline text color throughout admin so all body text is
- * legible. Specific items that NEED a non-white color (section titles, status
- * badges, accent banners, intentional warnings) keep their colors via more
- * specific rules elsewhere.
- */
-#adminScreen, #adminScreen *,
-#drmStoryModal, #drmStoryModal *,
-#drmScheduleModal, #drmScheduleModal * {
-  color: #ffffff !important;
+/* ─── 8. EDIT AREAS / INPUTS inside admin ─── */
+#adminScreen textarea, #adminScreen input,
+#drmStoryModal textarea, #drmStoryModal input,
+#drmScheduleModal textarea, #drmScheduleModal input {
+  font-weight: 400 !important;
 }
-/* Allow specific colored elements (selectors more specific than the catch-all
- * above by being multi-class or having pseudo-conditions) */
-#adminScreen .section-head .sh-title { color: #ff7777 !important; }
-#adminScreen .admin-section-title { color: #ff7777 !important; }
-#adminScreen .drm-row-title { color: #ffd078 !important; }
-#adminScreen .drm-head span:first-child { color: #ff8c3c !important; }
-/* Status badges keep their fill colors but force readable foreground */
-#adminScreen .badge.draft { background: rgba(255,255,255,0.15) !important; color: #ffffff !important; }
-#adminScreen .badge.live { background: #39ff14 !important; color: #000000 !important; }
-#adminScreen .badge.archived { background: #444 !important; color: #ffffff !important; }
-#adminScreen .badge.expired { background: rgba(239,68,68,0.18) !important; color: #ff8a8a !important; border: 1px solid #ef4444 !important; }
-#adminScreen .badge.activity-reading-pair { background: rgba(65,192,255,0.18) !important; color: #41c0ff !important; border: 1px solid #41c0ff !important; }
-#adminScreen .badge.activity-listening { background: rgba(255,140,60,0.18) !important; color: #ff8c3c !important; border: 1px solid #ff8c3c !important; }
-/* Target-words picker (listening admin) */
-.dlm-tw-picker{display:flex;flex-wrap:wrap;gap:6px;padding:10px;background:rgba(0,0,0,0.4);border:1px solid #2a3650;border-radius:6px;margin-bottom:6px;max-height:240px;overflow-y:auto;}
-.dlm-tw-chip{padding:5px 10px;background:rgba(255,255,255,0.06);border:1px solid #444;border-radius:6px;color:#cfd8e8;font-family:'Noto Sans KR',sans-serif;font-size:14px;cursor:pointer;}
-.dlm-tw-chip:hover{background:rgba(255,140,60,0.15);border-color:#ff8c3c;}
-.dlm-tw-chip.selected{background:rgba(255,140,60,0.3);border-color:#ff8c3c;color:#ffd078;font-weight:700;}
-.dlm-tw-status{margin-top:0;}
-#adminScreen .badge.scheduled { background: #a855f7 !important; color: #ffffff !important; }
+.drm-edit-area {
+  margin-top: 10px;
+  background: rgba(0,0,0,0.3) !important;
+  border: 1px solid #2a3650 !important;
+  border-radius: 6px;
+  padding: 12px;
+}
+.drm-edit-area input,
+.drm-edit-area textarea {
+  width: 100%;
+  background: #0d1424 !important;
+  color: #e6ebf5 !important;
+  border: 1px solid #2a3650 !important;
+  border-radius: 4px;
+  padding: 8px;
+  font-family: 'Noto Sans KR', 'Noto Sans', sans-serif !important;
+  font-size: 14px;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+}
+.drm-edit-area textarea { min-height: 240px; line-height: 1.6; resize: vertical; }
+.drm-edit-area label {
+  font-family: 'Noto Sans', sans-serif !important;
+  font-size: 12px !important;
+  color: #94a3b8 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-weight: 600 !important;
+  display: block;
+  margin-bottom: 4px;
+}
+.drm-help,
+#adminScreen .drm-help {
+  font-family: 'Noto Sans', sans-serif !important;
+  font-size: 13px !important;
+  color: #94a3b8 !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+  margin-top: 4px;
+}
+
+/* Target-words picker (listening admin) — keep it functional but quieter */
+.dlm-tw-picker {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 10px;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid #2a3650;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.dlm-tw-chip {
+  padding: 5px 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid #2a3650;
+  border-radius: 6px;
+  color: #cbd5e1;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+}
+.dlm-tw-chip:hover { background: rgba(255,140,60,0.1); border-color: #fdba74; }
+.dlm-tw-chip.selected { background: rgba(255,140,60,0.2); border-color: #fdba74; color: #fdba74; font-weight: 700; }
+.dlm-tw-status { margin-top: 0; }
+
 /* Pending/Active/Done/Cancelled tab pills (have their own classes elsewhere) */
 #adminScreen .pill-pending,
 #adminScreen .pill-active,
 #adminScreen .pill-done,
 #adminScreen .pill-cancelled { color: inherit !important; }
-/* Modal preview banner (green/red status) keeps colored text */
-#adminScreen #drmSchedPreview, #drmScheduleModal #drmSchedPreview { /* color set inline at runtime */ }
 
-/* ─── GENERIC COLLAPSIBLE ADMIN SECTION ───
- * Used for Class Manager, Daily Reading Manager, Enrollments, etc.
- * Click the header to collapse/expand. State persisted in localStorage by
- * the `data-admin-section` key on the wrapping element.
- */
-#adminScreen .admin-section { border-radius: 8px; padding: 0; margin-bottom: 18px; overflow: hidden; }
-#adminScreen .admin-section-head {
-  cursor: pointer; user-select: none;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 20px;
-  background: rgba(0,0,0,0.25);
-  border-bottom: 1px solid transparent;
-  transition: background 0.15s;
+/* WIP toggle row at the top — keep it visible but compact */
+#adminScreen .admin-section + div[style*="margin-bottom:18px"] {
+  /* This isn't a stable selector — the WIP toggle row is the inline-styled
+     div with the toggleDailyBtn. Styles applied inline still work; we just
+     don't need extra rules here. */
 }
-#adminScreen .admin-section-head:hover { background: rgba(255,255,255,0.04); }
-#adminScreen .admin-section:not(.collapsed) .admin-section-head { border-bottom-color: #2a3650; }
-#adminScreen .admin-section-title {
-  font-family: var(--ps) !important;
-  font-size: 13px !important;
-  font-weight: 400 !important;
-  color: #ff7777 !important;
-  text-shadow: var(--ps-outline-sm) !important;
-  letter-spacing: normal !important;
-}
-#adminScreen .admin-section-head .chev {
-  font-size: 13px; color: #94a3b8;
-  transition: transform 0.2s;
-}
-#adminScreen .admin-section.collapsed .admin-section-head .chev { transform: rotate(-90deg); }
-#adminScreen .admin-section-body { padding: 18px 20px; }
-#adminScreen .admin-section.collapsed .admin-section-body { display: none; }
-.drm-section{background:rgba(255,140,60,0.06);border:2px solid rgba(255,140,60,0.4);border-radius:8px;padding:16px;margin-bottom:18px;}
-.drm-section.collapsed{padding-bottom:0;}
-.drm-section.collapsed .drm-section-body{display:none;}
-.drm-head{font-family:'Press Start 2P',monospace;font-size:13px;color:#ff8c3c;text-shadow:var(--ps-outline-sm);margin-bottom:12px;}
-.drm-head.toggle{cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;margin-bottom:12px;}
-.drm-head.toggle:hover{filter:brightness(1.2);}
-.drm-section.collapsed .drm-head.toggle{margin-bottom:0;padding-bottom:8px;}
-.drm-head .chev{font-size:11px;color:#888;transition:transform 0.2s;}
-.drm-section.collapsed .drm-head .chev{transform:rotate(-90deg);}
-/* Outer "Daily Reading Manager" master collapse */
-.drm-master-toggle{cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;}
-.drm-master-toggle:hover{filter:brightness(1.15);}
-.drm-master-toggle .chev{font-size:14px;color:#aaa;margin-left:auto;transition:transform 0.2s;padding-left:12px;}
-.drm-master-toggle.collapsed .chev{transform:rotate(-90deg);}
-.drm-list{display:flex;flex-direction:column;gap:10px;}
-.drm-row{background:rgba(0,0,0,0.4);border:1px solid #333;border-radius:6px;padding:12px;}
-.drm-row-title{font-family:'Press Start 2P',monospace;font-size:11px;color:#ffd078;margin-bottom:6px;}
-.drm-row-meta{font-family:var(--vt);font-size:12px;color:#888;margin-bottom:10px;}
-.drm-row-meta .badge{display:inline-block;padding:1px 6px;border-radius:4px;margin-right:6px;font-family:'Press Start 2P',monospace;font-size:9px;}
-.drm-row-meta .badge.draft{background:rgba(255,255,255,0.1);color:#bbb;}
-.drm-row-meta .badge.live{background:#39ff14;color:#000;}
-.drm-row-meta .badge.archived{background:#444;color:#888;}
-.drm-row-meta .badge.expired{background:rgba(239,68,68,0.2);color:#ff8a8a;border:1px solid #ef4444;}
-.drm-row-meta .badge.scheduled{background:#a855f7;color:#fff;}
-.drm-row-actions{display:flex;gap:6px;flex-wrap:wrap;}
-.drm-edit-area{margin-top:10px;background:rgba(0,0,0,0.5);border:1px solid #333;border-radius:6px;padding:10px;}
-.drm-edit-area input,.drm-edit-area textarea{width:100%;background:#111;color:#eee;border:1px solid #444;border-radius:4px;padding:8px;font-family:'Noto Sans KR',sans-serif;font-size:14px;margin-bottom:8px;box-sizing:border-box;}
-.drm-edit-area textarea{min-height:240px;line-height:1.6;resize:vertical;}
-.drm-edit-area label{font-family:var(--vt);font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:4px;}
-.drm-help{font-family:var(--vt);font-size:11px;color:#666;margin-top:4px;font-style:italic;}
+
+/* End of admin redesign block
+ * ═══════════════════════════════════════════════════════════ */
+
+/* Hide the cyan-grid background when the admin screen is active — the
+ * grid + bordered cards + emoji + many controls together feel noisy.
+ * The grid still shows on student-facing screens. */
+body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 
 /* Story-prompt modal (admin generation) — adapted from Tuesday Reading */
 .drm-modal{display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.85);justify-content:center;align-items:center;padding:20px;}
@@ -1053,7 +1302,7 @@ body { zoom: var(--app-zoom, 1.2); }
   <!-- Class Manager (collapsible, collapsed by default) -->
   <div class="admin-section collapsed" data-admin-section="classes">
     <div class="admin-section-head" onclick="_adminToggleSection(this)">
-      <div class="admin-section-title">📚 CLASS MANAGER</div>
+      <div class="admin-section-title">📚 Class Manager</div>
       <span class="chev">▼</span>
     </div>
     <div class="admin-section-body">
@@ -1065,7 +1314,7 @@ body { zoom: var(--app-zoom, 1.2); }
   <!-- Daily Reading Manager (collapsible, collapsed by default) -->
   <div class="admin-section collapsed" data-admin-section="dailyReading">
     <div class="admin-section-head" onclick="_adminToggleSection(this)">
-      <div class="admin-section-title">📖 DAILY READING MANAGER</div>
+      <div class="admin-section-title">📖 Daily Reading Manager</div>
       <span class="chev">▼</span>
     </div>
     <div class="admin-section-body">
@@ -1077,7 +1326,7 @@ body { zoom: var(--app-zoom, 1.2); }
   <!-- Advanced Teamwork Manager (collapsible, collapsed by default) -->
   <div class="admin-section collapsed" data-admin-section="advancedTeamwork">
     <div class="admin-section-head" onclick="_adminToggleSection(this)">
-      <div class="admin-section-title">🏆 ADVANCED TEAMWORK MANAGER</div>
+      <div class="admin-section-title">🏆 Advanced Teamwork Manager</div>
       <span class="chev">▼</span>
     </div>
     <div class="admin-section-body">
@@ -1089,7 +1338,7 @@ body { zoom: var(--app-zoom, 1.2); }
   <!-- Enrollments (collapsible, collapsed by default) -->
   <div class="admin-section collapsed" data-admin-section="enrollments">
     <div class="admin-section-head" onclick="_adminToggleSection(this)">
-      <div class="admin-section-title">🎓 ENROLLMENTS</div>
+      <div class="admin-section-title">🎓 Enrollments</div>
       <span class="chev">▼</span>
     </div>
     <div class="admin-section-body">
@@ -4672,18 +4921,28 @@ async function _drmRenderManager(){
     var sched = '';
     if (d.scheduledFor){
       var ms = d.scheduledFor.toMillis ? d.scheduledFor.toMillis() : d.scheduledFor;
-      sched = ' <span class="badge scheduled">SCHEDULED ' + new Date(ms).toLocaleString() + '</span>';
+      // Compact, human date: "May 11, 9:00 PM" — no seconds, no weekday
+      var dt = new Date(ms);
+      var schedStr = dt.toLocaleString('en-US', {
+        month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+      });
+      sched = ' <span class="badge scheduled">📅 ' + schedStr + '</span>';
     }
     // Activity-type badge — defaults to reading-pair for legacy docs without the field
     var activityType = d.activityType || 'reading-pair';
-    var actLabel = activityType === 'listening' ? '🎤 SOLO READING' : '📖 TEAMWORK READING';
+    var actLabel = activityType === 'listening' ? 'Solo Reading' : 'Teamwork Reading';
     var actBadge = '<span class="badge activity-' + activityType + '">' + actLabel + '</span>';
-    // Live passages from previous days render as "EXPIRED" — visual only,
+    // Live passages from previous days render as "Expired" — visual only,
     // doc still has status:'live' in DB until admin archives manually.
     var expired = _drIsExpired(d);
+    var statusLabel = expired ? 'Expired'
+                     : d.status === 'live'     ? 'Live'
+                     : d.status === 'draft'    ? 'Draft'
+                     : d.status === 'archived' ? 'Archived'
+                     : d.status.charAt(0).toUpperCase() + d.status.slice(1);
     var statusBadge = expired
-      ? '<span class="badge expired">EXPIRED</span>'
-      : '<span class="badge ' + d.status + '">' + d.status.toUpperCase() + '</span>';
+      ? '<span class="badge expired">' + statusLabel + '</span>'
+      : '<span class="badge ' + d.status + '">' + statusLabel + '</span>';
     var actions = '';
     if (d.status === 'draft'){
       actions =
@@ -4701,8 +4960,8 @@ async function _drmRenderManager(){
     }
     return '<div class="drm-row" id="drmRow_' + d.id + '">' +
       '<div class="drm-row-title">' + _esc(d.title || 'Untitled') + '</div>' +
-      '<div class="drm-row-meta">' + actBadge + ' ' + statusBadge + sched +
-        ' <span style="color:#666;">' + (d.sentences ? d.sentences.length : 0) + ' sentences</span>' +
+      '<div class="drm-row-meta">' + actBadge + statusBadge + sched +
+        '<span>' + (d.sentences ? d.sentences.length : 0) + ' sentences</span>' +
       '</div>' +
       '<div class="drm-row-actions">' + actions + '</div>' +
     '</div>';
@@ -4725,20 +4984,20 @@ async function _drmRenderManager(){
 
   host.innerHTML =
     section('generate',
-      '✨ GENERATE WITH AI',
+      '✨ Generate with AI',
       '<button id="drmGenBtn" class="btn btn-cyan btn-md" onclick="_drmOpenStoryModal()">✨ GENERATE NEW PASSAGE</button>' +
       '<div class="drm-help" style="margin-top:8px;">Opens a prompt builder where you can choose grammar points to focus on. The webhook generates 16 sentences in 해요체. You can edit before publishing.</div>'
     ) +
     section('drafts',
-      '📝 DRAFTS (' + drafts.length + ')',
+      '📝 Drafts (' + drafts.length + ')',
       '<div class="drm-list">' + (drafts.length ? drafts.map(renderRow).join('') : '<div class="drm-help">No drafts. Click "Generate" above.</div>') + '</div>'
     ) +
     section('live',
-      '🟢 LIVE (' + lives.length + ')',
+      '🟢 Live (' + lives.length + ')',
       '<div class="drm-list">' + (lives.length ? lives.map(renderRow).join('') : '<div class="drm-help">No passages are live right now.</div>') + '</div>'
     ) +
     section('archived',
-      '📦 ARCHIVED (' + archived.length + ')',
+      '📦 Archived (' + archived.length + ')',
       '<div class="drm-list">' + (archived.length ? archived.map(renderRow).join('') : '<div class="drm-help">No archived passages.</div>') + '</div>'
     );
 }
@@ -5109,16 +5368,25 @@ async function _advmRenderManager(){
       else if (data.status === 'archived') archived.push(data);
     });
     function renderRow(d){
-      // Live passages from previous days show as EXPIRED (visual only — doc
+      // Live passages from previous days show as Expired (visual only — doc
       // remains status:'live' in DB until admin archives manually)
       var expired = _drIsExpired(d);
+      var statusLabel = expired ? 'Expired'
+                       : d.status === 'live'     ? 'Live'
+                       : d.status === 'draft'    ? 'Draft'
+                       : d.status === 'archived' ? 'Archived'
+                       : d.status.charAt(0).toUpperCase() + d.status.slice(1);
       var statusBadge = expired
-        ? '<span class="badge expired">EXPIRED</span>'
-        : '<span class="badge ' + d.status + '">' + d.status.toUpperCase() + '</span>';
+        ? '<span class="badge expired">' + statusLabel + '</span>'
+        : '<span class="badge ' + d.status + '">' + statusLabel + '</span>';
       var sched = '';
       if (d.scheduledFor){
         var ms = d.scheduledFor.toMillis ? d.scheduledFor.toMillis() : d.scheduledFor;
-        sched = ' <span class="badge scheduled">SCHEDULED ' + new Date(ms).toLocaleString() + '</span>';
+        var dt = new Date(ms);
+        var schedStr = dt.toLocaleString('en-US', {
+          month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+        });
+        sched = ' <span class="badge scheduled">📅 ' + schedStr + '</span>';
       }
       var ending = d.grammarEnding || '?';
       var verbCount = (d.verbs || []).length;
@@ -5138,7 +5406,7 @@ async function _advmRenderManager(){
       return '<div class="drm-row" id="advmRow_' + d.id + '">' +
         '<div class="drm-row-title">' + _esc(d.title || ('Drill: ' + ending)) + '</div>' +
         '<div class="drm-row-meta">' + statusBadge + sched +
-          ' <span style="color:#666;">' + verbCount + ' verbs · ending ' + _esc(ending) + '</span>' +
+          '<span>' + verbCount + ' verbs · ending ' + _esc(ending) + '</span>' +
         '</div>' +
         '<div class="drm-row-actions">' + actions + '</div>' +
       '</div>';
@@ -5151,9 +5419,9 @@ async function _advmRenderManager(){
       '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">' +
         '<button id="advmGenBtn" class="btn btn-cyan" onclick="_advmGenerate()">✨ GENERATE NEW DRILL</button>' +
       '</div>' +
-      '<div class="drm-section"><div class="drm-section-head">🟢 LIVE</div>' + liveHtml + '</div>' +
-      '<div class="drm-section"><div class="drm-section-head">📝 DRAFTS</div>' + draftHtml + '</div>' +
-      '<div class="drm-section"><div class="drm-section-head">📦 ARCHIVED</div>' + arcHtml + '</div>';
+      '<div class="drm-section"><div class="drm-section-head">🟢 Live</div>' + liveHtml + '</div>' +
+      '<div class="drm-section"><div class="drm-section-head">📝 Drafts</div>' + draftHtml + '</div>' +
+      '<div class="drm-section"><div class="drm-section-head">📦 Archived</div>' + arcHtml + '</div>';
   } catch(e){
     console.error('advm render:', e);
     host.innerHTML = '<div style="color:#ff8a8a;">Error loading activities: ' + _esc(e.message || e) + '</div>';
