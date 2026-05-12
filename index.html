@@ -326,13 +326,13 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .advm-input:focus{border-color:var(--cyan);}
 
 /* ─── APP FONT-SIZE ADJUSTER ───
- * --app-zoom is set on <body> (default 1.2) and persisted to localStorage.
+ * --app-zoom is set on <body> (default 1.1) and persisted to localStorage.
  * `zoom` scales the entire app uniformly (text + layout) — way simpler than
  * walking every fixed-px rule. Cross-browser supported as of Firefox 126.
  * Applied at body level so modals (which sit at the body level, outside #app)
  * scale along with everything else.
  */
-body { zoom: var(--app-zoom, 1.2); }
+body { zoom: var(--app-zoom, 1.1); }
 
 /* ─── DAILY READING ADMIN MANAGER ═══ */
 /* Admin-scoped readability override: force Noto Sans (bold) for everything inside
@@ -4296,11 +4296,11 @@ function _adminRestoreSectionStates(){
  * text + layout together. Available everywhere except login (controls live
  * in #topBar which is hidden on the login screen).
  *
- * Default is 1.2 (≈two A+ steps above 1.0). Calvin's retro fonts read
+ * Default is 1.1 (≈one A+ step above 1.0). Calvin's retro fonts read
  * more comfortably at this size for most users — anyone who wants smaller
  * can use A− and their preference is remembered via localStorage.
  */
-const APP_ZOOM_DEFAULT = 1.2;
+const APP_ZOOM_DEFAULT = 1.1;
 const APP_ZOOM_MIN = 0.8;
 const APP_ZOOM_MAX = 1.5;
 const APP_ZOOM_STEP = 0.1;
@@ -4324,6 +4324,34 @@ function _fontReset(){ _applyZoom(APP_ZOOM_DEFAULT); }
 function _initFontSize(){ _applyZoom(_getZoom()); }
 window._fontDelta = _fontDelta;
 window._fontReset = _fontReset;
+
+/* ─── SETTINGS VERSION / FORCED RESET ───
+ * When Calvin changes a default (e.g. bumps the default zoom), localStorage on
+ * each student's device still holds their old saved value, which overrides
+ * the new default. Bumping APP_SETTINGS_VERSION wipes those keys on next load
+ * so everyone picks up the new defaults exactly once.
+ *
+ * To force a reset across all users: increment APP_SETTINGS_VERSION (e.g.
+ * '2026-05-12-a' → '2026-05-12-b'). Each browser will see the new version
+ * once, wipe the listed UI prefs, then write the new version stamp and
+ * behave normally afterward.
+ */
+const APP_SETTINGS_VERSION = '2026-05-12-a';
+const APP_SETTINGS_VERSION_KEY = 'appSettingsVersion';
+// List of localStorage keys to wipe on a forced reset. Add new UI prefs here
+// if they ever need to be force-cleared in a future version bump.
+const APP_SETTINGS_KEYS_TO_RESET = ['appZoom'];
+(function _migrateAppSettings(){
+  try {
+    var stored = localStorage.getItem(APP_SETTINGS_VERSION_KEY);
+    if (stored === APP_SETTINGS_VERSION) return; // already on current version
+    APP_SETTINGS_KEYS_TO_RESET.forEach(function(k){
+      try { localStorage.removeItem(k); } catch(e){}
+    });
+    localStorage.setItem(APP_SETTINGS_VERSION_KEY, APP_SETTINGS_VERSION);
+  } catch(e){ /* localStorage unavailable — nothing to do */ }
+})();
+
 // Apply saved zoom on initial load so the user's preference is restored
 // before any rendering, not just when entering admin.
 if (document.readyState === 'loading'){
