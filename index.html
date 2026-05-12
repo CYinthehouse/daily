@@ -414,7 +414,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .yoda-chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
 .yoda-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:rgba(168,85,247,0.12);border:1px solid #a855f7;border-radius:6px;color:#dcd0ff;font-family:'Noto Sans',sans-serif;font-size:12px;font-weight:600;cursor:help;}
 .yoda-chip-key{font-family:'Press Start 2P',monospace;font-size:9px;letter-spacing:1px;}
-.yoda-help{font-family:var(--vt);font-size:13px;color:#aaa;margin-bottom:10px;line-height:1.5;font-style:italic;}
+.yoda-help{font-family:var(--vt);font-size:16px;color:#aaa;margin-bottom:10px;line-height:1.5;font-style:italic;}
 .yoda-textarea{width:100%;min-height:140px;background:#0a0a15;border:2px solid rgba(255,255,255,0.2);border-radius:6px;color:#fff;padding:12px;font-family:'Noto Sans',sans-serif;font-size:15px;line-height:1.6;resize:vertical;box-sizing:border-box;outline:none;transition:border-color 0.12s;}
 .yoda-textarea:focus{border-color:var(--cyan);}
 .yoda-progress{display:flex;gap:6px;justify-content:center;margin:14px 0;flex-wrap:wrap;}
@@ -1273,6 +1273,16 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 #dailyReadingScreen .dr-feed-banner.active .sub,
 #dailyReadingScreen .dr-feed-banner.done .sub { font-size: 16px !important; }
 
+/* Activity banner sub-text (VCR mono) on every daily sub-screen.
+ * The `.big` heading is Press Start 2P and stays at its native size; only
+ * the .sub description (VCR mono) gets bumped for readability. Applies to
+ * #dailyScreen, #dailyListeningScreen, #dailyAdvancedScreen, #dailyYodaScreen.
+ * #dailyReadingScreen is also covered by the more specific rule above. */
+#dailyScreen .dr-feed-banner .sub,
+#dailyListeningScreen .dr-feed-banner .sub,
+#dailyAdvancedScreen .dr-feed-banner .sub,
+#dailyYodaScreen .dr-feed-banner .sub { font-size: 17px !important; }
+
 /* Solo Reading (Listening) classes */
 #dailyListeningScreen .dl-lv-sub        { font-size: 16px !important; }
 #dailyListeningScreen .dl-lv-status     { font-size: 14px !important; }
@@ -1296,10 +1306,12 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 #dailyAdvancedScreen .dr-loading,
 #dailyAdvancedScreen .dr-empty          { font-size: 16px !important; }
 
-/* Daily picker screen — uses the same dr-banner / menu-card text */
+/* Daily picker screen — uses the same dr-banner / menu-card text.
+ * NOTE: do NOT bump .menu-count here. The badges use Press Start 2P (pixel
+ * font) by design and look correct at their native 10px. Bumping them
+ * makes them comically large. */
 #dailyScreen .dr-banner                 { font-size: 17px !important; }
 #dailyScreen .menu-desc                 { font-size: 19px !important; }
-#dailyScreen .menu-count                { font-size: 14px !important; }
 
 /* Point Shop classes */
 #shopScreen .shop-card .shop-desc       { font-size: 18px !important; }
@@ -1684,7 +1696,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   </div>
   <div class="section-head daily">
     <div class="sh-title">🔀 YODAFICATION</div>
-    <div class="sh-sub">Type every valid word-order permutation of each English sentence. Earn 1 egg for completing all 5.</div>
+    <div class="sh-sub">Rewrite each English sentence in as many different word orders as you can. Earn 1 egg for all 5.</div>
   </div>
   <div id="dailyYodaHost"></div>
 </div>
@@ -9426,9 +9438,9 @@ function _yodaRenderForm(){
   var sentences = (_yodaState.activity && _yodaState.activity.sentences) || [];
 
   var introHtml =
-    '<div class="dr-feed-banner active">' +
+    '<div class="dr-feed-banner active" style="margin-bottom:20px;">' +
       '<div class="big">🔀 ' + _esc(_yodaState.activity.title || 'YODAFICATION') + '</div>' +
-      '<div class="sub">For each sentence, type every valid word-order permutation — one per line. The verb stays last; if the subject moves away from the verb, prepend "(she/he/they)" before the verb. Submitting earns +1 egg.</div>' +
+      '<div class="sub">Write each sentence in as many different orders as you can — one per line. Keep the verb at the end. Earn +1 egg when you submit!</div>' +
     '</div>';
 
   var cardsHtml = sentences.map(function(s, i){
@@ -9440,8 +9452,8 @@ function _yodaRenderForm(){
         '<div class="yoda-card-num">SENTENCE ' + (i + 1) + ' / ' + sentences.length + '</div>' +
       '</div>' +
       '<div class="yoda-card-sentence">' + _esc(s.english || '') + '</div>' +
-      '<div class="yoda-help">Type every valid permutation, one per line. The verb stays last; if the subject moves away from the verb, prepend "(she/he/they)" before the verb.</div>' +
-      '<textarea class="yoda-textarea" data-i="' + i + '" placeholder="One permutation per line…" oninput="_yodaOnAnswerInput(' + i + ', this.value)">' + _esc(_yodaState.answers[i] || '') + '</textarea>' +
+      '<div class="yoda-help">Try writing this sentence in different orders — one per line. The verb always stays at the end.</div>' +
+      '<textarea class="yoda-textarea" data-i="' + i + '" placeholder="One per line…" oninput="_yodaOnAnswerInput(' + i + ', this.value)">' + _esc(_yodaState.answers[i] || '') + '</textarea>' +
     '</div>';
   }).join('');
 
