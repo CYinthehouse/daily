@@ -378,8 +378,8 @@ body { zoom: var(--app-zoom, 1.2); }
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  padding: 12px 0 24px 0 !important;
-  margin-bottom: 20px !important;
+  padding: 0 !important;
+  margin-bottom: 18px !important;
 }
 #adminScreen .section-head::before { display: none !important; }
 #adminScreen .section-head .sh-title {
@@ -388,7 +388,7 @@ body { zoom: var(--app-zoom, 1.2); }
   color: #ff7777 !important;
   text-shadow: var(--ps-outline-sm) !important;
   letter-spacing: normal !important;
-  margin-bottom: 10px !important;
+  margin-bottom: 8px !important;
 }
 #adminScreen .section-head .sh-sub {
   font-size: 14px !important;
@@ -396,15 +396,38 @@ body { zoom: var(--app-zoom, 1.2); }
   font-weight: 400 !important;
 }
 
+/* Tighten the back-row + WIP-toggle row spacing on admin */
+#adminScreen .back-row { margin-bottom: 14px !important; }
+
+/* Descriptive subtext inside each collapsible section (the one-line blurb
+ * under each section title). These were inheriting the sub-screen body bump
+ * (21px) and ended up bigger than the section heading. Force them small. */
+#adminScreen .admin-section-body > div[style*="color:#b8c5dc"] {
+  font-size: 13px !important;
+  font-weight: 400 !important;
+  color: #94a3b8 !important;
+}
+
+/* Back-to-menu button — slightly larger than before so it feels primary */
+#adminScreen .back-row .btn {
+  padding: 8px 14px !important;
+  font-size: 13px !important;
+  background: #1e293b !important;
+  border: 1px solid #334155 !important;
+  color: #cbd5e1 !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
+}
+#adminScreen .back-row .btn:hover { background: #283449 !important; color: #fff !important; border-color: #475569 !important; }
+
 /* ─── 3. SECTION HEADINGS (Class Manager, Daily Reading Manager, etc.) ─── */
 #adminScreen .admin-section {
-  background: #10162a !important;
-  border: none !important;
+  background: #141b30 !important;
+  border: 1px solid #232b47 !important;
   border-radius: 10px !important;
   padding: 0 !important;
   margin-bottom: 14px !important;
   overflow: hidden !important;
-  box-shadow: none !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
 }
 #adminScreen .admin-section-head {
   padding: 14px 18px !important;
@@ -441,8 +464,8 @@ body { zoom: var(--app-zoom, 1.2); }
 
 /* ─── 4. NESTED SECTIONS inside Daily Reading Manager ("Generate with AI", "Live", "Drafts") ─── */
 .drm-section {
-  background: rgba(255,255,255,0.02) !important;
-  border: none !important;
+  background: #1c2440 !important;
+  border: 1px solid #2a3458 !important;
   border-radius: 8px !important;
   padding: 14px 16px !important;
   margin-bottom: 12px !important;
@@ -486,15 +509,16 @@ body { zoom: var(--app-zoom, 1.2); }
 /* ─── 5. CARDS (passage rows, drill rows) ─── */
 .drm-list { display: flex; flex-direction: column; gap: 8px; }
 .drm-row {
-  background: #161e34 !important;
-  border: none !important;
+  background: #283358 !important;
+  border: 1px solid #364271 !important;
   border-radius: 8px !important;
   padding: 14px 16px !important;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important;
 }
-#adminScreen .drm-row { background: #161e34 !important; }
+#adminScreen .drm-row { background: #283358 !important; border: 1px solid #364271 !important; }
 .drm-row-title,
 #adminScreen .drm-row-title {
   font-family: 'Noto Sans', 'Noto Sans KR', sans-serif !important;
@@ -621,14 +645,14 @@ body { zoom: var(--app-zoom, 1.2); }
 }
 
 /* ─── 7. BUTTONS — one consistent visual language ─── */
-/* Default (secondary): muted slate */
+/* Default (secondary): solid muted slate fill */
 #adminScreen .btn,
 #adminScreen a.btn,
 #drmStoryModal .btn,
 #drmScheduleModal .btn {
-  background: #1e293b !important;
-  color: #e2e8f0 !important;
-  border: 1px solid #2a3650 !important;
+  background: #334155 !important;
+  color: #f1f5f9 !important;
+  border: 1px solid #475569 !important;
   border-radius: 6px !important;
   padding: 8px 14px !important;
   font-size: 13px !important;
@@ -642,7 +666,7 @@ body { zoom: var(--app-zoom, 1.2); }
   align-items: center !important;
   gap: 6px !important;
   line-height: 1.2 !important;
-  box-shadow: none !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3) !important;
   letter-spacing: 0 !important;
   text-transform: none !important;
 }
@@ -650,8 +674,8 @@ body { zoom: var(--app-zoom, 1.2); }
 #adminScreen a.btn:hover,
 #drmStoryModal .btn:hover,
 #drmScheduleModal .btn:hover {
-  background: #283449 !important;
-  border-color: #3a4a6a !important;
+  background: #475569 !important;
+  border-color: #64748b !important;
   transform: none !important;
 }
 #adminScreen .btn-xs, #adminScreen .btn-sm, #adminScreen .btn-md, #adminScreen .btn-lg {
@@ -673,49 +697,40 @@ body { zoom: var(--app-zoom, 1.2); }
 }
 /* Purple → keep slightly distinct for "schedule" since it's a different action */
 #adminScreen .btn-purple, #drmStoryModal .btn-purple, #drmScheduleModal .btn-purple {
-  background: #1e293b !important;
-  color: #c4b5fd !important;
-  border-color: #4c1d95 !important;
+  background: #4c1d95 !important;
+  color: #f1f5f9 !important;
+  border-color: #6d28d9 !important;
 }
-#adminScreen .btn-purple:hover { background: #2a1f4a !important; }
-/* Gold / Green → just neutral, no special treatment */
+#adminScreen .btn-purple:hover { background: #5b21b6 !important; border-color: #7c3aed !important; }
+/* Gold / Green → just neutral slate, no special treatment */
 #adminScreen .btn-gold, #adminScreen .btn-green,
 #drmStoryModal .btn-gold, #drmStoryModal .btn-green,
 #drmScheduleModal .btn-gold, #drmScheduleModal .btn-green {
-  background: #1e293b !important;
-  color: #e2e8f0 !important;
-  border-color: #2a3650 !important;
+  background: #334155 !important;
+  color: #f1f5f9 !important;
+  border-color: #475569 !important;
 }
-/* Ghost → quieter, lower contrast */
+/* Ghost → slightly darker than neutral, still clearly filled */
 #adminScreen .btn-ghost, #drmStoryModal .btn-ghost, #drmScheduleModal .btn-ghost {
-  background: transparent !important;
-  color: #94a3b8 !important;
-  border-color: #2a3650 !important;
+  background: #1e293b !important;
+  color: #cbd5e1 !important;
+  border-color: #334155 !important;
 }
-#adminScreen .btn-ghost:hover { background: rgba(255,255,255,0.03) !important; color: #cbd5e1 !important; }
-/* Danger */
+#adminScreen .btn-ghost:hover { background: #283449 !important; border-color: #475569 !important; color: #fff !important; }
+/* Danger — red fill, used sparingly */
 #adminScreen .btn-danger, #drmStoryModal .btn-danger, #drmScheduleModal .btn-danger {
-  background: transparent !important;
-  color: #f87171 !important;
-  border-color: rgba(239,68,68,0.4) !important;
+  background: #7f1d1d !important;
+  color: #fff !important;
+  border-color: #991b1b !important;
 }
-#adminScreen .btn-danger:hover { background: rgba(239,68,68,0.08) !important; color: #fca5a5 !important; }
+#adminScreen .btn-danger:hover { background: #991b1b !important; border-color: #b91c1c !important; }
 /* Disabled */
 #adminScreen .btn:disabled,
 #drmStoryModal .btn:disabled,
 #drmScheduleModal .btn:disabled {
-  opacity: 0.4 !important;
+  opacity: 0.45 !important;
   cursor: not-allowed !important;
 }
-/* Back-row link — quietest */
-#adminScreen .back-row .btn {
-  padding: 6px 10px !important;
-  font-size: 12px !important;
-  background: transparent !important;
-  border: 1px solid #2a3650 !important;
-  color: #94a3b8 !important;
-}
-#adminScreen .back-row .btn:hover { color: #cbd5e1 !important; border-color: #3a4a6a !important; }
 
 /* ─── 8. EDIT AREAS / INPUTS inside admin ─── */
 #adminScreen textarea, #adminScreen input,
@@ -803,6 +818,200 @@ body { zoom: var(--app-zoom, 1.2); }
 }
 
 /* End of admin redesign block
+ * ═══════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════
+ * ENROLLMENT ADMIN — status chips + action menu
+ * ═══════════════════════════════════════════════════════════ */
+
+/* Status summary chips at top of Enrollments list. Override the tiny pixel-font
+ * .chip from the top bar — admin needs readable Noto Sans chips. */
+#adminScreen .admin-summary .chip {
+  font-family: 'Noto Sans', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  padding: 8px 14px !important;
+  border-radius: 6px !important;
+  background: #1e293b !important;
+  border: 1px solid #334155 !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: #cbd5e1 !important;
+  white-space: nowrap !important;
+}
+/* Colored dot on the left of each chip + soft text tint matching status */
+#adminScreen .admin-summary .chip::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.9;
+}
+#adminScreen .admin-summary .chip.gold   { color: #fbbf24 !important; border-color: #422f0a !important; }
+#adminScreen .admin-summary .chip.cyan   { color: #4ade80 !important; border-color: #14532d !important; }
+#adminScreen .admin-summary .chip[style*="border-color:#888"] { color: #94a3b8 !important; border: 1px solid #334155 !important; }
+#adminScreen .admin-summary .chip[style*="border-color:#ff7777"] { color: #f87171 !important; border: 1px solid #7f1d1d !important; }
+
+/* Admin row tweaks: cleaner status pill inside the row */
+#adminScreen .admin-row {
+  background: #141b30 !important;
+  border: 1px solid #232b47 !important;
+  border-left-width: 4px !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3) !important;
+  border-radius: 8px !important;
+}
+#adminScreen .admin-row.pending   { border-left-color: #fbbf24 !important; }
+#adminScreen .admin-row.active    { border-left-color: #22c55e !important; }
+#adminScreen .admin-row.completed { border-left-color: #64748b !important; opacity: 0.85 !important; }
+#adminScreen .admin-row.cancelled { border-left-color: #ef4444 !important; opacity: 0.7 !important; }
+#adminScreen .admin-row .ar-email {
+  font-family: 'Noto Sans', sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #f1f5f9 !important;
+  margin-bottom: 8px !important;
+}
+#adminScreen .admin-row .ar-status {
+  font-family: 'Noto Sans', sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  padding: 3px 10px !important;
+  border-radius: 4px !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  text-shadow: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+}
+#adminScreen .admin-row .ar-status::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+#adminScreen .admin-row .ar-status.pending   { background: rgba(251,191,36,0.10) !important; color: #fbbf24 !important; border: 1px solid rgba(251,191,36,0.3) !important; }
+#adminScreen .admin-row .ar-status.active    { background: rgba(34,197,94,0.10) !important; color: #4ade80 !important; border: 1px solid rgba(34,197,94,0.3) !important; }
+#adminScreen .admin-row .ar-status.completed { background: rgba(100,116,139,0.10) !important; color: #94a3b8 !important; border: 1px solid rgba(100,116,139,0.3) !important; }
+#adminScreen .admin-row .ar-status.cancelled { background: rgba(239,68,68,0.10) !important; color: #f87171 !important; border: 1px solid rgba(239,68,68,0.3) !important; }
+#adminScreen .admin-row .ar-dates { font-size: 13px !important; color: #94a3b8 !important; }
+#adminScreen .admin-row .ar-dates b { color: #cbd5e1 !important; font-weight: 600 !important; }
+#adminScreen .admin-row .ar-signed { font-size: 12px !important; color: #94a3b8 !important; }
+
+/* Action menu — primary action button + a "More" dropdown that contains
+ * the rest of the actions. */
+.ar-action-wrap { position: relative; display: inline-flex; gap: 6px; align-items: center; }
+.ar-more-btn { position: relative; }
+.ar-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: #1e293b;
+  border: 1px solid #475569;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  min-width: 200px;
+  padding: 4px;
+  z-index: 50;
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+}
+.ar-menu.open { display: flex; }
+.ar-menu button {
+  background: transparent !important;
+  border: none !important;
+  color: #e2e8f0 !important;
+  font-family: 'Noto Sans', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  padding: 9px 12px !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  border-radius: 5px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  box-shadow: none !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+.ar-menu button:hover { background: #334155 !important; }
+.ar-menu button.danger { color: #f87171 !important; }
+.ar-menu button.danger:hover { background: rgba(239,68,68,0.10) !important; }
+.ar-menu hr {
+  border: none;
+  border-top: 1px solid #334155;
+  margin: 4px 2px;
+}
+
+/* Modal for set-start-date and set-level pickers */
+.ea-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100001;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.ea-modal.open { display: flex; }
+.ea-modal-inner {
+  background: #141b30;
+  border: 1px solid #2a3458;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+.ea-modal-title {
+  font-family: 'Noto Sans', sans-serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 6px;
+}
+.ea-modal-sub {
+  font-family: 'Noto Sans', sans-serif;
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 18px;
+}
+.ea-modal-input {
+  width: 100%;
+  padding: 12px 14px;
+  background: #0d1424;
+  border: 1px solid #334155;
+  border-radius: 6px;
+  color: #f1f5f9;
+  font-family: 'Noto Sans', sans-serif;
+  font-size: 15px;
+  outline: none;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+  color-scheme: dark;
+}
+.ea-modal-input:focus { border-color: #0891b2; }
+.ea-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+/* End of enrollment admin block
  * ═══════════════════════════════════════════════════════════ */
 
 /* Hide the cyan-grid background when the admin screen is active — the
@@ -6182,10 +6391,10 @@ function _drawAdmin(rows){
   rows.forEach(function(r){ counts[r.enrollment.status] = (counts[r.enrollment.status]||0) + 1; });
   var summary =
     '<div class="admin-summary">' +
-      '<span class="chip gold">PENDING ' + counts.pending + '</span>' +
-      '<span class="chip cyan">ACTIVE ' + counts.active + '</span>' +
-      '<span class="chip" style="border-color:#888;color:#888;">DONE ' + counts.completed + '</span>' +
-      '<span class="chip" style="border-color:#ff7777;color:#ff7777;">CANCELLED ' + counts.cancelled + '</span>' +
+      '<span class="chip gold">Pending ' + counts.pending + '</span>' +
+      '<span class="chip cyan">Active ' + counts.active + '</span>' +
+      '<span class="chip" style="border-color:#888;color:#888;">Done ' + counts.completed + '</span>' +
+      '<span class="chip" style="border-color:#ff7777;color:#ff7777;">Cancelled ' + counts.cancelled + '</span>' +
     '</div>';
 
   var tableRows = rows.map(function(r){
@@ -6196,48 +6405,148 @@ function _drawAdmin(rows){
     var purchased = e.purchasedAt ? _fmtDate(e.purchasedAt) : '—';
     var level = e.classLevel || '—';
     var statusCls = e.status || 'pending';
-    var override = e.adminOverride ? ' <span style="color:#f5c842;font-size:9px;">[OVERRIDE]</span>' : '';
+    var statusLabel = statusCls === 'pending'   ? 'Pending'
+                    : statusCls === 'active'    ? 'Active'
+                    : statusCls === 'completed' ? 'Done'
+                    : statusCls === 'cancelled' ? 'Cancelled'
+                    : statusCls.charAt(0).toUpperCase() + statusCls.slice(1);
+    var override = e.adminOverride ? ' <span style="color:#fbbf24;font-size:11px;font-weight:600;">[override]</span>' : '';
 
-    var actions = [];
+    // Two-tier action layout: one primary button + everything else in a dropdown.
+    // Only show actions for pending/active enrollments.
+    var actionsHtml = '';
     if (e.status === 'pending' || e.status === 'active'){
-      actions.push('<button class="btn btn-cyan btn-xs" onclick="adminSetStartDate(\'' + r.id + '\')">SET START</button>');
-      actions.push('<button class="btn btn-ghost btn-xs" onclick="adminSetClassLevel(\'' + r.id + '\')">SET LEVEL</button>');
-      actions.push('<button class="btn btn-green btn-xs" onclick="adminMarkComplete(\'' + r.id + '\')">MARK DONE</button>');
-      actions.push('<button class="btn btn-danger btn-xs" onclick="adminForceCancel(\'' + r.id + '\')">CANCEL</button>');
-      var overrideLabel = e.adminOverride ? 'REMOVE OVERRIDE' : 'GRANT OVERRIDE';
-      actions.push('<button class="btn btn-ghost btn-xs" onclick="adminToggleOverride(\'' + r.id + '\')">' + overrideLabel + '</button>');
+      var overrideLabel = e.adminOverride ? '🔓 Remove override' : '🔑 Grant override';
+      // Unique menu ID per row so multiple menus don't conflict
+      var menuId = 'arMenu_' + r.id;
+      actionsHtml =
+        '<div class="ar-action-wrap">' +
+          '<button class="btn btn-cyan btn-sm" onclick="adminSetStartDate(\'' + r.id + '\')">📅 Set start date</button>' +
+          '<div class="ar-more-btn">' +
+            '<button class="btn btn-ghost btn-sm" onclick="_arToggleMenu(event, \'' + menuId + '\')">⋯ More</button>' +
+            '<div class="ar-menu" id="' + menuId + '">' +
+              '<button onclick="_arCloseAllMenus(); adminSetClassLevel(\'' + r.id + '\')">🎯 Set level</button>' +
+              '<button onclick="_arCloseAllMenus(); adminMarkComplete(\'' + r.id + '\')">✅ Mark done</button>' +
+              '<button onclick="_arCloseAllMenus(); adminToggleOverride(\'' + r.id + '\')">' + overrideLabel + '</button>' +
+              '<hr>' +
+              '<button class="danger" onclick="_arCloseAllMenus(); adminForceCancel(\'' + r.id + '\')">✕ Cancel enrollment</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
     }
 
     return '<div class="admin-row ' + statusCls + '">' +
       '<div class="ar-main">' +
         '<div class="ar-email">' + esc(email) + override + '</div>' +
         '<div class="ar-meta">' +
-          '<span class="ar-status ' + statusCls + '">' + statusCls.toUpperCase() + '</span>' +
+          '<span class="ar-status ' + statusCls + '">' + statusLabel + '</span>' +
           '<span class="ar-dates">Level: <b>' + esc(level) + '</b> · Purchased: ' + purchased + ' · Starts: ' + started + ' · Ends: ' + ends + '</span>' +
         '</div>' +
         (e.signedName ? '<div class="ar-signed">✍ Signed by: <b>' + esc(e.signedName) + '</b></div>' : '') +
       '</div>' +
-      (actions.length ? '<div class="ar-actions">' + actions.join('') + '</div>' : '') +
+      actionsHtml +
     '</div>';
   }).join('');
 
   body.innerHTML = summary + '<div class="admin-list">' + tableRows + '</div>';
 }
 
-/* Set startDate on an enrollment. Auto-computes endDate as startDate + 35 days and flips status to active. */
+/* ─── ENROLLMENT ROW: dropdown menu helpers ───
+ * The "⋯ More" dropdown for each row is a small absolutely-positioned
+ * panel. Click outside closes any open menu. */
+function _arCloseAllMenus(){
+  document.querySelectorAll('.ar-menu.open').forEach(function(m){ m.classList.remove('open'); });
+}
+function _arToggleMenu(ev, id){
+  ev.stopPropagation();
+  var menu = document.getElementById(id);
+  if (!menu) return;
+  var wasOpen = menu.classList.contains('open');
+  _arCloseAllMenus();
+  if (!wasOpen) menu.classList.add('open');
+}
+window._arCloseAllMenus = _arCloseAllMenus;
+window._arToggleMenu = _arToggleMenu;
+// Close any open enrollment-action menu on outside click
+document.addEventListener('click', function(ev){
+  if (!ev.target.closest || !ev.target.closest('.ar-menu, .ar-more-btn')) {
+    _arCloseAllMenus();
+  }
+}, true);
+
+/* ─── SET START DATE — modal picker with native date input ─── */
 async function adminSetStartDate(userId){
   if (!user || !user.isAdmin) return;
-  var input = prompt('Enter class start date (YYYY-MM-DD).\nDate is interpreted as midnight in New York time.');
-  if (!input) return;
-  var startISO = _nyMidnightToISO(input);
-  if (!startISO){ alert('Invalid format. Use YYYY-MM-DD.'); return; }
-  // endDate = startDate + 35 days (5 weeks since startDate counts as week 1)
+  // Pull current enrollment so we can prefill the date if one already exists
+  var existing = '';
+  try {
+    var snap = await db.collection(TC).doc(userId).get();
+    if (snap.exists){
+      var cur = (snap.data() || {}).enrollment || {};
+      if (cur.startDate){
+        // Convert ISO → YYYY-MM-DD (in NY time so it matches what we'll save)
+        try {
+          var d = new Date(cur.startDate);
+          var ny = new Date(d.toLocaleString('en-US', { timeZone: CLASS_TIMEZONE }));
+          var y = ny.getFullYear();
+          var m = String(ny.getMonth() + 1).padStart(2, '0');
+          var da = String(ny.getDate()).padStart(2, '0');
+          existing = y + '-' + m + '-' + da;
+        } catch(e){}
+      }
+    }
+  } catch(e){}
+
+  // Build modal
+  _closeEaModal();
+  var ov = document.createElement('div');
+  ov.id = 'eaModalOverlay';
+  ov.className = 'ea-modal';
+  ov.innerHTML =
+    '<div class="ea-modal-inner" role="dialog" aria-labelledby="eaTitle">' +
+      '<div class="ea-modal-title" id="eaTitle">📅 Set class start date</div>' +
+      '<div class="ea-modal-sub">Date is interpreted as midnight in New York time. The end date will be set automatically to ' + SIX_WEEK_DURATION_DAYS + ' days later.</div>' +
+      '<input type="date" class="ea-modal-input" id="eaStartDateInput" value="' + esc(existing) + '">' +
+      '<div class="ea-modal-actions">' +
+        '<button class="btn btn-ghost" onclick="_closeEaModal()">Cancel</button>' +
+        '<button class="btn btn-cyan" id="eaStartDateConfirm">Save</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(ov);
+  // Animate open + focus
+  requestAnimationFrame(function(){ ov.classList.add('open'); });
+  var input = document.getElementById('eaStartDateInput');
+  if (input) setTimeout(function(){ input.focus(); }, 50);
+  // Click on overlay (not modal) closes
+  ov.addEventListener('click', function(ev){ if (ev.target === ov) _closeEaModal(); });
+  // Escape closes
+  document.addEventListener('keydown', _eaEscHandler);
+  // Save button
+  document.getElementById('eaStartDateConfirm').addEventListener('click', function(){
+    _confirmAdminSetStartDate(userId);
+  });
+}
+window.adminSetStartDate = adminSetStartDate;
+
+function _eaEscHandler(ev){ if (ev.key === 'Escape') _closeEaModal(); }
+function _closeEaModal(){
+  var ov = document.getElementById('eaModalOverlay');
+  if (ov) ov.remove();
+  document.removeEventListener('keydown', _eaEscHandler);
+}
+window._closeEaModal = _closeEaModal;
+
+async function _confirmAdminSetStartDate(userId){
+  var input = document.getElementById('eaStartDateInput');
+  if (!input || !input.value){ toast('Pick a date first.', 'var(--pink)'); return; }
+  var ymd = input.value; // YYYY-MM-DD
+  var startISO = _nyMidnightToISO(ymd);
+  if (!startISO){ toast('Invalid date.', 'var(--pink)'); return; }
   var endMs = new Date(startISO).getTime() + SIX_WEEK_DURATION_DAYS * 86400000;
   var endISO = new Date(endMs).toISOString();
   try {
-    // Read current enrollment to preserve other fields
     var snap = await db.collection(TC).doc(userId).get();
-    if (!snap.exists){ alert('User not found.'); return; }
+    if (!snap.exists){ toast('User not found.', 'var(--pink)'); return; }
     var cur = snap.data().enrollment || {};
     var updated = Object.assign({}, cur, {
       startDate: startISO,
@@ -6245,30 +6554,78 @@ async function adminSetStartDate(userId){
       status: 'active'
     });
     await db.collection(TC).doc(userId).update({ enrollment: updated });
+    _closeEaModal();
     toast('Start date set.', 'var(--cyan)');
     renderAdmin();
   } catch(e){
-    alert('Error: ' + e.message);
+    toast('Error: ' + (e.message || e), 'var(--pink)');
+    console.error('adminSetStartDate:', e);
   }
 }
-window.adminSetStartDate = adminSetStartDate;
+window._confirmAdminSetStartDate = _confirmAdminSetStartDate;
 
+/* ─── SET CLASS LEVEL — modal picker with dropdown ─── */
 async function adminSetClassLevel(userId){
   if (!user || !user.isAdmin) return;
-  var input = prompt('Enter class level (' + CLASS_LEVELS.join(' / ') + '):');
-  if (!input) return;
-  var clean = input.trim();
+  // Prefill with current level if any
+  var existing = '';
+  try {
+    var snap = await db.collection(TC).doc(userId).get();
+    if (snap.exists){
+      var cur = (snap.data() || {}).enrollment || {};
+      existing = cur.classLevel || '';
+    }
+  } catch(e){}
+
+  _closeEaModal();
+  var ov = document.createElement('div');
+  ov.id = 'eaModalOverlay';
+  ov.className = 'ea-modal';
+  var options = CLASS_LEVELS.map(function(lv){
+    var sel = (lv === existing) ? ' selected' : '';
+    return '<option value="' + esc(lv) + '"' + sel + '>' + esc(lv) + '</option>';
+  }).join('');
+  ov.innerHTML =
+    '<div class="ea-modal-inner" role="dialog" aria-labelledby="eaTitle">' +
+      '<div class="ea-modal-title" id="eaTitle">🎯 Set class level</div>' +
+      '<div class="ea-modal-sub">Choose the class level for this enrollment.</div>' +
+      '<select class="ea-modal-input" id="eaLevelInput">' + options + '</select>' +
+      '<div class="ea-modal-actions">' +
+        '<button class="btn btn-ghost" onclick="_closeEaModal()">Cancel</button>' +
+        '<button class="btn btn-cyan" id="eaLevelConfirm">Save</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(ov);
+  requestAnimationFrame(function(){ ov.classList.add('open'); });
+  var input = document.getElementById('eaLevelInput');
+  if (input) setTimeout(function(){ input.focus(); }, 50);
+  ov.addEventListener('click', function(ev){ if (ev.target === ov) _closeEaModal(); });
+  document.addEventListener('keydown', _eaEscHandler);
+  document.getElementById('eaLevelConfirm').addEventListener('click', function(){
+    _confirmAdminSetClassLevel(userId);
+  });
+}
+window.adminSetClassLevel = adminSetClassLevel;
+
+async function _confirmAdminSetClassLevel(userId){
+  var input = document.getElementById('eaLevelInput');
+  if (!input || !input.value){ toast('Pick a level first.', 'var(--pink)'); return; }
+  var clean = input.value.trim();
   if (CLASS_LEVELS.indexOf(clean) === -1){
-    alert('Invalid level. Must be exactly one of: ' + CLASS_LEVELS.join(', '));
+    toast('Invalid level.', 'var(--pink)');
     return;
   }
   try {
     await db.collection(TC).doc(userId).update({ 'enrollment.classLevel': clean });
+    _closeEaModal();
     toast('Level set to ' + clean, 'var(--cyan)');
     renderAdmin();
-  } catch(e){ alert('Error: ' + e.message); }
+  } catch(e){
+    toast('Error: ' + (e.message || e), 'var(--pink)');
+    console.error('adminSetClassLevel:', e);
+  }
 }
-window.adminSetClassLevel = adminSetClassLevel;
+window._confirmAdminSetClassLevel = _confirmAdminSetClassLevel;
 
 async function adminMarkComplete(userId){
   if (!user || !user.isAdmin) return;
