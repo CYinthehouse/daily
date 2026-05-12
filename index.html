@@ -133,6 +133,14 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 #menuScreen{padding:48px 24px;max-width:1000px;margin:0 auto;}
 .menu-header{text-align:center;margin-bottom:44px;}
 .menu-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;}
+
+/* When the daily picker has its 4th tile (Yodafication), force a fixed
+ * 3-column grid so the 4th tile drops to row 2 and centers in column 2.
+ * Without this, auto-fit puts it flush-left on row 2. */
+@media (min-width: 820px){
+  #dailyPickerGrid.has-yoda { grid-template-columns: repeat(3, 1fr); }
+  #dailyPickerGrid.has-yoda > .menu-card.yoda { grid-column: 2 / 3; }
+}
 .menu-card{background:#0d0d1f;border:2px solid rgba(255,255,255,0.2);border-radius:2px;padding:40px 28px;text-align:center;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;position:relative;overflow:hidden;box-shadow:4px 4px 0 rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:center;}
 .menu-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;}
 .menu-card.daily::before{background:var(--green);}
@@ -327,6 +335,35 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .advm-verb-label{font-family:var(--vt);font-size:11px;color:#9aa3b8;}
 .advm-input{padding:6px 8px;background:rgba(255,255,255,0.06);border:1px solid #2a3650;border-radius:5px;color:#fff;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;min-width:0;}
 .advm-input:focus{border-color:var(--cyan);}
+
+/* ─── YODAFICATION — student-side form ─── */
+.yoda-card{background:#10172a;border:2px solid #2a3650;border-radius:10px;padding:18px;margin-bottom:14px;}
+.yoda-card.current{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(65,192,255,0.18);}
+.yoda-card-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
+.yoda-card-num{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--cyan);text-shadow:var(--ps-outline-sm);letter-spacing:2px;}
+.yoda-card-sentence{font-family:'Noto Sans',sans-serif;font-size:18px;font-weight:600;color:#fff;line-height:1.45;margin-bottom:12px;}
+.yoda-chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.yoda-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;background:rgba(168,85,247,0.12);border:1px solid #a855f7;border-radius:6px;color:#dcd0ff;font-family:'Noto Sans',sans-serif;font-size:12px;font-weight:600;cursor:help;}
+.yoda-chip-key{font-family:'Press Start 2P',monospace;font-size:9px;letter-spacing:1px;}
+.yoda-help{font-family:var(--vt);font-size:13px;color:#aaa;margin-bottom:10px;line-height:1.5;font-style:italic;}
+.yoda-textarea{width:100%;min-height:140px;background:#0a0a15;border:2px solid rgba(255,255,255,0.2);border-radius:6px;color:#fff;padding:12px;font-family:'Noto Sans',sans-serif;font-size:15px;line-height:1.6;resize:vertical;box-sizing:border-box;outline:none;transition:border-color 0.12s;}
+.yoda-textarea:focus{border-color:var(--cyan);}
+.yoda-progress{display:flex;gap:6px;justify-content:center;margin:14px 0;flex-wrap:wrap;}
+.yoda-dot{width:28px;height:28px;border-radius:6px;border:2px solid #444;background:#111;display:flex;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;font-size:9px;color:#666;}
+.yoda-dot.done{background:#39ff14;border-color:#1ec807;color:#000;}
+.yoda-dot.current{box-shadow:0 0 8px var(--cyan);border-color:var(--cyan);color:var(--cyan);}
+.yoda-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:12px;}
+.yoda-key-box{margin-top:14px;background:rgba(57,255,20,0.06);border:2px solid #39ff14;border-radius:8px;padding:12px 14px;font-family:var(--vt);font-size:14px;line-height:1.6;color:#cfe6cd;}
+.yoda-key-box .yoda-key-title{font-family:'Press Start 2P',monospace;font-size:10px;color:#39ff14;text-shadow:var(--ps-outline-sm);margin-bottom:6px;}
+.yoda-key-box ol{margin:6px 0 0 22px;padding:0;}
+.yoda-key-box li{margin-bottom:3px;}
+
+/* Yoda manager: editable answer-key rows look like the advm verb rows */
+.yoda-edit-row{display:grid;grid-template-columns:1fr;gap:6px;background:rgba(255,255,255,0.02);border:1px solid #2a3650;border-radius:6px;padding:10px;margin-bottom:10px;}
+.yoda-edit-row label{font-family:'Noto Sans',sans-serif;font-size:11px;color:#a0aef7;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
+.yoda-edit-row input,.yoda-edit-row textarea{width:100%;background:#0d1424;color:#e6ebf5;border:1px solid #334155;border-radius:5px;padding:8px;font-family:'Noto Sans',sans-serif;font-size:14px;box-sizing:border-box;outline:none;}
+.yoda-edit-row textarea{min-height:80px;line-height:1.5;resize:vertical;}
+.yoda-edit-row .yoda-edit-labels{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
 
 /* ─── APP FONT-SIZE ADJUSTER ───
  * --app-zoom is set on <body> (default 1.2) and persisted to localStorage.
@@ -1129,6 +1166,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 #dailyReadingScreen .sh-sub,
 #dailyListeningScreen .sh-sub,
 #dailyAdvancedScreen .sh-sub,
+#dailyYodaScreen .sh-sub,
 #shopScreen .sh-sub,
 #showcaseScreen .sh-sub { font-size: 17px !important; }
 
@@ -1552,6 +1590,18 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   <div id="dailyAdvancedHost"></div>
 </div>
 
+<!-- ═══ DAILY: YODAFICATION ═══ -->
+<div id="dailyYodaScreen" class="sub-screen hidden">
+  <div class="back-row">
+    <button class="btn btn-ghost btn-sm" onclick="_dailyShowPicker()">← BACK TO ACTIVITIES</button>
+  </div>
+  <div class="section-head daily">
+    <div class="sh-title">🔀 YODAFICATION</div>
+    <div class="sh-sub">Type every valid word-order permutation of each English sentence. Earn 1 egg for completing all 5.</div>
+  </div>
+  <div id="dailyYodaHost"></div>
+</div>
+
 <!-- ═══ SHOP ═══ -->
 <div id="shopScreen" class="sub-screen hidden">
   <div class="back-row"><button class="btn btn-ghost btn-sm" onclick="goBackToMenu()">← BACK TO MENU</button></div>
@@ -1623,6 +1673,18 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
     <div class="admin-section-body">
       <div style="margin-bottom:12px;color:#b8c5dc;font-weight:600;">Generate 40-conjugation drills (10 verbs × 4 tenses with a chosen grammar ending).</div>
       <div id="advmHost"></div>
+    </div>
+  </div>
+
+  <!-- Yodafication Manager (collapsible, collapsed by default) -->
+  <div class="admin-section collapsed" data-admin-section="yodafication">
+    <div class="admin-section-head" onclick="_adminToggleSection(this)">
+      <div class="admin-section-title">🔀 Yodafication Manager</div>
+      <span class="chev">▼</span>
+    </div>
+    <div class="admin-section-body">
+      <div style="margin-bottom:12px;color:#b8c5dc;font-weight:600;">Generate 5-sentence English permutation drills. Students rewrite each sentence in every valid constituent order.</div>
+      <div id="yodaMgrHost"></div>
     </div>
   </div>
 
@@ -2026,7 +2088,7 @@ function _setBgmForScreen(screenId){
   var ambient = ['shopScreen','showcaseScreen','dailyScreen'];
   // Admin works with a lot of text + recordings — keeping silent so audio
   // playback (student recordings, etc.) doesn't compete with background music.
-  var silent  = ['dailyReadingScreen','dailyListeningScreen','dailyAdvancedScreen','adminScreen'];
+  var silent  = ['dailyReadingScreen','dailyListeningScreen','dailyAdvancedScreen','dailyYodaScreen','adminScreen'];
   if (ambient.indexOf(screenId) !== -1){
     menuBgmStop();
     if (gachaBgmAudio.paused) gachaBgmPlay();
@@ -2128,7 +2190,7 @@ function hide(id){
 }
 function showFade(id){ var el = $(id); if (!el) return; el.classList.remove('hidden','page-fade'); void el.offsetWidth; el.classList.add('page-fade'); }
 function hideAllScreens(){
-  ['loginScreen','menuScreen','dailyScreen','dailyReadingScreen','dailyListeningScreen','dailyAdvancedScreen','shopScreen','showcaseScreen','adminScreen'].forEach(function(s){
+  ['loginScreen','menuScreen','dailyScreen','dailyReadingScreen','dailyListeningScreen','dailyAdvancedScreen','dailyYodaScreen','shopScreen','showcaseScreen','adminScreen'].forEach(function(s){
     var el = $(s); if (el) el.classList.add('hidden');
   });
 }
@@ -2211,6 +2273,7 @@ async function _loadUserProfile(authUser){
     dailyListeningLevels: d.dailyListeningLevels || null,
     dailyAdvancedSubmittedFor: d.dailyAdvancedSubmittedFor || null,
     dailyAdvancedBonusFor: d.dailyAdvancedBonusFor || null,
+    dailyYodaDoneFor: d.dailyYodaDoneFor || null,
     isAdmin: !!(d.isAdmin || d.role === 'admin' || _isAdminEmail(d.username || authUser.email))
   };
   // Self-heal any negative values from earlier bugs
@@ -2691,6 +2754,8 @@ function renderDaily(){
 function _renderDailyPicker(){
   var grid = document.getElementById('dailyPickerGrid');
   if (!grid) return;
+  // Add the has-yoda class so the CSS rule kicks in to center the 4th tile.
+  grid.classList.add('has-yoda');
   var todayKey = _drTodayNYKey();
   // ─── Reading Pair tile ───
   var readingDone = (user && user.dailyReadingDoneFor === todayKey);
@@ -2723,6 +2788,11 @@ function _renderDailyPicker(){
   } else {
     advBadge = '<div class="menu-count">+1 EGG (+2 IF 10 JOIN)</div>';
   }
+  // ─── Yodafication tile ───
+  var yodaDone = (user && user.dailyYodaDoneFor === todayKey);
+  var yodaBadge = yodaDone
+    ? '<div class="menu-count" style="border-color:var(--green);color:var(--green);">✅ DONE TODAY</div>'
+    : '<div class="menu-count">+1 EGG</div>';
   grid.innerHTML =
     '<div class="menu-card daily" onclick="_dailyOpen(\'reading\')">' +
       '<div class="menu-icon">📖</div>' +
@@ -2738,6 +2808,11 @@ function _renderDailyPicker(){
       '<div class="menu-icon">🏆</div>' +
       '<div class="menu-title">ADVANCED<br>TEAMWORK</div>' +
       advBadge +
+    '</div>' +
+    '<div class="menu-card daily yoda" onclick="_dailyOpen(\'yoda\')">' +
+      '<div class="menu-icon">🔀</div>' +
+      '<div class="menu-title">YODA-<br>FICATION</div>' +
+      yodaBadge +
     '</div>';
 }
 
@@ -2759,6 +2834,10 @@ function _dailyOpen(which){
     showFade('dailyAdvancedScreen');
     _setBgmForScreen('dailyAdvancedScreen');
     _advRender();
+  } else if (which === 'yoda'){
+    showFade('dailyYodaScreen');
+    _setBgmForScreen('dailyYodaScreen');
+    _yodaRender();
   }
   try { window.scrollTo(0, 0); } catch(e){}
 }
@@ -2816,6 +2895,25 @@ const ADV_TENSE_LABELS = {
   future: 'Future'
 };
 const ADV_BONUS_THRESHOLD = 10; // when ≥10 students submit today, everyone earns +2 eggs
+
+// ─── Yodafication Activity (English permutation drill) ───
+// Teaches Korean's flexible word order by having students permute English
+// sentences across their constituent labels (S, O, PP, PPN, V, VAV).
+// 5 sentences per session, free-form textarea entry, +1 egg on submit
+// regardless of accuracy. Admin generates a draft via the Make.com webhook,
+// reviews/edits, then publishes live.
+const YODA_WEBHOOK = 'https://hook.us1.make.com/9v1y6rl1q21cgkvb1r4weldpaot4n2h3';
+const YODA_COLLECTION = 'gacha_yoda_activities';
+const YODA_SENTENCE_COUNT = 5;
+// Constituent label glossary — shown as tooltips next to each sentence.
+const YODA_LABEL_DEFS = {
+  S:   'Subject',
+  O:   'Object',
+  PP:  'Prepositional phrase (temporal — when)',
+  PPN: 'Prepositional phrase with possessive noun (where/with)',
+  V:   'Action verb',
+  VAV: 'Verb + auxiliary verb'
+};
 
 var _drState = {
   passageId: null,
@@ -6444,11 +6542,10 @@ function renderAdmin(){
   if (typeof _adminRestoreSectionStates === 'function') _adminRestoreSectionStates();
   // Refresh the daily-toggle button label + status to reflect current state
   _refreshDailyToggleUi();
-  // Render the daily reading manager
+  // Render each manager (each one writes into its own host div)
   if (typeof _drmRenderManager === 'function') _drmRenderManager();
   if (typeof _advmRenderManager === 'function') _advmRenderManager();
-  // Render the advanced teamwork manager
-  if (typeof _advmRenderManager === 'function') _advmRenderManager();
+  if (typeof _yodaRenderManager === 'function') _yodaRenderManager();
   var body = $('adminBody');
   if (!body) return;
   body.innerHTML = '<div class="admin-loading">Loading enrollments…</div>';
@@ -8721,6 +8818,537 @@ function startFreeEggs(){
     _startEggFor(firstRoll, 'EGG 1 / ' + SIGNUP_BONUS_ROLLS);
 }
 window.startFreeEggs = startFreeEggs;
+
+/* ═══════════════════════════════════════════════════════════
+ * YODAFICATION ACTIVITY
+ * ═══════════════════════════════════════════════════════════
+ * Teaches Korean's flexible word order by having students type every valid
+ * English permutation of 5 sentences. AI generates the sentences with
+ * constituent labels (S, O, PP, PPN, V, VAV) and an expected answer key;
+ * student types each permutation in a textarea, one per line. Submitting
+ * any non-empty answer for all 5 sentences awards +1 egg (lenient grading
+ * — teacher reviews submissions admin-side).
+ */
+
+/* ─── ADMIN MANAGER ─── */
+async function _yodaRenderManager(){
+  var host = document.getElementById('yodaMgrHost');
+  if (!host) return;
+  host.innerHTML = '<div class="drm-help">Loading activities…</div>';
+  try {
+    var snap = await db.collection(YODA_COLLECTION).orderBy('createdAt','desc').get().catch(function(){
+      return db.collection(YODA_COLLECTION).get();
+    });
+    var drafts = [], lives = [], archived = [];
+    snap.forEach(function(d){
+      var data = Object.assign({ id: d.id }, d.data());
+      if (data.status === 'draft') drafts.push(data);
+      else if (data.status === 'live') lives.push(data);
+      else if (data.status === 'archived') archived.push(data);
+    });
+
+    function renderRow(d){
+      var expired = _drIsExpired(d);
+      var statusLabel = expired ? 'Expired'
+                       : d.status === 'live' ? 'Live'
+                       : d.status === 'draft' ? 'Draft'
+                       : d.status === 'archived' ? 'Archived'
+                       : d.status.charAt(0).toUpperCase() + d.status.slice(1);
+      var statusBadge = expired
+        ? '<span class="badge expired">' + statusLabel + '</span>'
+        : '<span class="badge ' + d.status + '">' + statusLabel + '</span>';
+      var sched = '';
+      if (d.scheduledFor){
+        var ms = d.scheduledFor.toMillis ? d.scheduledFor.toMillis() : d.scheduledFor;
+        var dt = new Date(ms);
+        var schedStr = dt.toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+        sched = ' <span class="badge scheduled">📅 ' + schedStr + '</span>';
+      }
+      var sentenceCount = (d.sentences || []).length;
+      var actions = '';
+      if (d.status === 'draft'){
+        actions =
+          '<button class="btn btn-cyan" onclick="_yodaEdit(\'' + d.id + '\')">✏️ EDIT</button>' +
+          '<button class="btn btn-pink" onclick="_yodaPublish(\'' + d.id + '\')">🚀 PUBLISH NOW</button>' +
+          '<button class="btn btn-ghost" onclick="_yodaDiscard(\'' + d.id + '\')">🗑 DISCARD</button>';
+      } else if (d.status === 'live'){
+        actions = '<button class="btn btn-ghost" onclick="_yodaArchive(\'' + d.id + '\')">📦 ARCHIVE</button>';
+      } else if (d.status === 'archived'){
+        actions =
+          '<button class="btn btn-ghost" onclick="_yodaRevive(\'' + d.id + '\')">♻️ REVIVE TO DRAFT</button>' +
+          '<button class="btn btn-ghost" onclick="_yodaDelete(\'' + d.id + '\')">🗑 DELETE</button>';
+      }
+      return '<div class="drm-row" id="yodaRow_' + d.id + '">' +
+        '<div class="drm-row-title">' + _esc(d.title || 'Yodafication') + '</div>' +
+        '<div class="drm-row-meta">' + statusBadge + sched +
+          '<span>' + sentenceCount + ' sentences</span>' +
+        '</div>' +
+        '<div class="drm-row-actions">' + actions + '</div>' +
+      '</div>';
+    }
+
+    var liveHtml  = lives.length    ? '<div class="drm-list">' + lives.map(renderRow).join('') + '</div>'    : '<div class="drm-help">No live activity right now.</div>';
+    var draftHtml = drafts.length   ? '<div class="drm-list">' + drafts.map(renderRow).join('') + '</div>'   : '<div class="drm-help">No drafts. Click "Generate new yodafication" above.</div>';
+    var arcHtml   = archived.length ? '<div class="drm-list">' + archived.map(renderRow).join('') + '</div>' : '<div class="drm-help">No archived activities.</div>';
+
+    function section(key, headInner, bodyHtml){
+      var stored = '';
+      try { stored = localStorage.getItem('yodaSection_' + key) || ''; } catch(e){}
+      var collapsed = stored === '1' ? ' collapsed' : '';
+      return '<div class="drm-section' + collapsed + '" data-yoda-section="' + key + '">' +
+        '<div class="drm-head toggle" onclick="_yodaToggleSection(this)">' +
+          '<span>' + headInner + '</span>' +
+          '<span class="chev">\u25BC</span>' +
+        '</div>' +
+        '<div class="drm-section-body">' + bodyHtml + '</div>' +
+      '</div>';
+    }
+
+    host.innerHTML =
+      section('generate',
+        '✨ Generate with AI',
+        '<button id="yodaGenBtn" class="btn btn-cyan btn-md" onclick="_yodaGenerate()">✨ GENERATE NEW YODAFICATION</button>' +
+        '<div class="drm-help" style="margin-top:8px;">One click generates 5 English sentences with constituent labels (S, O, PP, PPN, V, VAV) and every valid permutation answer key. You can edit before publishing.</div>'
+      ) +
+      section('drafts',  '📝 Drafts ('   + drafts.length   + ')', draftHtml) +
+      section('live',    '🟢 Live ('     + lives.length    + ')', liveHtml) +
+      section('archived','📦 Archived (' + archived.length + ')', arcHtml);
+  } catch(e){
+    console.error('yoda render:', e);
+    host.innerHTML = '<div style="color:#ff8a8a;">Error loading activities: ' + _esc(e.message || e) + '</div>';
+  }
+}
+window._yodaRenderManager = _yodaRenderManager;
+
+function _yodaToggleSection(headEl){
+  var section = headEl.closest('.drm-section');
+  if (!section) return;
+  var key = section.getAttribute('data-yoda-section');
+  section.classList.toggle('collapsed');
+  try { localStorage.setItem('yodaSection_' + key, section.classList.contains('collapsed') ? '1' : '0'); } catch(e){}
+}
+window._yodaToggleSection = _yodaToggleSection;
+
+/* ─── ADMIN: GENERATE ─── */
+async function _yodaGenerate(){
+  var btn = document.getElementById('yodaGenBtn');
+  if (btn){ btn.disabled = true; btn.textContent = '⏳ Generating…'; }
+
+  var prompt =
+    'You are an English-sentence permutation drill generator for Korean language learners.\n' +
+    '\n' +
+    'GOAL — Korean has flexible word order thanks to postpositional particles. To help students\n' +
+    'internalize this, we generate English sentences and ask them to type out every valid\n' +
+    'permutation of the sentence in English. This drill teaches them that the constituent\n' +
+    'order is fluid in Korean, unlike English where word order is mostly fixed.\n' +
+    '\n' +
+    'STEP 1 — Generate exactly ' + YODA_SENTENCE_COUNT + ' English sentences at beginner-to-intermediate\n' +
+    'level (~6–14 words each). Each must contain a mix of these constituent types:\n' +
+    '  • S   = subject (e.g. "My mom", "I", "The students")\n' +
+    '  • O   = object (e.g. "the book", "her homework")\n' +
+    '  • PP  = prepositional phrase, TEMPORAL (e.g. "in the morning", "on Tuesday")\n' +
+    '  • PPN = prepositional phrase with possessive noun, typically LOCATION/COMPANION (e.g. "to the park", "with my friend")\n' +
+    '  • V   = action verb (e.g. "went", "ate", "studied")\n' +
+    '  • VAV = verb + auxiliary verb (e.g. "is going", "has eaten")\n' +
+    'Sentences should be varied — different subjects, different combinations of PP/PPN/O.\n' +
+    'Aim for 3–4 constituents per sentence (not counting the verb).\n' +
+    '\n' +
+    'STEP 2 — For each sentence, list its constituents in the ORIGINAL English order using the keys above.\n' +
+    'Example for "My mom went to the park in the morning": constituents = ["S", "V", "PPN", "PP"]\n' +
+    '\n' +
+    'STEP 3 — For each sentence, write the FULL answer key as a list of strings. Every entry is one\n' +
+    'valid permutation of the sentence in plain English. RULES for permutations:\n' +
+    '  • The verb (V or VAV) is treated as fixed at the end.\n' +
+    '  • If the subject is moved away from the verb, prepend the pronoun "(she/he/they)" before the verb so the verb still has a clear subject.\n' +
+    '    Example: "To the park, in the morning, my mom went." → "To the park, in the morning, (she) went."\n' +
+    '  • Generate every distinct ordering of the non-verb constituents. With N constituents besides the verb, that\'s N! permutations (e.g. 3 constituents → 6 permutations).\n' +
+    '  • Include the original English ordering as one of the answer-key entries.\n' +
+    '  • Use natural commas between fronted constituents.\n' +
+    '\n' +
+    'OUTPUT — STRICT JSON ONLY. No markdown, no code fences, no preamble. Exactly this shape:\n' +
+    '{\n' +
+    '  "title": "<short English label, 2-5 words, e.g. \\"Daily Routines Drill\\">",\n' +
+    '  "sentences": [\n' +
+    '    {\n' +
+    '      "english": "My mom went to the park in the morning.",\n' +
+    '      "constituents": ["S", "V", "PPN", "PP"],\n' +
+    '      "answerKey": [\n' +
+    '        "My mom went to the park in the morning.",\n' +
+    '        "My mom, in the morning, went to the park.",\n' +
+    '        "To the park, my mom went in the morning.",\n' +
+    '        "To the park, in the morning, (she) went.",\n' +
+    '        "In the morning, my mom went to the park.",\n' +
+    '        "In the morning, to the park, (she) went."\n' +
+    '      ]\n' +
+    '    }\n' +
+    '  ]\n' +
+    '}\n' +
+    '\n' +
+    'CRITICAL RULES:\n' +
+    '• Output ONLY the JSON object. No surrounding text.\n' +
+    '• Exactly ' + YODA_SENTENCE_COUNT + ' sentences in the "sentences" array.\n' +
+    '• Each "answerKey" must include every distinct permutation, including the original ordering.\n' +
+    '• Use natural English punctuation in every answer-key entry.';
+
+  try {
+    var resp = await fetch(YODA_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: prompt })
+    });
+    if (!resp.ok) throw new Error('Webhook returned ' + resp.status);
+    var raw = await resp.text();
+    raw = String(raw || '').trim();
+    if (!raw) throw new Error('Empty response from webhook');
+
+    raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
+    var parsed;
+    try {
+      parsed = JSON.parse(raw);
+      if (typeof parsed === 'string') parsed = JSON.parse(parsed);
+      else if (parsed.content && typeof parsed.content === 'string') parsed = JSON.parse(parsed.content);
+      else if (parsed.text && typeof parsed.text === 'string') parsed = JSON.parse(parsed.text);
+    } catch(e){
+      var m = raw.match(/\{[\s\S]*\}/);
+      if (m) parsed = JSON.parse(m[0]);
+      else throw new Error('Could not parse JSON from webhook response');
+    }
+
+    if (!Array.isArray(parsed.sentences) || parsed.sentences.length !== YODA_SENTENCE_COUNT){
+      throw new Error('Bad sentences array: expected ' + YODA_SENTENCE_COUNT + ' items, got ' + (parsed.sentences ? parsed.sentences.length : 'none'));
+    }
+    for (var i = 0; i < parsed.sentences.length; i++){
+      var s = parsed.sentences[i];
+      if (!s.english || typeof s.english !== 'string') throw new Error('Sentence ' + (i+1) + ' missing english');
+      if (!Array.isArray(s.constituents) || s.constituents.length === 0) throw new Error('Sentence ' + (i+1) + ' missing constituents');
+      if (!Array.isArray(s.answerKey) || s.answerKey.length === 0) throw new Error('Sentence ' + (i+1) + ' missing answerKey');
+    }
+
+    await db.collection(YODA_COLLECTION).add({
+      title: parsed.title || 'Yodafication',
+      sentences: parsed.sentences,
+      status: 'draft',
+      scheduledFor: null,
+      generatedByAI: true,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy: (user && user.username) || ''
+    });
+    _yodaRenderManager();
+  } catch(e){
+    alert('Generation failed: ' + (e.message || e));
+  } finally {
+    if (btn){ btn.disabled = false; btn.textContent = '✨ GENERATE NEW YODAFICATION'; }
+  }
+}
+window._yodaGenerate = _yodaGenerate;
+
+/* ─── ADMIN: EDIT ─── */
+async function _yodaEdit(id){
+  var row = document.getElementById('yodaRow_' + id);
+  if (!row) return;
+  var snap = await db.collection(YODA_COLLECTION).doc(id).get();
+  if (!snap.exists) return;
+  var d = snap.data();
+  document.querySelectorAll('.drm-edit-area').forEach(function(el){ el.remove(); });
+  var area = document.createElement('div');
+  area.className = 'drm-edit-area';
+
+  var sentencesHtml = (d.sentences || []).map(function(s, i){
+    var keyHtml = (s.answerKey || []).map(function(line){ return _esc(line); }).join('\n');
+    return '<div class="yoda-edit-row">' +
+      '<label>Sentence ' + (i + 1) + '</label>' +
+      '<input class="yoda-edit-eng" data-i="' + i + '" type="text" value="' + _esc(s.english || '') + '">' +
+      '<div class="yoda-edit-labels">' +
+        '<label style="margin:0;">Labels (comma-separated):</label>' +
+        '<input class="yoda-edit-cons" data-i="' + i + '" type="text" value="' + _esc((s.constituents || []).join(', ')) + '" style="flex:1;min-width:120px;">' +
+      '</div>' +
+      '<label>Answer key (one permutation per line):</label>' +
+      '<textarea class="yoda-edit-key" data-i="' + i + '">' + keyHtml + '</textarea>' +
+    '</div>';
+  }).join('');
+
+  area.innerHTML =
+    '<label>TITLE</label>' +
+    '<input id="yodaEditTitle_' + id + '" type="text" value="' + _esc(d.title || '') + '">' +
+    '<label>SENTENCES</label>' +
+    sentencesHtml +
+    '<div style="display:flex;gap:8px;margin-top:14px;">' +
+      '<button class="btn btn-cyan" onclick="_yodaSaveEdit(\'' + id + '\')">💾 SAVE</button>' +
+      '<button class="btn btn-ghost" onclick="this.closest(\'.drm-edit-area\').remove();">CANCEL</button>' +
+    '</div>';
+  row.appendChild(area);
+  area.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+window._yodaEdit = _yodaEdit;
+
+async function _yodaSaveEdit(id){
+  var row = document.getElementById('yodaRow_' + id);
+  if (!row) return;
+  var titleEl = document.getElementById('yodaEditTitle_' + id);
+  var title = (titleEl && titleEl.value || '').trim() || 'Yodafication';
+
+  var sentences = [];
+  var engInputs = row.querySelectorAll('.yoda-edit-eng');
+  for (var i = 0; i < engInputs.length; i++){
+    var idx = parseInt(engInputs[i].getAttribute('data-i'), 10);
+    var english = engInputs[i].value.trim();
+    var consInput = row.querySelector('.yoda-edit-cons[data-i="' + idx + '"]');
+    var keyInput = row.querySelector('.yoda-edit-key[data-i="' + idx + '"]');
+    var constituents = (consInput.value || '').split(',').map(function(s){ return s.trim().toUpperCase(); }).filter(Boolean);
+    var answerKey = (keyInput.value || '').split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+    sentences.push({ english: english, constituents: constituents, answerKey: answerKey });
+  }
+
+  try {
+    await db.collection(YODA_COLLECTION).doc(id).update({ title: title, sentences: sentences });
+    toast('Saved.', 'var(--cyan)');
+    _yodaRenderManager();
+  } catch(e){
+    alert('Save failed: ' + (e.message || e));
+  }
+}
+window._yodaSaveEdit = _yodaSaveEdit;
+
+/* ─── ADMIN: PUBLISH / ARCHIVE / DELETE / DISCARD / REVIVE ─── */
+async function _yodaPublish(id){
+  if (!confirm('Publish this yodafication live to all students now?')) return;
+  var liveSnap = await db.collection(YODA_COLLECTION).where('status','==','live').get();
+  var batch = db.batch();
+  liveSnap.forEach(function(d){
+    if (d.id !== id){
+      batch.update(d.ref, { status: 'archived', archivedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    }
+  });
+  batch.update(db.collection(YODA_COLLECTION).doc(id), {
+    status: 'live',
+    publishedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    scheduledFor: null
+  });
+  await batch.commit();
+  toast('Published live!', 'var(--green)');
+  _yodaRenderManager();
+}
+window._yodaPublish = _yodaPublish;
+
+async function _yodaArchive(id){
+  await db.collection(YODA_COLLECTION).doc(id).update({
+    status: 'archived',
+    archivedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  toast('Archived.', 'var(--cyan)');
+  _yodaRenderManager();
+}
+window._yodaArchive = _yodaArchive;
+
+async function _yodaDiscard(id){
+  if (!confirm('Discard this draft? This cannot be undone.')) return;
+  await db.collection(YODA_COLLECTION).doc(id).delete();
+  toast('Discarded.', 'var(--cyan)');
+  _yodaRenderManager();
+}
+window._yodaDiscard = _yodaDiscard;
+
+async function _yodaRevive(id){
+  await db.collection(YODA_COLLECTION).doc(id).update({ status: 'draft', archivedAt: null });
+  toast('Revived to draft.', 'var(--cyan)');
+  _yodaRenderManager();
+}
+window._yodaRevive = _yodaRevive;
+
+async function _yodaDelete(id){
+  if (!confirm('Permanently delete this activity? This cannot be undone.')) return;
+  await db.collection(YODA_COLLECTION).doc(id).delete();
+  toast('Deleted.', 'var(--cyan)');
+  _yodaRenderManager();
+}
+window._yodaDelete = _yodaDelete;
+
+/* ─── STUDENT-SIDE ─── */
+var _yodaState = {
+  activityId: null,
+  activity: null,
+  answers: [],
+  busy: false
+};
+
+async function _yodaRender(){
+  var host = document.getElementById('dailyYodaHost');
+  if (!host) return;
+  host.innerHTML = '<div class="dr-loading">Loading today\'s yodafication…</div>';
+  if (!user){ host.innerHTML = ''; return; }
+  var todayKey = _drTodayNYKey();
+
+  try {
+    var snap = await db.collection(TC).doc(user.id).get();
+    if (snap.exists){
+      user.dailyYodaDoneFor = snap.data().dailyYodaDoneFor || null;
+    }
+  } catch(e){}
+
+  var liveSnap = await db.collection(YODA_COLLECTION).where('status','==','live').limit(1).get().catch(function(){ return null; });
+  if (!liveSnap || liveSnap.empty){
+    host.innerHTML =
+      '<div class="dr-empty">' +
+        '<div class="big">📭 NO ACTIVITY TODAY</div>' +
+        '<div class="sub">There\'s no yodafication available right now. Check back tomorrow!</div>' +
+      '</div>';
+    return;
+  }
+  var doc = liveSnap.docs[0];
+  _yodaState.activityId = doc.id;
+  _yodaState.activity = doc.data();
+
+  var alreadyDone = (user.dailyYodaDoneFor === todayKey);
+  if (alreadyDone){
+    host.innerHTML =
+      '<div class="dr-feed-banner done">' +
+        '<div class="big">✅ DONE TODAY</div>' +
+        '<div class="sub">You\'ve already earned your egg from yodafication today. Come back tomorrow!</div>' +
+      '</div>';
+    return;
+  }
+
+  _yodaState.answers = (_yodaState.activity.sentences || []).map(function(){ return ''; });
+  _yodaRenderForm();
+}
+window._yodaRender = _yodaRender;
+
+function _yodaRenderForm(){
+  var host = document.getElementById('dailyYodaHost');
+  if (!host) return;
+  var sentences = (_yodaState.activity && _yodaState.activity.sentences) || [];
+
+  var introHtml =
+    '<div class="dr-feed-banner active">' +
+      '<div class="big">🔀 ' + _esc(_yodaState.activity.title || 'YODAFICATION') + '</div>' +
+      '<div class="sub">For each sentence, type every valid word-order permutation — one per line. The verb stays last; if the subject moves away from the verb, prepend "(she/he/they)" before the verb. Submitting earns +1 egg.</div>' +
+    '</div>';
+
+  var cardsHtml = sentences.map(function(s, i){
+    var chipsHtml = (s.constituents || []).map(function(c){
+      var def = YODA_LABEL_DEFS[c] || c;
+      return '<span class="yoda-chip" title="' + _esc(def) + '"><span class="yoda-chip-key">' + _esc(c) + '</span></span>';
+    }).join('');
+    return '<div class="yoda-card">' +
+      '<div class="yoda-card-head">' +
+        '<div class="yoda-card-num">SENTENCE ' + (i + 1) + ' / ' + sentences.length + '</div>' +
+      '</div>' +
+      '<div class="yoda-card-sentence">' + _esc(s.english || '') + '</div>' +
+      (chipsHtml ? '<div class="yoda-chip-row">' + chipsHtml + '</div>' : '') +
+      '<div class="yoda-help">Type every valid permutation, one per line.</div>' +
+      '<textarea class="yoda-textarea" data-i="' + i + '" placeholder="One permutation per line…" oninput="_yodaOnAnswerInput(' + i + ', this.value)">' + _esc(_yodaState.answers[i] || '') + '</textarea>' +
+    '</div>';
+  }).join('');
+
+  var submitHtml =
+    '<div class="yoda-actions">' +
+      '<button class="btn btn-green btn-lg sparkle-btn" id="yodaSubmitBtn" onclick="_yodaSubmit()">✅ SUBMIT ALL — EARN +1 EGG</button>' +
+    '</div>';
+
+  host.innerHTML = introHtml + cardsHtml + submitHtml;
+  setTimeout(function(){
+    var btn = document.getElementById('yodaSubmitBtn');
+    if (btn && typeof addSparkles === 'function') addSparkles(btn);
+  }, 50);
+}
+
+function _yodaOnAnswerInput(i, value){
+  _yodaState.answers[i] = value;
+}
+window._yodaOnAnswerInput = _yodaOnAnswerInput;
+
+async function _yodaSubmit(){
+  if (_yodaState.busy) return;
+  if (!user || !_yodaState.activityId) return;
+
+  var empty = [];
+  for (var i = 0; i < _yodaState.answers.length; i++){
+    var lines = (_yodaState.answers[i] || '').split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+    if (lines.length === 0) empty.push(i + 1);
+  }
+  if (empty.length){
+    toast('Add at least one line for sentence ' + empty.join(', '), 'var(--pink)');
+    return;
+  }
+
+  _yodaState.busy = true;
+  var btn = document.getElementById('yodaSubmitBtn');
+  if (btn){ btn.disabled = true; btn.textContent = '⏳ SAVING…'; }
+
+  var todayKey = _drTodayNYKey();
+  try {
+    var subRef = db.collection(YODA_COLLECTION).doc(_yodaState.activityId).collection('submissions').doc(user.id);
+    var answerPayload = (_yodaState.activity.sentences || []).map(function(s, i){
+      var lines = (_yodaState.answers[i] || '').split('\n').map(function(t){ return t.trim(); }).filter(Boolean);
+      return { english: s.english, constituents: s.constituents || [], lines: lines };
+    });
+    await subRef.set({
+      userName: (user.displayName || user.username || 'Student'),
+      userEmail: user.username || '',
+      answers: answerPayload,
+      submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      forKey: todayKey
+    }, { merge: true });
+
+    // Award egg atomically (only if not already credited today)
+    var acctRef = db.collection(TC).doc(user.id);
+    var awarded = false;
+    await db.runTransaction(async function(tx){
+      var snap = await tx.get(acctRef);
+      if (!snap.exists) return;
+      var d = snap.data() || {};
+      if (d.dailyYodaDoneFor === todayKey) return;
+      tx.update(acctRef, {
+        gachaRolls: firebase.firestore.FieldValue.increment(1),
+        dailyYodaDoneFor: todayKey
+      });
+      awarded = true;
+    });
+    if (awarded) user.gachaRolls = (user.gachaRolls || 0) + 1;
+    user.dailyYodaDoneFor = todayKey;
+    if (typeof updateCounts === 'function') updateCounts();
+    playSfx(SOUND_WIN, 0.9);
+
+    _yodaRenderDone();
+  } catch(e){
+    console.error('yoda submit:', e);
+    toast('Save failed. Try again.', 'var(--pink)');
+    if (btn){ btn.disabled = false; btn.textContent = '✅ SUBMIT ALL — EARN +1 EGG'; }
+  } finally {
+    _yodaState.busy = false;
+  }
+}
+window._yodaSubmit = _yodaSubmit;
+
+function _yodaRenderDone(){
+  var host = document.getElementById('dailyYodaHost');
+  if (!host) return;
+  var sentences = (_yodaState.activity && _yodaState.activity.sentences) || [];
+  var bannerHtml =
+    '<div class="dr-feed-banner done">' +
+      '<div class="big">✅ +1 EGG EARNED</div>' +
+      '<div class="sub">Nice work! Compare your answers to the answer key below. Come back tomorrow for a new yodafication.</div>' +
+    '</div>';
+  var keysHtml = sentences.map(function(s, i){
+    var keys = s.answerKey || [];
+    var keyList = keys.map(function(k){ return '<li>' + _esc(k) + '</li>'; }).join('');
+    var mineLines = (_yodaState.answers[i] || '').split('\n').map(function(t){ return t.trim(); }).filter(Boolean);
+    var mineList = mineLines.map(function(k){ return '<li>' + _esc(k) + '</li>'; }).join('') || '<li><i>(no answer)</i></li>';
+    return '<div class="yoda-card">' +
+      '<div class="yoda-card-head">' +
+        '<div class="yoda-card-num">SENTENCE ' + (i + 1) + '</div>' +
+      '</div>' +
+      '<div class="yoda-card-sentence">' + _esc(s.english || '') + '</div>' +
+      '<div style="font-family:var(--vt);font-size:13px;color:#aaa;margin-bottom:4px;">YOUR ANSWERS</div>' +
+      '<ol style="margin:0 0 10px 22px;color:#cfd8e8;font-family:var(--vt);font-size:14px;line-height:1.6;">' + mineList + '</ol>' +
+      '<div class="yoda-key-box">' +
+        '<div class="yoda-key-title">ANSWER KEY (' + keys.length + ')</div>' +
+        '<ol>' + keyList + '</ol>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+  host.innerHTML = bannerHtml + keysHtml;
+}
 
 /* Expose needed globals */
 window.setBgmVolume = setBgmVolume;
