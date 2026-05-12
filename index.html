@@ -1899,6 +1899,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-functions-compat.js"></script>
 
 <script>
 (function(){
@@ -3029,11 +3030,11 @@ const YODA_LABEL_DEFS = {
   V:   'Action verb',
   VAV: 'Verb + auxiliary verb'
 };
-// Yodafication auto-grader webhook. Fires after the student submits;
-// expects ChatGPT to grade their permutations against the answer key and
-// return { score: "X/Y", feedback: "markdown text" } which is then written
-// as an inbox message for the student.
-const YODA_GRADE_WEBHOOK = 'https://hook.us1.make.com/z9v6c2da6v51ovkgdq4uftuzw7hqu962';
+// Yodafication auto-grader is owned by the `yodaGrade` Cloud Function.
+// The webhook URL lives in Secret Manager (YODA_GRADE_WEBHOOK_URL) — never
+// in client code — so students can't bypass the server and forge inbox
+// messages. The function calls Make, parses ChatGPT's reply, and writes
+// the inbox message using admin SDK.
 
 // ─── INBOX ────────────────────────────────────────────────
 // Student inbox lives at tevello_accounts/{uid}/inbox/{messageId}. Admin
@@ -9754,73 +9755,35 @@ function _inboxFormatBody(text){
   return html;
 }
 
-/* ─── YODA AUTO-GRADE ─── */
+/* ─── YODA AUTO-GRADE ───
+ * The grade webhook + inbox write are owned by a Cloud Function (yodaGrade)
+ * so students CANNOT forge messages. We send the student's answers; the
+ * function re-reads the activity's answer key from Firestore (so the
+ * student can't inject a fake answer key) and writes the inbox doc
+ * server-side using admin SDK. Client just fires the call and shows a
+ * toast on success.
+ */
 async function _yodaFireAutoGrade(answerPayload){
   if (!user || !_yodaState.activity) return;
-  // Build a clean payload: send the original sentences + answer keys (so
-  // ChatGPT can grade against them) + the student's typed permutations.
-  var sentences = (_yodaState.activity.sentences || []).map(function(s, i){
-    return {
-      english: s.english,
-      // Normalize answerKey to plain {labels,english} regardless of legacy shape
-      answerKey: (s.answerKey || []).map(function(k){
-        if (typeof k === 'string') return { labels: [], english: k };
-        return { labels: k.labels || [], english: k.english || '' };
-      }),
-      studentAnswers: (answerPayload[i] && answerPayload[i].lines) || []
-    };
+  // We only send the student's typed lines per sentence. The function
+  // re-reads `english` and `answerKey` from Firestore using `activityId`
+  // — bypassing any tampering with what the answer key looks like.
+  var sentences = (answerPayload || []).map(function(a){
+    return { studentAnswers: (a && a.lines) || [] };
   });
-  var payload = {
-    studentEmail: user.username || '',
-    studentName: user.displayName || user.username || 'Student',
-    studentUid: user.id,
-    activityId: _yodaState.activityId,
-    activityTitle: _yodaState.activity.title || 'Yodafication',
-    sentences: sentences
-  };
   try {
-    var resp = await fetch(YODA_GRADE_WEBHOOK, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    if (!resp.ok) return; // silent failure — egg already awarded
-    var raw = await resp.text();
-    raw = String(raw || '').trim();
-    if (!raw) return;
-    // Strip markdown fences + unwrap envelopes (same approach as the generator)
-    raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
-    var parsed;
-    try {
-      parsed = JSON.parse(raw);
-      if (typeof parsed === 'string') parsed = JSON.parse(parsed);
-      else if (parsed.content && typeof parsed.content === 'string') parsed = JSON.parse(parsed.content);
-      else if (parsed.text && typeof parsed.text === 'string') parsed = JSON.parse(parsed.text);
-    } catch(e){
-      var m = raw.match(/\{[\s\S]*\}/);
-      if (m){ try { parsed = JSON.parse(m[0]); } catch(_){} }
-    }
-    if (!parsed || typeof parsed !== 'object') return;
-    var score = String(parsed.score || '').trim() || null;
-    var feedback = String(parsed.feedback || parsed.body || '').trim();
-    if (!feedback) return;
-    // Write to the student's own inbox subcollection
-    await db.collection(TC).doc(user.id).collection(INBOX_SUBCOL).add({
-      type: 'grade',
-      title: 'Yodafication feedback' + (score ? ' · ' + score : ''),
-      body: feedback,
-      score: score,
+    var callable = firebase.app('gacha').functions('us-central1').httpsCallable('yodaGrade');
+    var result = await callable({
       activityId: _yodaState.activityId,
       activityTitle: _yodaState.activity.title || 'Yodafication',
-      read: false,
-      fromAdmin: true,
-      fromName: 'KoreaLand Auto-Grader',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      sentences: sentences
     });
-    // Nudge the student with a toast (badge auto-updates via listener)
-    toast('📬 Feedback ready in inbox!', 'var(--green)');
+    if (result && result.data && result.data.ok){
+      toast('📬 Feedback ready in inbox!', 'var(--green)');
+    }
   } catch(e){
-    // Silent — autograde is best-effort. Don't bug the student.
+    // Silent — autograde is best-effort. Student already got their egg.
+    // (Common harmless cases: function cold-start timeout, Make slow, ChatGPT slow.)
     console.warn('yoda auto-grade:', e && e.message);
   }
 }
