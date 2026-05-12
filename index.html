@@ -126,8 +126,77 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .chip.purple{border-color:var(--purple);color:var(--purple);}
 .chip.gold{border-color:var(--gold);color:var(--gold);}
 
-.icon-btn{font-size:18px;background:rgba(65,192,255,0.08);border:1px solid rgba(65,192,255,0.25);color:var(--cyan);width:36px;height:36px;border-radius:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 rgba(0,0,0,0.8);}
+.icon-btn{font-size:18px;background:rgba(65,192,255,0.08);border:1px solid rgba(65,192,255,0.25);color:var(--cyan);width:36px;height:36px;border-radius:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 rgba(0,0,0,0.8);position:relative;}
 .icon-btn:hover{background:rgba(65,192,255,0.18);}
+
+/* ─── INBOX badge on the topbar icon button ─── */
+.inbox-badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:#ff4444;color:#fff;font-family:'Press Start 2P',monospace;font-size:8px;display:none;align-items:center;justify-content:center;border:1px solid #000;box-shadow:1px 1px 0 rgba(0,0,0,0.7);animation:inboxPulse 1.8s ease-in-out infinite;}
+.inbox-badge.show{display:flex;}
+@keyframes inboxPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+/* ─── INBOX screen ─── */
+#inboxScreen{padding:20px;max-width:780px;margin:0 auto;}
+.inbox-list{display:flex;flex-direction:column;gap:10px;margin-top:14px;}
+.inbox-empty{text-align:center;padding:60px 20px;color:#888;font-family:var(--vt);font-size:15px;}
+.inbox-empty .big{font-family:'Press Start 2P',monospace;font-size:14px;color:#666;margin-bottom:10px;letter-spacing:1px;}
+.inbox-card{background:#10172a;border:2px solid #2a3650;border-radius:10px;padding:14px 16px;cursor:pointer;transition:border-color .12s, transform .08s;display:flex;align-items:flex-start;gap:12px;}
+.inbox-card:hover{border-color:#41c0ff;transform:translateY(-1px);}
+.inbox-card.unread{border-left:4px solid #41c0ff;background:#101e35;}
+.inbox-card-icon{font-size:22px;width:36px;text-align:center;flex-shrink:0;line-height:1.2;}
+.inbox-card-body{flex:1;min-width:0;}
+.inbox-card-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px;}
+.inbox-card-title{font-family:'Noto Sans',sans-serif;font-weight:700;font-size:15px;color:#fff;}
+.inbox-card.unread .inbox-card-title{color:#7dd3fc;}
+.inbox-card-date{font-family:var(--vt);font-size:12px;color:#888;white-space:nowrap;}
+.inbox-card-preview{font-family:var(--vt);font-size:13px;color:#aaa;line-height:1.5;max-height:42px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.inbox-card.unread .inbox-card-preview{color:#d0d8e8;}
+.inbox-type-pill{display:inline-block;font-family:'Press Start 2P',monospace;font-size:8px;padding:3px 6px;border-radius:3px;letter-spacing:1px;margin-bottom:4px;}
+.inbox-type-pill.grade{background:rgba(57,255,20,0.18);color:#39ff14;border:1px solid #39ff14;}
+.inbox-type-pill.admin{background:rgba(168,85,247,0.18);color:#c4a3ff;border:1px solid #a855f7;}
+.inbox-type-pill.voice{background:rgba(255,140,60,0.18);color:#ffb072;border:1px solid #ff8c3c;}
+
+/* Detail view */
+.inbox-detail{background:#0d1424;border:2px solid #2a3650;border-radius:10px;padding:20px;margin-top:14px;}
+.inbox-detail-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.inbox-detail-title{font-family:'Noto Sans',sans-serif;font-weight:700;font-size:18px;color:#fff;}
+.inbox-detail-date{font-family:var(--vt);font-size:13px;color:#888;}
+.inbox-detail-body{font-family:'Noto Sans',sans-serif;font-size:15px;line-height:1.7;color:#dcd0ff;white-space:pre-wrap;}
+.inbox-detail-body h1,.inbox-detail-body h2,.inbox-detail-body h3,.inbox-detail-body h4{font-family:'Noto Sans',sans-serif;color:#7dd3fc;margin:16px 0 8px;}
+.inbox-detail-body code{background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:3px;color:#ffd479;font-family:'Courier New',monospace;font-size:14px;}
+.inbox-detail-body strong{color:#fff;}
+.inbox-detail-body ul,.inbox-detail-body ol{margin:8px 0 8px 22px;}
+.inbox-detail-body li{margin-bottom:4px;}
+.inbox-voice-player{background:#0a0a15;border:1px solid #444;border-radius:8px;padding:12px;margin-top:12px;}
+.inbox-voice-player audio{width:100%;}
+.inbox-grade-score{display:inline-block;padding:8px 14px;background:rgba(57,255,20,0.10);border:2px solid #39ff14;border-radius:6px;font-family:'Press Start 2P',monospace;font-size:14px;color:#39ff14;margin-bottom:16px;text-shadow:var(--ps-outline-sm);letter-spacing:2px;}
+
+/* ─── ADMIN: SEND TO STUDENT composer ─── */
+.istc-row{display:flex;flex-direction:column;gap:8px;margin-bottom:12px;}
+.istc-row label{font-family:'Noto Sans',sans-serif;font-size:11px;color:#a0aef7;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
+.istc-row select,.istc-row input,.istc-row textarea{background:#0d1424;color:#e6ebf5;border:1px solid #334155;border-radius:5px;padding:8px;font-family:'Noto Sans',sans-serif;font-size:14px;width:100%;box-sizing:border-box;outline:none;}
+.istc-row textarea{min-height:140px;line-height:1.5;resize:vertical;}
+.istc-tabs{display:flex;gap:0;border-bottom:1px solid #334155;margin-bottom:14px;}
+.istc-tab{font-family:'Noto Sans',sans-serif;font-size:13px;font-weight:600;background:none;color:#888;border:none;padding:10px 16px;cursor:pointer;border-bottom:2px solid transparent;}
+.istc-tab.active{color:#7dd3fc;border-bottom-color:#41c0ff;}
+.istc-tab:hover{color:#fff;}
+.istc-voice-controls{background:#0a0a15;border:1px solid #444;border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.istc-voice-record-btn{background:#7f1d1d;color:#fff;border:1px solid #991b1b;padding:10px 18px;border-radius:6px;font-family:'Noto Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;align-self:flex-start;}
+.istc-voice-record-btn.recording{background:#dc2626;animation:inboxPulse 1.2s ease-in-out infinite;}
+.istc-voice-record-btn:hover{background:#991b1b;}
+.istc-voice-status{font-family:var(--vt);font-size:13px;color:#aaa;}
+.istc-student-search{position:relative;}
+.istc-student-results{position:absolute;top:100%;left:0;right:0;background:#0d1424;border:1px solid #334155;border-top:none;border-radius:0 0 5px 5px;max-height:240px;overflow-y:auto;z-index:10;display:none;}
+.istc-student-results.show{display:block;}
+.istc-student-row{padding:8px 10px;cursor:pointer;font-family:'Noto Sans',sans-serif;font-size:13px;color:#cbd5e1;border-bottom:1px solid #1e293b;}
+.istc-student-row:hover{background:#1e293b;color:#fff;}
+.istc-student-row:last-child{border-bottom:none;}
+.istc-recipients{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;min-height:24px;}
+.istc-recipient-chip{display:inline-flex;align-items:center;gap:6px;background:rgba(65,192,255,0.12);border:1px solid #41c0ff;border-radius:4px;padding:4px 8px;font-family:'Noto Sans',sans-serif;font-size:12px;color:#7dd3fc;}
+.istc-recipient-chip .x{cursor:pointer;color:#ff8888;font-weight:bold;}
+.istc-recipient-chip .x:hover{color:#ff4444;}
 
 /* ── MAIN MENU SCREEN ── */
 #menuScreen{padding:48px 24px;max-width:1000px;margin:0 auto;}
@@ -383,6 +452,24 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
  * runtime (policy modal, ea-modal date/level pickers, drm modals,
  * freeEggsScreen, etc.) */
 body > div { zoom: var(--app-zoom, 1.2); }
+
+/* The gacha reveal sequence (egg crack, monster reveal, win popup, rarity
+ * tables, epic-effects opt-in) must ALWAYS render at native scale, never
+ * affected by the app-wide zoom setting. The monster artwork is calibrated
+ * for a specific pixel size and zooming distorts the retro aesthetic.
+ *
+ * These overlays are dynamically appended to <body> so they match the
+ * `body > div` selector above; we explicitly reset their zoom to 1. */
+body > #_gov,
+body > ._gov,
+body > #_grov,
+body > ._grov,
+body > #_grarov,
+body > ._grarov,
+body > #_gwpop,
+body > ._gwpop,
+body > #_gepipop,
+body > ._gepipop { zoom: 1 !important; }
 
 /* ═══════════════════════════════════════════════════════════
  * ADMIN PAGE REDESIGN — readability-first hierarchy
@@ -1602,6 +1689,18 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   <div id="dailyYodaHost"></div>
 </div>
 
+<!-- ═══ INBOX ═══ -->
+<div id="inboxScreen" class="sub-screen hidden">
+  <div class="back-row">
+    <button class="btn btn-ghost btn-sm" onclick="goBackToMenu()">← BACK TO MENU</button>
+  </div>
+  <div class="section-head daily">
+    <div class="sh-title">📬 INBOX</div>
+    <div class="sh-sub">Messages from your teacher and feedback on your activities.</div>
+  </div>
+  <div id="inboxHost"></div>
+</div>
+
 <!-- ═══ SHOP ═══ -->
 <div id="shopScreen" class="sub-screen hidden">
   <div class="back-row"><button class="btn btn-ghost btn-sm" onclick="goBackToMenu()">← BACK TO MENU</button></div>
@@ -1685,6 +1784,18 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
     <div class="admin-section-body">
       <div style="margin-bottom:12px;color:#b8c5dc;font-weight:600;">Generate 5-sentence English permutation drills. Students rewrite each sentence in every valid constituent order.</div>
       <div id="yodaMgrHost"></div>
+    </div>
+  </div>
+
+  <!-- Inbox Composer (collapsible, collapsed by default) -->
+  <div class="admin-section collapsed" data-admin-section="inboxComposer">
+    <div class="admin-section-head" onclick="_adminToggleSection(this)">
+      <div class="admin-section-title">📬 Send to Student</div>
+      <span class="chev">▼</span>
+    </div>
+    <div class="admin-section-body">
+      <div style="margin-bottom:12px;color:#b8c5dc;font-weight:600;">Send a text or voice message to one or more students' inboxes. Submissions for review live in the Yodafication Manager above.</div>
+      <div id="inboxComposerHost"></div>
     </div>
   </div>
 
@@ -2088,7 +2199,7 @@ function _setBgmForScreen(screenId){
   var ambient = ['shopScreen','showcaseScreen','dailyScreen'];
   // Admin works with a lot of text + recordings — keeping silent so audio
   // playback (student recordings, etc.) doesn't compete with background music.
-  var silent  = ['dailyReadingScreen','dailyListeningScreen','dailyAdvancedScreen','dailyYodaScreen','adminScreen'];
+  var silent  = ['dailyReadingScreen','dailyListeningScreen','dailyAdvancedScreen','dailyYodaScreen','inboxScreen','adminScreen'];
   if (ambient.indexOf(screenId) !== -1){
     menuBgmStop();
     if (gachaBgmAudio.paused) gachaBgmPlay();
@@ -2190,7 +2301,7 @@ function hide(id){
 }
 function showFade(id){ var el = $(id); if (!el) return; el.classList.remove('hidden','page-fade'); void el.offsetWidth; el.classList.add('page-fade'); }
 function hideAllScreens(){
-  ['loginScreen','menuScreen','dailyScreen','dailyReadingScreen','dailyListeningScreen','dailyAdvancedScreen','dailyYodaScreen','shopScreen','showcaseScreen','adminScreen'].forEach(function(s){
+  ['loginScreen','menuScreen','dailyScreen','dailyReadingScreen','dailyListeningScreen','dailyAdvancedScreen','dailyYodaScreen','inboxScreen','shopScreen','showcaseScreen','adminScreen'].forEach(function(s){
     var el = $(s); if (el) el.classList.add('hidden');
   });
 }
@@ -2680,6 +2791,7 @@ function updateTopBar(){
     '<span class="chip cyan">👤 ' + esc(display.toUpperCase()) + '</span>' +
     '<span class="chip purple" id="chipRolls">🪺 ' + (user.gachaRolls||0) + '</span>' +
     '<span class="chip gold" id="chipPoints">⭐ ' + (user.points||0) + '</span>' +
+    '<button class="icon-btn" id="inboxBtn" onclick="_inboxOpen()" title="Inbox">📬<span class="inbox-badge" id="inboxBadge">0</span></button>' +
     '<div style="position:relative;display:inline-block;">' +
       '<button class="icon-btn" onclick="toggleVolPanel()" title="Volume">🔊</button>' +
       '<div id="volPanel" class="vol-panel">' +
@@ -2696,6 +2808,9 @@ function updateTopBar(){
       '</div>' +
     '</div>' +
     '<button class="btn btn-ghost btn-xs" onclick="doLogout()">LOGOUT</button>';
+
+  // Subscribe to the user's inbox for unread count once topbar is rendered
+  _inboxStartUnreadListener();
 }
 
 function updateCounts(){
@@ -2914,6 +3029,20 @@ const YODA_LABEL_DEFS = {
   V:   'Action verb',
   VAV: 'Verb + auxiliary verb'
 };
+// Yodafication auto-grader webhook. Fires after the student submits;
+// expects ChatGPT to grade their permutations against the answer key and
+// return { score: "X/Y", feedback: "markdown text" } which is then written
+// as an inbox message for the student.
+const YODA_GRADE_WEBHOOK = 'https://hook.us1.make.com/z9v6c2da6v51ovkgdq4uftuzw7hqu962';
+
+// ─── INBOX ────────────────────────────────────────────────
+// Student inbox lives at tevello_accounts/{uid}/inbox/{messageId}. Admin
+// writes messages here from the admin panel (text or voice); auto-grade
+// from Yodafication writes here too. Students read & mark-as-read on
+// their own subcollection.
+const INBOX_SUBCOL = 'inbox';
+// Storage path prefix for voice messages
+const INBOX_VOICE_PATH = 'inbox-voice/';
 
 var _drState = {
   passageId: null,
@@ -6546,6 +6675,7 @@ function renderAdmin(){
   if (typeof _drmRenderManager === 'function') _drmRenderManager();
   if (typeof _advmRenderManager === 'function') _advmRenderManager();
   if (typeof _yodaRenderManager === 'function') _yodaRenderManager();
+  if (typeof _istcRender === 'function') _istcRender();
   var body = $('adminBody');
   if (!body) return;
   body.innerHTML = '<div class="admin-loading">Loading enrollments…</div>';
@@ -8935,60 +9065,74 @@ async function _yodaGenerate(){
   if (btn){ btn.disabled = true; btn.textContent = '⏳ Generating…'; }
 
   var prompt =
-    'You are an English-sentence permutation drill generator for Korean language learners.\n' +
+    'You generate English-sentence permutation drills for Korean language learners.\n' +
     '\n' +
-    'GOAL — Korean has flexible word order thanks to postpositional particles. To help students\n' +
-    'internalize this, we generate English sentences and ask them to type out every valid\n' +
-    'permutation of the sentence in English. This drill teaches them that the constituent\n' +
-    'order is fluid in Korean, unlike English where word order is mostly fixed.\n' +
+    'WHY THIS EXISTS\n' +
+    'Korean has flexible word order thanks to postpositional particles attached to each constituent.\n' +
+    'To help students internalize that flexibility, we have them rewrite English sentences in every\n' +
+    'valid permutation. The drill trains the *concept* of word-order freedom; the student practices in\n' +
+    'English first, then transfers the intuition to Korean.\n' +
     '\n' +
-    'STEP 1 — Generate exactly ' + YODA_SENTENCE_COUNT + ' English sentences at beginner-to-intermediate\n' +
-    'level (~6–14 words each). Each must contain a mix of these constituent types:\n' +
-    '  • S   = subject (e.g. "My mom", "I", "The students")\n' +
-    '  • O   = object (e.g. "the book", "her homework")\n' +
+    'CONSTITUENT LABELS — use these exact label keys:\n' +
+    '  • S   = subject (e.g. "My mom", "I", "Tom")\n' +
+    '  • O   = object (e.g. "the book", "her homework", "kimchi")\n' +
     '  • PP  = prepositional phrase, TEMPORAL (e.g. "in the morning", "on Tuesday")\n' +
     '  • PPN = prepositional phrase with possessive noun, typically LOCATION/COMPANION (e.g. "to the park", "with my friend")\n' +
-    '  • V   = action verb (e.g. "went", "ate", "studied")\n' +
+    '  • V   = action verb, single word (e.g. "went", "ate", "studied")\n' +
     '  • VAV = verb + auxiliary verb (e.g. "is going", "has eaten")\n' +
-    'Sentences should be varied — different subjects, different combinations of PP/PPN/O.\n' +
-    'Aim for 3–4 constituents per sentence (not counting the verb).\n' +
     '\n' +
-    'STEP 2 — For each sentence, list its constituents in the ORIGINAL English order using the keys above.\n' +
-    'Example for "My mom went to the park in the morning": constituents = ["S", "V", "PPN", "PP"]\n' +
+    'TASK — Generate exactly ' + YODA_SENTENCE_COUNT + ' English sentences at beginner-to-intermediate level (6–14 words each).\n' +
     '\n' +
-    'STEP 3 — For each sentence, write the FULL answer key as a list of strings. Every entry is one\n' +
-    'valid permutation of the sentence in plain English. RULES for permutations:\n' +
-    '  • The verb (V or VAV) is treated as fixed at the end.\n' +
-    '  • If the subject is moved away from the verb, prepend the pronoun "(she/he/they)" before the verb so the verb still has a clear subject.\n' +
-    '    Example: "To the park, in the morning, my mom went." → "To the park, in the morning, (she) went."\n' +
-    '  • Generate every distinct ordering of the non-verb constituents. With N constituents besides the verb, that\'s N! permutations (e.g. 3 constituents → 6 permutations).\n' +
-    '  • Include the original English ordering as one of the answer-key entries.\n' +
-    '  • Use natural commas between fronted constituents.\n' +
+    'For each sentence:\n' +
+    '  1. Write the sentence in natural English ("english" field).\n' +
+    '  2. Break it into its constituent spans. For each span give:\n' +
+    '       - "label": one of S / O / PP / PPN / V / VAV\n' +
+    '       - "text":  the exact words that make up that span (verbatim from the sentence)\n' +
+    '     List constituents in ORIGINAL English word order, in the "constituents" array.\n' +
+    '  3. Produce the FULL labeled answer key in "answerKey" — every valid permutation. Each entry is an OBJECT with:\n' +
+    '       - "labels":  array of labels in the order they appear in this permutation (always include every non-verb label, then the verb label at the end)\n' +
+    '       - "english": the sentence rewritten with those constituents in that order, in natural English with proper commas\n' +
+    '\n' +
+    'PERMUTATION RULES\n' +
+    '  • The verb (V or VAV) is fixed at the end of every permutation.\n' +
+    '  • If S is moved away from the verb, prepend "(she/he/they)" before the verb so it has a clear referent. The pronoun is only in the english text — it does NOT get its own label entry.\n' +
+    '  • Generate every distinct ordering of the non-verb constituents. With N non-verb constituents, that\'s N! permutations (3 → 6, 4 → 24).\n' +
+    '  • CAP at 12 permutations per sentence. If N! exceeds 12, return the first 12 in a varied selection.\n' +
+    '  • Include the ORIGINAL English ordering as one of the entries.\n' +
+    '  • Natural punctuation. Fronted constituents are separated by commas. Always end with a period.\n' +
+    '\n' +
+    'VARIETY — Mix subjects, verbs, and constituent counts across the 5 sentences. Don\'t repeat sentence shapes.\n' +
     '\n' +
     'OUTPUT — STRICT JSON ONLY. No markdown, no code fences, no preamble. Exactly this shape:\n' +
     '{\n' +
-    '  "title": "<short English label, 2-5 words, e.g. \\"Daily Routines Drill\\">",\n' +
+    '  "title": "<2-5 word English label, e.g. \\"Daily Routines\\">",\n' +
     '  "sentences": [\n' +
     '    {\n' +
     '      "english": "My mom went to the park in the morning.",\n' +
-    '      "constituents": ["S", "V", "PPN", "PP"],\n' +
+    '      "constituents": [\n' +
+    '        { "label": "S",   "text": "My mom" },\n' +
+    '        { "label": "V",   "text": "went" },\n' +
+    '        { "label": "PPN", "text": "to the park" },\n' +
+    '        { "label": "PP",  "text": "in the morning" }\n' +
+    '      ],\n' +
     '      "answerKey": [\n' +
-    '        "My mom went to the park in the morning.",\n' +
-    '        "My mom, in the morning, went to the park.",\n' +
-    '        "To the park, my mom went in the morning.",\n' +
-    '        "To the park, in the morning, (she) went.",\n' +
-    '        "In the morning, my mom went to the park.",\n' +
-    '        "In the morning, to the park, (she) went."\n' +
+    '        { "labels": ["S","PPN","PP","V"], "english": "My mom went to the park in the morning." },\n' +
+    '        { "labels": ["S","PP","PPN","V"], "english": "My mom, in the morning, went to the park." },\n' +
+    '        { "labels": ["PPN","S","PP","V"], "english": "To the park, my mom went in the morning." },\n' +
+    '        { "labels": ["PPN","PP","S","V"], "english": "To the park, in the morning, (she) went." },\n' +
+    '        { "labels": ["PP","S","PPN","V"], "english": "In the morning, my mom went to the park." },\n' +
+    '        { "labels": ["PP","PPN","S","V"], "english": "In the morning, to the park, (she) went." }\n' +
     '      ]\n' +
     '    }\n' +
     '  ]\n' +
     '}\n' +
     '\n' +
-    'CRITICAL RULES:\n' +
-    '• Output ONLY the JSON object. No surrounding text.\n' +
-    '• Exactly ' + YODA_SENTENCE_COUNT + ' sentences in the "sentences" array.\n' +
-    '• Each "answerKey" must include every distinct permutation, including the original ordering.\n' +
-    '• Use natural English punctuation in every answer-key entry.';
+    'CRITICAL\n' +
+    '• Output ONLY the JSON object. No text before or after.\n' +
+    '• Exactly ' + YODA_SENTENCE_COUNT + ' sentences in "sentences".\n' +
+    '• Every answerKey entry has both "labels" and "english" fields.\n' +
+    '• Every constituent\'s "text" must appear verbatim in the sentence\'s "english".\n' +
+    '• Answer keys are for ADMIN REVIEW ONLY — they will not be shown to students. Write them as a useful reference for the teacher.';
 
   try {
     var resp = await fetch(YODA_WEBHOOK, {
@@ -9017,11 +9161,29 @@ async function _yodaGenerate(){
     if (!Array.isArray(parsed.sentences) || parsed.sentences.length !== YODA_SENTENCE_COUNT){
       throw new Error('Bad sentences array: expected ' + YODA_SENTENCE_COUNT + ' items, got ' + (parsed.sentences ? parsed.sentences.length : 'none'));
     }
+    // Normalize each sentence: constituents may be either an array of strings
+    // (legacy: ["S","V","PPN","PP"]) or an array of {label,text} objects (new
+    // schema). answerKey may be an array of strings (legacy) or an array of
+    // {labels,english} objects (new). Both are valid; we coerce to the new
+    // richer shape on save so admin sees consistent data either way.
     for (var i = 0; i < parsed.sentences.length; i++){
       var s = parsed.sentences[i];
       if (!s.english || typeof s.english !== 'string') throw new Error('Sentence ' + (i+1) + ' missing english');
       if (!Array.isArray(s.constituents) || s.constituents.length === 0) throw new Error('Sentence ' + (i+1) + ' missing constituents');
       if (!Array.isArray(s.answerKey) || s.answerKey.length === 0) throw new Error('Sentence ' + (i+1) + ' missing answerKey');
+      // Normalize constituents to [{label,text}]
+      s.constituents = s.constituents.map(function(c){
+        if (typeof c === 'string') return { label: c.toUpperCase(), text: '' };
+        return { label: String(c.label || '').toUpperCase(), text: String(c.text || '') };
+      });
+      // Normalize answerKey to [{labels,english}]
+      s.answerKey = s.answerKey.map(function(k){
+        if (typeof k === 'string') return { labels: [], english: k };
+        return {
+          labels: Array.isArray(k.labels) ? k.labels.map(function(l){ return String(l).toUpperCase(); }) : [],
+          english: String(k.english || '')
+        };
+      });
     }
 
     await db.collection(YODA_COLLECTION).add({
@@ -9053,17 +9215,40 @@ async function _yodaEdit(id){
   var area = document.createElement('div');
   area.className = 'drm-edit-area';
 
+  // Normalize legacy shapes when rendering the edit form. Constituents may be
+  // strings or {label,text} objects; answerKey may be strings or {labels,english}.
+  function _normCons(c){
+    if (typeof c === 'string') return { label: c.toUpperCase(), text: '' };
+    return { label: String((c && c.label) || '').toUpperCase(), text: String((c && c.text) || '') };
+  }
+  function _normKey(k){
+    if (typeof k === 'string') return { labels: [], english: k };
+    return {
+      labels: Array.isArray(k && k.labels) ? k.labels.map(function(l){ return String(l).toUpperCase(); }) : [],
+      english: String((k && k.english) || '')
+    };
+  }
+
   var sentencesHtml = (d.sentences || []).map(function(s, i){
-    var keyHtml = (s.answerKey || []).map(function(line){ return _esc(line); }).join('\n');
+    var cons = (s.constituents || []).map(_normCons);
+    var consDisplay = cons.map(function(c){
+      return c.text ? (c.label + ':' + c.text) : c.label;
+    }).join(', ');
+    var keys = (s.answerKey || []).map(_normKey);
+    // Each line: "LABELS | english text"
+    var keyHtml = keys.map(function(k){
+      var labelPart = (k.labels || []).join(' ');
+      return labelPart ? (labelPart + ' | ' + k.english) : k.english;
+    }).join('\n');
     return '<div class="yoda-edit-row">' +
       '<label>Sentence ' + (i + 1) + '</label>' +
       '<input class="yoda-edit-eng" data-i="' + i + '" type="text" value="' + _esc(s.english || '') + '">' +
       '<div class="yoda-edit-labels">' +
-        '<label style="margin:0;">Labels (comma-separated):</label>' +
-        '<input class="yoda-edit-cons" data-i="' + i + '" type="text" value="' + _esc((s.constituents || []).join(', ')) + '" style="flex:1;min-width:120px;">' +
+        '<label style="margin:0;">Constituents (comma-separated, format <code>LABEL:text</code> or just <code>LABEL</code>):</label>' +
+        '<input class="yoda-edit-cons" data-i="' + i + '" type="text" value="' + _esc(consDisplay) + '" style="flex:1;min-width:200px;">' +
       '</div>' +
-      '<label>Answer key (one permutation per line):</label>' +
-      '<textarea class="yoda-edit-key" data-i="' + i + '">' + keyHtml + '</textarea>' +
+      '<label>Answer key (one per line, format <code>LABELS | english text</code>):</label>' +
+      '<textarea class="yoda-edit-key" data-i="' + i + '">' + _esc(keyHtml) + '</textarea>' +
     '</div>';
   }).join('');
 
@@ -9094,8 +9279,29 @@ async function _yodaSaveEdit(id){
     var english = engInputs[i].value.trim();
     var consInput = row.querySelector('.yoda-edit-cons[data-i="' + idx + '"]');
     var keyInput = row.querySelector('.yoda-edit-key[data-i="' + idx + '"]');
-    var constituents = (consInput.value || '').split(',').map(function(s){ return s.trim().toUpperCase(); }).filter(Boolean);
-    var answerKey = (keyInput.value || '').split('\n').map(function(s){ return s.trim(); }).filter(Boolean);
+    // Parse constituents: each entry is "LABEL" or "LABEL:text" (comma-separated)
+    var constituents = (consInput.value || '').split(',').map(function(s){
+      var trimmed = s.trim();
+      if (!trimmed) return null;
+      var colonAt = trimmed.indexOf(':');
+      if (colonAt === -1) return { label: trimmed.toUpperCase(), text: '' };
+      return {
+        label: trimmed.slice(0, colonAt).trim().toUpperCase(),
+        text: trimmed.slice(colonAt + 1).trim()
+      };
+    }).filter(Boolean);
+    // Parse answer-key lines: "LABELS | english" → {labels:[...], english:"..."}
+    // If no '|' present, treat the whole line as english with empty labels.
+    var answerKey = (keyInput.value || '').split('\n').map(function(line){
+      var trimmed = line.trim();
+      if (!trimmed) return null;
+      var pipeAt = trimmed.indexOf('|');
+      if (pipeAt === -1) return { labels: [], english: trimmed };
+      var labelStr = trimmed.slice(0, pipeAt).trim();
+      var eng = trimmed.slice(pipeAt + 1).trim();
+      var labels = labelStr.split(/[\s,]+/).map(function(l){ return l.trim().toUpperCase(); }).filter(Boolean);
+      return { labels: labels, english: eng };
+    }).filter(Boolean);
     sentences.push({ english: english, constituents: constituents, answerKey: answerKey });
   }
 
@@ -9225,17 +9431,15 @@ function _yodaRenderForm(){
     '</div>';
 
   var cardsHtml = sentences.map(function(s, i){
-    var chipsHtml = (s.constituents || []).map(function(c){
-      var def = YODA_LABEL_DEFS[c] || c;
-      return '<span class="yoda-chip" title="' + _esc(def) + '"><span class="yoda-chip-key">' + _esc(c) + '</span></span>';
-    }).join('');
+    // Students see only the English sentence. Constituent breakdown and answer
+    // key are admin-only (saved on the activity doc for teacher review but
+    // never rendered to students).
     return '<div class="yoda-card">' +
       '<div class="yoda-card-head">' +
         '<div class="yoda-card-num">SENTENCE ' + (i + 1) + ' / ' + sentences.length + '</div>' +
       '</div>' +
       '<div class="yoda-card-sentence">' + _esc(s.english || '') + '</div>' +
-      (chipsHtml ? '<div class="yoda-chip-row">' + chipsHtml + '</div>' : '') +
-      '<div class="yoda-help">Type every valid permutation, one per line.</div>' +
+      '<div class="yoda-help">Type every valid permutation, one per line. The verb stays last; if the subject moves away from the verb, prepend "(she/he/they)" before the verb.</div>' +
       '<textarea class="yoda-textarea" data-i="' + i + '" placeholder="One permutation per line…" oninput="_yodaOnAnswerInput(' + i + ', this.value)">' + _esc(_yodaState.answers[i] || '') + '</textarea>' +
     '</div>';
   }).join('');
@@ -9309,6 +9513,12 @@ async function _yodaSubmit(){
     if (typeof updateCounts === 'function') updateCounts();
     playSfx(SOUND_WIN, 0.9);
 
+    // Fire the auto-grade webhook in the background. We don't await it —
+    // student gets the egg + sees the done screen immediately. When the
+    // webhook returns we write the result as an inbox message and show a
+    // toast nudging the student to check their inbox.
+    _yodaFireAutoGrade(answerPayload);
+
     _yodaRenderDone();
   } catch(e){
     console.error('yoda submit:', e);
@@ -9327,11 +9537,11 @@ function _yodaRenderDone(){
   var bannerHtml =
     '<div class="dr-feed-banner done">' +
       '<div class="big">✅ +1 EGG EARNED</div>' +
-      '<div class="sub">Nice work! Compare your answers to the answer key below. Come back tomorrow for a new yodafication.</div>' +
+      '<div class="sub">Nice work! Your submission has been sent to your teacher for review. Come back tomorrow for a new yodafication.</div>' +
     '</div>';
+  // Show the student their own answers as a confirmation — but NOT the answer
+  // key. The answer key is saved on the activity doc for admin review only.
   var keysHtml = sentences.map(function(s, i){
-    var keys = s.answerKey || [];
-    var keyList = keys.map(function(k){ return '<li>' + _esc(k) + '</li>'; }).join('');
     var mineLines = (_yodaState.answers[i] || '').split('\n').map(function(t){ return t.trim(); }).filter(Boolean);
     var mineList = mineLines.map(function(k){ return '<li>' + _esc(k) + '</li>'; }).join('') || '<li><i>(no answer)</i></li>';
     return '<div class="yoda-card">' +
@@ -9340,15 +9550,556 @@ function _yodaRenderDone(){
       '</div>' +
       '<div class="yoda-card-sentence">' + _esc(s.english || '') + '</div>' +
       '<div style="font-family:var(--vt);font-size:13px;color:#aaa;margin-bottom:4px;">YOUR ANSWERS</div>' +
-      '<ol style="margin:0 0 10px 22px;color:#cfd8e8;font-family:var(--vt);font-size:14px;line-height:1.6;">' + mineList + '</ol>' +
-      '<div class="yoda-key-box">' +
-        '<div class="yoda-key-title">ANSWER KEY (' + keys.length + ')</div>' +
-        '<ol>' + keyList + '</ol>' +
-      '</div>' +
+      '<ol style="margin:0 0 4px 22px;color:#cfd8e8;font-family:var(--vt);font-size:14px;line-height:1.6;">' + mineList + '</ol>' +
     '</div>';
   }).join('');
   host.innerHTML = bannerHtml + keysHtml;
 }
+
+/* ═══════════════════════════════════════════════════════════
+ * INBOX
+ * ═══════════════════════════════════════════════════════════
+ * Subcollection-per-user at tevello_accounts/{uid}/inbox/{messageId}.
+ * Shape of each message doc:
+ *   {
+ *     type: 'admin' | 'grade' | 'voice',
+ *     title: 'Short heading shown in list',
+ *     body:  'Markdown-ish text content',
+ *     score: '4/5'  // optional, only for type=grade
+ *     voiceUrl: 'https://...'  // optional, for voice messages
+ *     activityId: '...'  // optional, ties grade back to its activity
+ *     read: false,
+ *     createdAt: serverTimestamp,
+ *     fromAdmin: true | false,
+ *     fromName: 'Calvin'
+ *   }
+ */
+
+/* ─── STUDENT: UNREAD LISTENER ─── */
+var _inboxUnsub = null;     // Firestore unsubscribe handle
+var _inboxUnreadCount = 0;
+var _inboxLastUid = null;   // tracks current listener owner; re-subscribes on user change
+
+function _inboxStartUnreadListener(){
+  if (!user || !user.id) return;
+  // Resubscribe if user changed
+  if (_inboxLastUid === user.id && _inboxUnsub) return;
+  if (_inboxUnsub){ try { _inboxUnsub(); } catch(e){} _inboxUnsub = null; }
+  _inboxLastUid = user.id;
+  try {
+    _inboxUnsub = db.collection(TC).doc(user.id).collection(INBOX_SUBCOL)
+      .where('read', '==', false)
+      .onSnapshot(function(snap){
+        _inboxUnreadCount = snap.size;
+        _inboxUpdateBadge();
+      }, function(err){
+        // Silent — if rules deny or network's flaky, just leave badge hidden
+        console.warn('inbox listener:', err && err.message);
+      });
+  } catch(e){
+    console.warn('inbox listener setup:', e && e.message);
+  }
+}
+
+function _inboxUpdateBadge(){
+  var badge = document.getElementById('inboxBadge');
+  if (!badge) return;
+  if (_inboxUnreadCount > 0){
+    badge.textContent = _inboxUnreadCount > 99 ? '99+' : String(_inboxUnreadCount);
+    badge.classList.add('show');
+  } else {
+    badge.classList.remove('show');
+  }
+}
+
+/* ─── STUDENT: OPEN INBOX SCREEN ─── */
+function _inboxOpen(){
+  playSelect();
+  hideAllScreens(); show('topBar');
+  showFade('inboxScreen');
+  _setBgmForScreen('inboxScreen');
+  _inboxRender();
+  try { window.scrollTo(0, 0); } catch(e){}
+}
+window._inboxOpen = _inboxOpen;
+
+async function _inboxRender(){
+  var host = document.getElementById('inboxHost');
+  if (!host) return;
+  if (!user){ host.innerHTML = ''; return; }
+  host.innerHTML = '<div class="dr-loading">Loading inbox…</div>';
+  try {
+    var snap = await db.collection(TC).doc(user.id).collection(INBOX_SUBCOL)
+      .orderBy('createdAt', 'desc').limit(50).get();
+    if (snap.empty){
+      host.innerHTML =
+        '<div class="inbox-empty">' +
+          '<div class="big">📭 NO MESSAGES YET</div>' +
+          '<div>Feedback from your teacher and activity grades will arrive here.</div>' +
+        '</div>';
+      return;
+    }
+    var msgs = [];
+    snap.forEach(function(d){ msgs.push(Object.assign({ id: d.id }, d.data())); });
+    var listHtml = msgs.map(function(m){
+      var icon = m.type === 'grade' ? '🎯' : m.type === 'voice' ? '🎤' : '💬';
+      var pillClass = m.type === 'grade' ? 'grade' : m.type === 'voice' ? 'voice' : 'admin';
+      var pillLabel = m.type === 'grade' ? 'GRADE' : m.type === 'voice' ? 'VOICE' : 'MESSAGE';
+      var when = '';
+      if (m.createdAt){
+        try {
+          var ms = m.createdAt.toMillis ? m.createdAt.toMillis() : m.createdAt;
+          var dt = new Date(ms);
+          when = dt.toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+        } catch(e){}
+      }
+      var preview = (m.body || '').replace(/[#*`_>]/g, '').replace(/\s+/g, ' ').slice(0, 140);
+      return '<div class="inbox-card ' + (m.read ? '' : 'unread') + '" onclick="_inboxOpenMessage(\'' + m.id + '\')">' +
+        '<div class="inbox-card-icon">' + icon + '</div>' +
+        '<div class="inbox-card-body">' +
+          '<span class="inbox-type-pill ' + pillClass + '">' + pillLabel + (m.score ? ' · ' + _esc(m.score) : '') + '</span>' +
+          '<div class="inbox-card-head">' +
+            '<div class="inbox-card-title">' + _esc(m.title || 'Message') + '</div>' +
+            '<div class="inbox-card-date">' + _esc(when) + '</div>' +
+          '</div>' +
+          '<div class="inbox-card-preview">' + _esc(preview) + '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    host.innerHTML = '<div class="inbox-list">' + listHtml + '</div>';
+  } catch(e){
+    console.error('inbox render:', e);
+    host.innerHTML = '<div style="color:#ff8a8a;padding:20px;">Couldn\'t load inbox: ' + _esc(e.message || e) + '</div>';
+  }
+}
+window._inboxRender = _inboxRender;
+
+async function _inboxOpenMessage(id){
+  var host = document.getElementById('inboxHost');
+  if (!host || !user) return;
+  try {
+    var ref = db.collection(TC).doc(user.id).collection(INBOX_SUBCOL).doc(id);
+    var snap = await ref.get();
+    if (!snap.exists){
+      toast('Message not found.', 'var(--pink)');
+      return;
+    }
+    var m = snap.data();
+    // Mark as read (fire-and-forget). Listener will auto-update the badge.
+    if (!m.read){
+      ref.update({ read: true, readAt: firebase.firestore.FieldValue.serverTimestamp() }).catch(function(){});
+    }
+    var when = '';
+    if (m.createdAt){
+      try {
+        var ms = m.createdAt.toMillis ? m.createdAt.toMillis() : m.createdAt;
+        var dt = new Date(ms);
+        when = dt.toLocaleString('en-US', { weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+      } catch(e){}
+    }
+    var scoreHtml = m.score ? '<div class="inbox-grade-score">SCORE: ' + _esc(m.score) + '</div>' : '';
+    var voiceHtml = m.voiceUrl
+      ? '<div class="inbox-voice-player"><audio controls src="' + _esc(m.voiceUrl) + '"></audio></div>'
+      : '';
+    var bodyHtml = _inboxFormatBody(m.body || '');
+    host.innerHTML =
+      '<div style="margin-bottom:10px;">' +
+        '<button class="btn btn-ghost btn-sm" onclick="_inboxRender()">← BACK TO INBOX</button>' +
+      '</div>' +
+      '<div class="inbox-detail">' +
+        '<div class="inbox-detail-head">' +
+          '<div class="inbox-detail-title">' + _esc(m.title || 'Message') + '</div>' +
+          '<div class="inbox-detail-date">' + _esc(when) + '</div>' +
+        '</div>' +
+        scoreHtml +
+        voiceHtml +
+        '<div class="inbox-detail-body">' + bodyHtml + '</div>' +
+      '</div>';
+    try { window.scrollTo(0, 0); } catch(e){}
+  } catch(e){
+    console.error('inbox open msg:', e);
+    toast('Couldn\'t open message.', 'var(--pink)');
+  }
+}
+window._inboxOpenMessage = _inboxOpenMessage;
+
+// Cheap markdown-ish formatter for inbox body text. We don't want to pull in
+// a full markdown library; this handles bold (**x**), code (`x`), bullet
+// lists (lines starting with - or *), numbered lists, and line breaks.
+function _inboxFormatBody(text){
+  if (!text) return '';
+  var html = _esc(text);
+  // Bold
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  // Inline code
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+  // Headers
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  html = html.replace(/^# (.+)$/gm, '<h2>$1</h2>');
+  // Bullet lists — group consecutive lines starting with "- " or "* "
+  html = html.replace(/(^|\n)((?:[-*] .+(?:\n|$))+)/g, function(m, lead, block){
+    var items = block.trim().split('\n').map(function(line){
+      return '<li>' + line.replace(/^[-*] /, '') + '</li>';
+    }).join('');
+    return lead + '<ul>' + items + '</ul>';
+  });
+  // Numbered lists
+  html = html.replace(/(^|\n)((?:\d+\. .+(?:\n|$))+)/g, function(m, lead, block){
+    var items = block.trim().split('\n').map(function(line){
+      return '<li>' + line.replace(/^\d+\. /, '') + '</li>';
+    }).join('');
+    return lead + '<ol>' + items + '</ol>';
+  });
+  return html;
+}
+
+/* ─── YODA AUTO-GRADE ─── */
+async function _yodaFireAutoGrade(answerPayload){
+  if (!user || !_yodaState.activity) return;
+  // Build a clean payload: send the original sentences + answer keys (so
+  // ChatGPT can grade against them) + the student's typed permutations.
+  var sentences = (_yodaState.activity.sentences || []).map(function(s, i){
+    return {
+      english: s.english,
+      // Normalize answerKey to plain {labels,english} regardless of legacy shape
+      answerKey: (s.answerKey || []).map(function(k){
+        if (typeof k === 'string') return { labels: [], english: k };
+        return { labels: k.labels || [], english: k.english || '' };
+      }),
+      studentAnswers: (answerPayload[i] && answerPayload[i].lines) || []
+    };
+  });
+  var payload = {
+    studentEmail: user.username || '',
+    studentName: user.displayName || user.username || 'Student',
+    studentUid: user.id,
+    activityId: _yodaState.activityId,
+    activityTitle: _yodaState.activity.title || 'Yodafication',
+    sentences: sentences
+  };
+  try {
+    var resp = await fetch(YODA_GRADE_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!resp.ok) return; // silent failure — egg already awarded
+    var raw = await resp.text();
+    raw = String(raw || '').trim();
+    if (!raw) return;
+    // Strip markdown fences + unwrap envelopes (same approach as the generator)
+    raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/, '').replace(/```\s*$/, '').trim();
+    var parsed;
+    try {
+      parsed = JSON.parse(raw);
+      if (typeof parsed === 'string') parsed = JSON.parse(parsed);
+      else if (parsed.content && typeof parsed.content === 'string') parsed = JSON.parse(parsed.content);
+      else if (parsed.text && typeof parsed.text === 'string') parsed = JSON.parse(parsed.text);
+    } catch(e){
+      var m = raw.match(/\{[\s\S]*\}/);
+      if (m){ try { parsed = JSON.parse(m[0]); } catch(_){} }
+    }
+    if (!parsed || typeof parsed !== 'object') return;
+    var score = String(parsed.score || '').trim() || null;
+    var feedback = String(parsed.feedback || parsed.body || '').trim();
+    if (!feedback) return;
+    // Write to the student's own inbox subcollection
+    await db.collection(TC).doc(user.id).collection(INBOX_SUBCOL).add({
+      type: 'grade',
+      title: 'Yodafication feedback' + (score ? ' · ' + score : ''),
+      body: feedback,
+      score: score,
+      activityId: _yodaState.activityId,
+      activityTitle: _yodaState.activity.title || 'Yodafication',
+      read: false,
+      fromAdmin: true,
+      fromName: 'KoreaLand Auto-Grader',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    // Nudge the student with a toast (badge auto-updates via listener)
+    toast('📬 Feedback ready in inbox!', 'var(--green)');
+  } catch(e){
+    // Silent — autograde is best-effort. Don't bug the student.
+    console.warn('yoda auto-grade:', e && e.message);
+  }
+}
+window._yodaFireAutoGrade = _yodaFireAutoGrade;
+
+/* ═══════════════════════════════════════════════════════════
+ * ADMIN: SEND TO STUDENT (inbox composer)
+ * ═══════════════════════════════════════════════════════════
+ */
+var _istc = {
+  mode: 'text',            // 'text' | 'voice'
+  recipients: [],          // [{uid, name, email}]
+  mediaRecorder: null,
+  recording: false,
+  audioChunks: [],
+  recordedBlob: null,
+  recordedMime: '',
+  audioUrl: null,          // object URL for preview
+  studentCache: null       // [{uid, name, email}] of all students (cached)
+};
+
+async function _istcRender(){
+  var host = document.getElementById('inboxComposerHost');
+  if (!host) return;
+  host.innerHTML =
+    '<div class="istc-tabs">' +
+      '<button class="istc-tab ' + (_istc.mode === 'text' ? 'active' : '') + '" onclick="_istcSetMode(\'text\')">💬 Text</button>' +
+      '<button class="istc-tab ' + (_istc.mode === 'voice' ? 'active' : '') + '" onclick="_istcSetMode(\'voice\')">🎤 Voice</button>' +
+    '</div>' +
+    '<div class="istc-row">' +
+      '<label>To (search by name or email):</label>' +
+      '<div class="istc-student-search">' +
+        '<input id="istcStudentInput" type="text" placeholder="Type a name or email…" oninput="_istcSearchStudents(this.value)" onfocus="_istcSearchStudents(this.value)">' +
+        '<div class="istc-student-results" id="istcStudentResults"></div>' +
+      '</div>' +
+      '<div class="istc-recipients" id="istcRecipients">' + _istcRenderRecipients() + '</div>' +
+    '</div>' +
+    '<div class="istc-row">' +
+      '<label>Title:</label>' +
+      '<input id="istcTitle" type="text" placeholder="e.g. Feedback on your reading"' +
+        (_istc.mode === 'voice' ? ' value="Voice message from your teacher"' : '') +
+      '>' +
+    '</div>' +
+    (_istc.mode === 'text'
+      ? '<div class="istc-row">' +
+          '<label>Message (markdown supported — **bold**, `code`, lists, headers):</label>' +
+          '<textarea id="istcBody" placeholder="Type your message…"></textarea>' +
+        '</div>'
+      : '<div class="istc-row">' +
+          '<label>Recording:</label>' +
+          '<div class="istc-voice-controls">' +
+            '<button id="istcRecBtn" class="istc-voice-record-btn" onclick="_istcToggleRecord()">🔴 START RECORDING</button>' +
+            '<div class="istc-voice-status" id="istcRecStatus">Click to start recording your message.</div>' +
+            '<div id="istcRecPreview"></div>' +
+          '</div>' +
+          '<label style="margin-top:8px;">Optional caption (shown alongside the audio):</label>' +
+          '<textarea id="istcBody" placeholder="Optional caption or transcript…" style="min-height:80px;"></textarea>' +
+        '</div>'
+    ) +
+    '<div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">' +
+      '<button class="btn btn-cyan btn-md" id="istcSendBtn" onclick="_istcSend()">📬 SEND MESSAGE</button>' +
+      '<button class="btn btn-ghost btn-md" onclick="_istcReset()">↺ Reset</button>' +
+    '</div>';
+}
+window._istcRender = _istcRender;
+
+function _istcSetMode(mode){
+  _istc.mode = mode;
+  // Discard any recording-in-progress when switching modes
+  if (_istc.recording) _istcToggleRecord();
+  if (_istc.audioUrl){ try { URL.revokeObjectURL(_istc.audioUrl); } catch(e){} }
+  _istc.recordedBlob = null;
+  _istc.audioUrl = null;
+  _istcRender();
+}
+window._istcSetMode = _istcSetMode;
+
+function _istcReset(){
+  if (_istc.recording) _istcToggleRecord();
+  if (_istc.audioUrl){ try { URL.revokeObjectURL(_istc.audioUrl); } catch(e){} }
+  _istc.recipients = [];
+  _istc.recordedBlob = null;
+  _istc.audioUrl = null;
+  _istc.mode = 'text';
+  _istcRender();
+}
+window._istcReset = _istcReset;
+
+async function _istcSearchStudents(q){
+  q = (q || '').trim().toLowerCase();
+  var box = document.getElementById('istcStudentResults');
+  if (!box) return;
+  // Lazy-load the student list once per admin session
+  if (!_istc.studentCache){
+    try {
+      var snap = await db.collection(TC).limit(500).get();
+      var arr = [];
+      snap.forEach(function(d){
+        var data = d.data() || {};
+        arr.push({
+          uid: d.id,
+          name: data.displayName || data.username || '(unnamed)',
+          email: data.username || ''
+        });
+      });
+      _istc.studentCache = arr;
+    } catch(e){
+      box.innerHTML = '<div class="istc-student-row" style="color:#ff8a8a;">Couldn\'t load students: ' + _esc(e.message || e) + '</div>';
+      box.classList.add('show');
+      return;
+    }
+  }
+  // Filter (or show all if empty query and < 12 students)
+  var matches;
+  if (!q){
+    matches = _istc.studentCache.slice(0, 12);
+  } else {
+    matches = _istc.studentCache.filter(function(s){
+      return (s.name && s.name.toLowerCase().indexOf(q) !== -1)
+          || (s.email && s.email.toLowerCase().indexOf(q) !== -1);
+    }).slice(0, 12);
+  }
+  // Don't show already-selected recipients
+  var selectedUids = _istc.recipients.map(function(r){ return r.uid; });
+  matches = matches.filter(function(m){ return selectedUids.indexOf(m.uid) === -1; });
+  if (!matches.length){
+    box.innerHTML = '<div class="istc-student-row" style="color:#888;">No matches.</div>';
+  } else {
+    box.innerHTML = matches.map(function(s){
+      return '<div class="istc-student-row" onclick="_istcAddRecipient(\'' + s.uid + '\')">' +
+        '<strong>' + _esc(s.name) + '</strong> · <span style="color:#888;">' + _esc(s.email) + '</span>' +
+      '</div>';
+    }).join('');
+  }
+  box.classList.add('show');
+}
+window._istcSearchStudents = _istcSearchStudents;
+
+function _istcAddRecipient(uid){
+  if (!_istc.studentCache) return;
+  var s = _istc.studentCache.find(function(x){ return x.uid === uid; });
+  if (!s) return;
+  if (_istc.recipients.find(function(r){ return r.uid === uid; })) return;
+  _istc.recipients.push(s);
+  // Update DOM in place
+  var input = document.getElementById('istcStudentInput');
+  if (input) input.value = '';
+  var box = document.getElementById('istcStudentResults');
+  if (box) box.classList.remove('show');
+  var rh = document.getElementById('istcRecipients');
+  if (rh) rh.innerHTML = _istcRenderRecipients();
+}
+window._istcAddRecipient = _istcAddRecipient;
+
+function _istcRemoveRecipient(uid){
+  _istc.recipients = _istc.recipients.filter(function(r){ return r.uid !== uid; });
+  var rh = document.getElementById('istcRecipients');
+  if (rh) rh.innerHTML = _istcRenderRecipients();
+}
+window._istcRemoveRecipient = _istcRemoveRecipient;
+
+function _istcRenderRecipients(){
+  if (!_istc.recipients.length) return '<span style="color:#666;font-family:var(--vt);font-size:13px;">No recipients yet.</span>';
+  return _istc.recipients.map(function(r){
+    return '<span class="istc-recipient-chip">' +
+      _esc(r.name) +
+      ' <span class="x" onclick="_istcRemoveRecipient(\'' + r.uid + '\')">×</span>' +
+    '</span>';
+  }).join('');
+}
+
+async function _istcToggleRecord(){
+  var btn = document.getElementById('istcRecBtn');
+  var status = document.getElementById('istcRecStatus');
+  if (_istc.recording){
+    // Stop
+    try { _istc.mediaRecorder && _istc.mediaRecorder.stop(); } catch(e){}
+    _istc.recording = false;
+    if (btn){ btn.classList.remove('recording'); btn.textContent = '🔴 START RECORDING'; }
+    if (status) status.textContent = 'Processing…';
+    return;
+  }
+  // Start
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    if (status) status.textContent = 'Mic not supported in this browser.';
+    return;
+  }
+  try {
+    var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    var mime = '';
+    if (typeof MediaRecorder !== 'undefined'){
+      if (MediaRecorder.isTypeSupported('audio/webm')) mime = 'audio/webm';
+      else if (MediaRecorder.isTypeSupported('audio/mp4')) mime = 'audio/mp4';
+    }
+    _istc.mediaRecorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+    _istc.audioChunks = [];
+    _istc.recordedMime = _istc.mediaRecorder.mimeType || 'audio/webm';
+    _istc.mediaRecorder.ondataavailable = function(e){ if (e.data && e.data.size) _istc.audioChunks.push(e.data); };
+    _istc.mediaRecorder.onstop = function(){
+      try { stream.getTracks().forEach(function(t){ t.stop(); }); } catch(e){}
+      var blob = new Blob(_istc.audioChunks, { type: _istc.recordedMime });
+      _istc.recordedBlob = blob;
+      if (_istc.audioUrl){ try { URL.revokeObjectURL(_istc.audioUrl); } catch(e){} }
+      _istc.audioUrl = URL.createObjectURL(blob);
+      if (status) status.textContent = 'Recorded. Listen below, then send.';
+      var preview = document.getElementById('istcRecPreview');
+      if (preview) preview.innerHTML = '<audio controls src="' + _istc.audioUrl + '"></audio>';
+    };
+    _istc.mediaRecorder.start();
+    _istc.recording = true;
+    if (btn){ btn.classList.add('recording'); btn.textContent = '⏹ STOP RECORDING'; }
+    if (status) status.textContent = 'Recording… click to stop.';
+  } catch(e){
+    if (status) status.textContent = 'Mic permission denied or unavailable: ' + (e.message || e);
+  }
+}
+window._istcToggleRecord = _istcToggleRecord;
+
+async function _istcSend(){
+  var btn = document.getElementById('istcSendBtn');
+  if (!_istc.recipients.length){
+    toast('Pick at least one recipient.', 'var(--pink)');
+    return;
+  }
+  var titleEl = document.getElementById('istcTitle');
+  var bodyEl = document.getElementById('istcBody');
+  var title = (titleEl && titleEl.value || '').trim();
+  var body = (bodyEl && bodyEl.value || '').trim();
+  if (!title){ toast('Add a title.', 'var(--pink)'); return; }
+  if (_istc.mode === 'text' && !body){ toast('Add a message body.', 'var(--pink)'); return; }
+  if (_istc.mode === 'voice' && !_istc.recordedBlob){ toast('Record a message first.', 'var(--pink)'); return; }
+  if (btn){ btn.disabled = true; btn.textContent = '⏳ Sending…'; }
+
+  try {
+    var voiceUrl = null;
+    if (_istc.mode === 'voice' && _istc.recordedBlob){
+      // Upload once, share URL across all recipients
+      var ext = (_istc.recordedMime.indexOf('mp4') !== -1) ? 'm4a' : 'webm';
+      var path = INBOX_VOICE_PATH + Date.now() + '_' + Math.random().toString(36).slice(2,8) + '.' + ext;
+      var ref = firebase.storage().ref().child(path);
+      var snap = await ref.put(_istc.recordedBlob, { contentType: _istc.recordedMime });
+      voiceUrl = await snap.ref.getDownloadURL();
+    }
+    var type = _istc.mode === 'voice' ? 'voice' : 'admin';
+    var batch = db.batch();
+    _istc.recipients.forEach(function(r){
+      var ref = db.collection(TC).doc(r.uid).collection(INBOX_SUBCOL).doc();
+      var payload = {
+        type: type,
+        title: title,
+        body: body,
+        read: false,
+        fromAdmin: true,
+        fromName: (user && user.displayName) || 'KoreanLearnin',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+      if (voiceUrl) payload.voiceUrl = voiceUrl;
+      batch.set(ref, payload);
+    });
+    await batch.commit();
+    toast('📬 Sent to ' + _istc.recipients.length + ' student' + (_istc.recipients.length === 1 ? '' : 's') + '.', 'var(--green)');
+    _istcReset();
+  } catch(e){
+    console.error('istc send:', e);
+    alert('Send failed: ' + (e.message || e));
+  } finally {
+    if (btn){ btn.disabled = false; btn.textContent = '📬 SEND MESSAGE'; }
+  }
+}
+window._istcSend = _istcSend;
+
+// Close student-search dropdown when clicking outside it
+document.addEventListener('click', function(ev){
+  var box = document.getElementById('istcStudentResults');
+  var input = document.getElementById('istcStudentInput');
+  if (!box || !box.classList.contains('show')) return;
+  if (box.contains(ev.target) || (input && input === ev.target)) return;
+  box.classList.remove('show');
+});
 
 /* Expose needed globals */
 window.setBgmVolume = setBgmVolume;
