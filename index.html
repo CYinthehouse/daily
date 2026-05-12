@@ -140,7 +140,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 /* ─── INBOX screen ─── */
 #inboxScreen{padding:20px;max-width:780px;margin:0 auto;}
 .inbox-list{display:flex;flex-direction:column;gap:10px;margin-top:14px;}
-.inbox-empty{text-align:center;padding:60px 20px;color:#888;font-family:var(--vt);font-size:15px;}
+.inbox-empty{text-align:center;padding:60px 20px;color:#888;font-family:var(--vt);font-size:17px;}
 .inbox-empty .big{font-family:'Press Start 2P',monospace;font-size:14px;color:#666;margin-bottom:10px;letter-spacing:1px;}
 .inbox-card{background:#10172a;border:2px solid #2a3650;border-radius:10px;padding:14px 16px;cursor:pointer;transition:border-color .12s, transform .08s;display:flex;align-items:flex-start;gap:12px;}
 .inbox-card:hover{border-color:#41c0ff;transform:translateY(-1px);}
@@ -148,10 +148,10 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .inbox-card-icon{font-size:22px;width:36px;text-align:center;flex-shrink:0;line-height:1.2;}
 .inbox-card-body{flex:1;min-width:0;}
 .inbox-card-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:4px;}
-.inbox-card-title{font-family:'Noto Sans',sans-serif;font-weight:700;font-size:15px;color:#fff;}
+.inbox-card-title{font-family:'Noto Sans',sans-serif;font-weight:700;font-size:17px;color:#fff;}
 .inbox-card.unread .inbox-card-title{color:#7dd3fc;}
-.inbox-card-date{font-family:var(--vt);font-size:12px;color:#888;white-space:nowrap;}
-.inbox-card-preview{font-family:var(--vt);font-size:13px;color:#aaa;line-height:1.5;max-height:42px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.inbox-card-date{font-family:var(--vt);font-size:14px;color:#888;white-space:nowrap;}
+.inbox-card-preview{font-family:var(--vt);font-size:16px;color:#aaa;line-height:1.55;max-height:50px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
 .inbox-card.unread .inbox-card-preview{color:#d0d8e8;}
 .inbox-type-pill{display:inline-block;font-family:'Press Start 2P',monospace;font-size:8px;padding:3px 6px;border-radius:3px;letter-spacing:1px;margin-bottom:4px;}
 .inbox-type-pill.grade{background:rgba(57,255,20,0.18);color:#39ff14;border:1px solid #39ff14;}
@@ -161,9 +161,9 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 /* Detail view */
 .inbox-detail{background:#0d1424;border:2px solid #2a3650;border-radius:10px;padding:20px;margin-top:14px;}
 .inbox-detail-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
-.inbox-detail-title{font-family:'Noto Sans',sans-serif;font-weight:700;font-size:18px;color:#fff;}
-.inbox-detail-date{font-family:var(--vt);font-size:13px;color:#888;}
-.inbox-detail-body{font-family:'Noto Sans',sans-serif;font-size:15px;line-height:1.7;color:#dcd0ff;white-space:pre-wrap;}
+.inbox-detail-title{font-family:'Noto Sans',sans-serif;font-weight:700;font-size:20px;color:#fff;}
+.inbox-detail-date{font-family:var(--vt);font-size:14px;color:#888;}
+.inbox-detail-body{font-family:'Noto Sans',sans-serif;font-size:16px;line-height:1.7;color:#dcd0ff;white-space:pre-wrap;}
 .inbox-detail-body h1,.inbox-detail-body h2,.inbox-detail-body h3,.inbox-detail-body h4{font-family:'Noto Sans',sans-serif;color:#7dd3fc;margin:16px 0 8px;}
 .inbox-detail-body code{background:rgba(0,0,0,0.4);padding:2px 6px;border-radius:3px;color:#ffd479;font-family:'Courier New',monospace;font-size:14px;}
 .inbox-detail-body strong{color:#fff;}
@@ -1254,6 +1254,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 #dailyListeningScreen .sh-sub,
 #dailyAdvancedScreen .sh-sub,
 #dailyYodaScreen .sh-sub,
+#inboxScreen .sh-sub,
 #shopScreen .sh-sub,
 #showcaseScreen .sh-sub { font-size: 17px !important; }
 
@@ -9419,6 +9420,30 @@ async function _yodaRender(){
 
   var alreadyDone = (user.dailyYodaDoneFor === todayKey);
   if (alreadyDone){
+    // Fetch the student's saved submission so we can render the same
+    // post-submit view they saw originally — with their own answers under
+    // each sentence. Falls back to a simple "done" banner if no submission
+    // doc is found (shouldn't happen but safety net).
+    try {
+      var subSnap = await db.collection(YODA_COLLECTION).doc(_yodaState.activityId)
+        .collection('submissions').doc(user.id).get();
+      if (subSnap.exists){
+        var subData = subSnap.data() || {};
+        var saved = Array.isArray(subData.answers) ? subData.answers : [];
+        // Recreate the per-sentence answer strings from the saved {lines:[]}
+        // payload so renderDone can show them exactly as the student typed.
+        _yodaState.answers = (_yodaState.activity.sentences || []).map(function(s, i){
+          var rec = saved[i];
+          var lines = (rec && Array.isArray(rec.lines)) ? rec.lines : [];
+          return lines.join('\n');
+        });
+        _yodaRenderDone();
+        return;
+      }
+    } catch(e){
+      console.warn('yoda: failed to load existing submission', e && e.message);
+    }
+    // Fallback if submission doc isn't readable for some reason
     host.innerHTML =
       '<div class="dr-feed-banner done">' +
         '<div class="big">✅ DONE TODAY</div>' +
@@ -9562,8 +9587,8 @@ function _yodaRenderDone(){
         '<div class="yoda-card-num">SENTENCE ' + (i + 1) + '</div>' +
       '</div>' +
       '<div class="yoda-card-sentence">' + _esc(s.english || '') + '</div>' +
-      '<div style="font-family:var(--vt);font-size:13px;color:#aaa;margin-bottom:4px;">YOUR ANSWERS</div>' +
-      '<ol style="margin:0 0 4px 22px;color:#cfd8e8;font-family:var(--vt);font-size:14px;line-height:1.6;">' + mineList + '</ol>' +
+      '<div style="font-family:var(--vt);font-size:15px;color:#aaa;margin-bottom:6px;">YOUR ANSWERS</div>' +
+      '<ol style="margin:0 0 4px 22px;color:#cfd8e8;font-family:var(--vt);font-size:17px;line-height:1.6;">' + mineList + '</ol>' +
     '</div>';
   }).join('');
   host.innerHTML = bannerHtml + keysHtml;
