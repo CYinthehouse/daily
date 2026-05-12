@@ -326,13 +326,13 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .advm-input:focus{border-color:var(--cyan);}
 
 /* ─── APP FONT-SIZE ADJUSTER ───
- * --app-zoom is set on <body> (default 1.0) and persisted to localStorage.
+ * --app-zoom is set on <body> (default 1.2) and persisted to localStorage.
  * `zoom` scales the entire app uniformly (text + layout) — way simpler than
  * walking every fixed-px rule. Cross-browser supported as of Firefox 126.
  * Applied at body level so modals (which sit at the body level, outside #app)
  * scale along with everything else.
  */
-body { zoom: var(--app-zoom, 1); }
+body { zoom: var(--app-zoom, 1.2); }
 
 /* ─── DAILY READING ADMIN MANAGER ═══ */
 /* Admin-scoped readability override: force Noto Sans (bold) for everything inside
@@ -4295,14 +4295,19 @@ function _adminRestoreSectionStates(){
  * page reloads. Applied via `zoom` (CSS) which scales the whole document's
  * text + layout together. Available everywhere except login (controls live
  * in #topBar which is hidden on the login screen).
+ *
+ * Default is 1.2 (≈two A+ steps above 1.0). Calvin's retro fonts read
+ * more comfortably at this size for most users — anyone who wants smaller
+ * can use A− and their preference is remembered via localStorage.
  */
+const APP_ZOOM_DEFAULT = 1.2;
 const APP_ZOOM_MIN = 0.8;
 const APP_ZOOM_MAX = 1.5;
 const APP_ZOOM_STEP = 0.1;
 function _getZoom(){
-  var v = 1;
+  var v = APP_ZOOM_DEFAULT;
   try { var s = localStorage.getItem('appZoom'); if (s) v = parseFloat(s); } catch(e){}
-  if (isNaN(v) || v < APP_ZOOM_MIN) v = 1;
+  if (isNaN(v) || v < APP_ZOOM_MIN) v = APP_ZOOM_DEFAULT;
   return Math.max(APP_ZOOM_MIN, Math.min(APP_ZOOM_MAX, v));
 }
 function _applyZoom(v){
@@ -4315,7 +4320,7 @@ function _fontDelta(steps){
   v = Math.max(APP_ZOOM_MIN, Math.min(APP_ZOOM_MAX, v));
   _applyZoom(v);
 }
-function _fontReset(){ _applyZoom(1); }
+function _fontReset(){ _applyZoom(APP_ZOOM_DEFAULT); }
 function _initFontSize(){ _applyZoom(_getZoom()); }
 window._fontDelta = _fontDelta;
 window._fontReset = _fontReset;
