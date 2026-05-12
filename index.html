@@ -73,7 +73,14 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .grad-purple{background-image:linear-gradient(180deg,#e0ccff 0%,#a855f7 100%);}
 
 /* ── LOGIN SCREEN ── */
-#loginScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;}
+/* Override the body-level zoom on the login screen so it centers cleanly.
+ * `zoom` interacts badly with `min-height:100vh` + flex centering, throwing
+ * off the horizontal alignment. Login is a one-time screen so it doesn't
+ * need the scaled-up readability bump anyway. The value here is the inverse
+ * of APP_ZOOM_DEFAULT (1.2) so the screen renders at effective 1.0×. If
+ * APP_ZOOM_DEFAULT ever changes, update this number too (1 / new_default).
+ */
+#loginScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;zoom:0.833;}
 .login-logo{font-family:var(--ps);font-size:clamp(16px,3.5vw,24px);color:var(--cyan);text-shadow:var(--ps-outline);margin-bottom:10px;text-align:center;}
 .login-sub{font-family:var(--ps);font-size:clamp(8px,1.5vw,10px);color:var(--gold);text-shadow:var(--ps-outline-sm);margin-bottom:44px;text-align:center;letter-spacing:3px;}
 .login-box{width:100%;max-width:400px;background:#0d0d1f;border:2px solid rgba(255,255,255,0.3);border-radius:2px;padding:28px;box-shadow:4px 4px 0 rgba(0,0,0,0.8);}
@@ -96,11 +103,11 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .form-expanding{animation:formExpand 0.35s ease-out both;overflow:hidden;}
 
 /* ── TOP BAR ── */
-#topBar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:#08081a;border-bottom:2px solid rgba(255,255,255,0.2);position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:10px;}
+#topBar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:#08081a;border-bottom:2px solid rgba(255,255,255,0.2);position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:10px;zoom:1.2;}
 .topbar-logo img{height:44px;width:auto;display:block;}
 .topbar-user{font-family:var(--ps);font-size:11px;color:var(--green);display:flex;align-items:center;gap:12px;text-shadow:var(--ps-outline-sm);flex-wrap:wrap;}
 /* Font-size controls row — sits beneath the topBar, right-aligned. Hidden on login. */
-#fontControlsRow{display:flex;justify-content:flex-end;padding:6px 24px;background:#08081a;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;z-index:99;}
+#fontControlsRow{display:flex;justify-content:flex-end;padding:6px 24px;background:#08081a;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;z-index:99;zoom:1.2;}
 .font-ctrls{display:flex;align-items:center;gap:6px;}
 .font-ctrls .tfc-label{font-family:var(--ps);font-size:9px;color:#9aa3b8;text-shadow:var(--ps-outline-sm);}
 .font-ctrls .tfc-btn{background:#1e293b;color:#e8eaf2;border:1px solid #2a3650;border-radius:5px;padding:5px 9px;font-family:'Noto Sans',sans-serif;font-weight:700;font-size:11px;cursor:pointer;transition:background 0.15s;min-width:30px;line-height:1;}
@@ -405,7 +412,7 @@ body { zoom: var(--app-zoom, 1.2); }
 #adminScreen .admin-section-body > div[style*="color:#b8c5dc"] {
   font-size: 13px !important;
   font-weight: 400 !important;
-  color: #94a3b8 !important;
+  color: #cbd5e1 !important;
 }
 
 /* Back-to-menu button — slightly larger than before so it feels primary */
@@ -459,7 +466,7 @@ body { zoom: var(--app-zoom, 1.2); }
 #adminScreen .admin-section.collapsed .admin-section-head .chev {
   transform: rotate(-90deg) !important;
 }
-#adminScreen .admin-section-body { padding: 16px 18px 18px !important; }
+#adminScreen .admin-section-body { padding: 18px !important; }
 #adminScreen .admin-section.collapsed .admin-section-body { display: none !important; }
 
 /* ─── 4. NESTED SECTIONS inside Daily Reading Manager ("Generate with AI", "Live", "Drafts") ─── */
@@ -467,10 +474,10 @@ body { zoom: var(--app-zoom, 1.2); }
   background: #1c2440 !important;
   border: 1px solid #2a3458 !important;
   border-radius: 8px !important;
-  padding: 14px 16px !important;
+  padding: 16px !important;
   margin-bottom: 12px !important;
 }
-.drm-section.collapsed { padding-bottom: 10px !important; }
+.drm-section.collapsed { padding-bottom: 12px !important; }
 .drm-section.collapsed .drm-section-body { display: none !important; }
 .drm-head {
   font-family: 'Noto Sans', sans-serif !important;
@@ -534,7 +541,7 @@ body { zoom: var(--app-zoom, 1.2); }
   font-family: 'Noto Sans', sans-serif !important;
   font-size: 13px !important;
   font-weight: 400 !important;
-  color: #94a3b8 !important;
+  color: #cbd5e1 !important;
   margin-bottom: 0 !important;
   display: flex;
   flex-wrap: wrap;
@@ -545,7 +552,7 @@ body { zoom: var(--app-zoom, 1.2); }
 .drm-row-meta > *:not(:last-child)::after {
   content: '·';
   margin-left: 8px;
-  color: #475569;
+  color: #64748b;
 }
 .drm-row-actions {
   display: flex;
@@ -645,11 +652,13 @@ body { zoom: var(--app-zoom, 1.2); }
 }
 
 /* ─── 7. BUTTONS — one consistent visual language ─── */
-/* Default (secondary): solid muted slate fill */
+/* Default (secondary): solid muted slate fill.
+ * Scoped to admin screen + admin-style modals (.drm-modal, .ea-modal). */
 #adminScreen .btn,
 #adminScreen a.btn,
 #drmStoryModal .btn,
-#drmScheduleModal .btn {
+#drmScheduleModal .btn,
+.ea-modal .btn {
   background: #334155 !important;
   color: #f1f5f9 !important;
   border: 1px solid #475569 !important;
@@ -673,61 +682,70 @@ body { zoom: var(--app-zoom, 1.2); }
 #adminScreen .btn:hover,
 #adminScreen a.btn:hover,
 #drmStoryModal .btn:hover,
-#drmScheduleModal .btn:hover {
+#drmScheduleModal .btn:hover,
+.ea-modal .btn:hover {
   background: #475569 !important;
   border-color: #64748b !important;
   transform: none !important;
 }
-#adminScreen .btn-xs, #adminScreen .btn-sm, #adminScreen .btn-md, #adminScreen .btn-lg {
+#adminScreen .btn-xs, #adminScreen .btn-sm, #adminScreen .btn-md, #adminScreen .btn-lg,
+.ea-modal .btn-xs, .ea-modal .btn-sm, .ea-modal .btn-md, .ea-modal .btn-lg {
   padding: 8px 14px !important;
   font-size: 13px !important;
 }
 /* Primary action — cyan fill (used for the main action per section) */
 #adminScreen .btn-cyan,    #drmStoryModal .btn-cyan,    #drmScheduleModal .btn-cyan,
-#adminScreen .btn-pink,    #drmStoryModal .btn-pink,    #drmScheduleModal .btn-pink {
+#adminScreen .btn-pink,    #drmStoryModal .btn-pink,    #drmScheduleModal .btn-pink,
+.ea-modal .btn-cyan, .ea-modal .btn-pink {
   background: #0891b2 !important;
   color: #fff !important;
   border-color: #0891b2 !important;
 }
 #adminScreen .btn-cyan:hover, #adminScreen .btn-pink:hover,
 #drmStoryModal .btn-cyan:hover, #drmStoryModal .btn-pink:hover,
-#drmScheduleModal .btn-cyan:hover, #drmScheduleModal .btn-pink:hover {
+#drmScheduleModal .btn-cyan:hover, #drmScheduleModal .btn-pink:hover,
+.ea-modal .btn-cyan:hover, .ea-modal .btn-pink:hover {
   background: #0e7490 !important;
   border-color: #0e7490 !important;
 }
 /* Purple → keep slightly distinct for "schedule" since it's a different action */
-#adminScreen .btn-purple, #drmStoryModal .btn-purple, #drmScheduleModal .btn-purple {
+#adminScreen .btn-purple, #drmStoryModal .btn-purple, #drmScheduleModal .btn-purple,
+.ea-modal .btn-purple {
   background: #4c1d95 !important;
   color: #f1f5f9 !important;
   border-color: #6d28d9 !important;
 }
-#adminScreen .btn-purple:hover { background: #5b21b6 !important; border-color: #7c3aed !important; }
+#adminScreen .btn-purple:hover, .ea-modal .btn-purple:hover { background: #5b21b6 !important; border-color: #7c3aed !important; }
 /* Gold / Green → just neutral slate, no special treatment */
 #adminScreen .btn-gold, #adminScreen .btn-green,
 #drmStoryModal .btn-gold, #drmStoryModal .btn-green,
-#drmScheduleModal .btn-gold, #drmScheduleModal .btn-green {
+#drmScheduleModal .btn-gold, #drmScheduleModal .btn-green,
+.ea-modal .btn-gold, .ea-modal .btn-green {
   background: #334155 !important;
   color: #f1f5f9 !important;
   border-color: #475569 !important;
 }
 /* Ghost → slightly darker than neutral, still clearly filled */
-#adminScreen .btn-ghost, #drmStoryModal .btn-ghost, #drmScheduleModal .btn-ghost {
+#adminScreen .btn-ghost, #drmStoryModal .btn-ghost, #drmScheduleModal .btn-ghost,
+.ea-modal .btn-ghost {
   background: #1e293b !important;
   color: #cbd5e1 !important;
   border-color: #334155 !important;
 }
-#adminScreen .btn-ghost:hover { background: #283449 !important; border-color: #475569 !important; color: #fff !important; }
+#adminScreen .btn-ghost:hover, .ea-modal .btn-ghost:hover { background: #283449 !important; border-color: #475569 !important; color: #fff !important; }
 /* Danger — red fill, used sparingly */
-#adminScreen .btn-danger, #drmStoryModal .btn-danger, #drmScheduleModal .btn-danger {
+#adminScreen .btn-danger, #drmStoryModal .btn-danger, #drmScheduleModal .btn-danger,
+.ea-modal .btn-danger {
   background: #7f1d1d !important;
   color: #fff !important;
   border-color: #991b1b !important;
 }
-#adminScreen .btn-danger:hover { background: #991b1b !important; border-color: #b91c1c !important; }
+#adminScreen .btn-danger:hover, .ea-modal .btn-danger:hover { background: #991b1b !important; border-color: #b91c1c !important; }
 /* Disabled */
 #adminScreen .btn:disabled,
 #drmStoryModal .btn:disabled,
-#drmScheduleModal .btn:disabled {
+#drmScheduleModal .btn:disabled,
+.ea-modal .btn:disabled {
   opacity: 0.45 !important;
   cursor: not-allowed !important;
 }
@@ -903,9 +921,9 @@ body { zoom: var(--app-zoom, 1.2); }
 #adminScreen .admin-row .ar-status.active    { background: rgba(34,197,94,0.10) !important; color: #4ade80 !important; border: 1px solid rgba(34,197,94,0.3) !important; }
 #adminScreen .admin-row .ar-status.completed { background: rgba(100,116,139,0.10) !important; color: #94a3b8 !important; border: 1px solid rgba(100,116,139,0.3) !important; }
 #adminScreen .admin-row .ar-status.cancelled { background: rgba(239,68,68,0.10) !important; color: #f87171 !important; border: 1px solid rgba(239,68,68,0.3) !important; }
-#adminScreen .admin-row .ar-dates { font-size: 13px !important; color: #94a3b8 !important; }
-#adminScreen .admin-row .ar-dates b { color: #cbd5e1 !important; font-weight: 600 !important; }
-#adminScreen .admin-row .ar-signed { font-size: 12px !important; color: #94a3b8 !important; }
+#adminScreen .admin-row .ar-dates { font-size: 13px !important; color: #cbd5e1 !important; }
+#adminScreen .admin-row .ar-dates b { color: #f1f5f9 !important; font-weight: 600 !important; }
+#adminScreen .admin-row .ar-signed { font-size: 12px !important; color: #cbd5e1 !important; }
 
 /* Action menu — primary action button + a "More" dropdown that contains
  * the rest of the actions. */
@@ -1089,17 +1107,75 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 /* ── SUBSCREEN HEADERS ── */
 .sub-screen{padding:32px 24px;max-width:1000px;margin:0 auto;}
 
-/* Sub-screen readability: bump base font-size on the daily / shop / showcase
- * screens from 18px (body default) to 21px (~3 size steps up). Press Start 2P
- * elements (titles, button labels, stat tallies) declare their own explicit
- * font-size in CSS so they're unaffected. The admin screen is intentionally
- * excluded — it has its own font overrides further down. */
-#dailyScreen,
-#dailyReadingScreen,
-#dailyListeningScreen,
-#dailyAdvancedScreen,
-#shopScreen,
-#showcaseScreen { font-size: 21px; }
+/* Sub-screen readability: bump every VCR OSD Mono text class on the daily,
+ * shop, and showcase screens by ~3px. The previous attempt set font-size on
+ * the screen container only, but nearly every text element on these screens
+ * uses its own explicit font-size in CSS, so the container value was ignored.
+ *
+ * This block targets each VCR class by name and bumps it. Press Start 2P
+ * elements (titles, badges, stat tallies) are intentionally left at their
+ * original size to preserve hierarchy.
+ *
+ * Scoped to the six screens — Daily picker, Teamwork Reading, Solo Reading,
+ * Advanced Teamwork, Point Shop, Gacha Showcase. Admin is excluded.
+ */
+#dailyScreen .sh-sub,
+#dailyReadingScreen .sh-sub,
+#dailyListeningScreen .sh-sub,
+#dailyAdvancedScreen .sh-sub,
+#shopScreen .sh-sub,
+#showcaseScreen .sh-sub { font-size: 17px !important; }
+
+/* Daily Reading (Teamwork) classes */
+#dailyReadingScreen .dr-banner          { font-size: 17px !important; }
+#dailyReadingScreen .dr-card-sub        { font-size: 16px !important; }
+#dailyReadingScreen .dr-sentence-label  { font-size: 15px !important; }
+#dailyReadingScreen .dr-status-row      { font-size: 15px !important; }
+#dailyReadingScreen .dr-rec-status      { font-size: 16px !important; }
+#dailyReadingScreen .dr-pair-status     { font-size: 14px !important; }
+#dailyReadingScreen .dr-slot-role       { font-size: 14px !important; }
+#dailyReadingScreen .dr-slot-audio-empty{ font-size: 15px !important; }
+#dailyReadingScreen .dr-feed-hidden-note{ font-size: 16px !important; }
+#dailyReadingScreen .dr-loading,
+#dailyReadingScreen .dr-empty           { font-size: 17px !important; }
+#dailyReadingScreen .dr-empty .sub      { font-size: 16px !important; }
+#dailyReadingScreen .dr-feed-banner.active .sub,
+#dailyReadingScreen .dr-feed-banner.done .sub { font-size: 16px !important; }
+
+/* Solo Reading (Listening) classes */
+#dailyListeningScreen .dl-lv-sub        { font-size: 16px !important; }
+#dailyListeningScreen .dl-lv-status     { font-size: 14px !important; }
+#dailyListeningScreen .dl-lv-cta        { font-size: 17px !important; }
+#dailyListeningScreen .dl-lv-done-msg   { font-size: 16px !important; }
+#dailyListeningScreen .dl-lv-locked-msg { font-size: 16px !important; }
+#dailyListeningScreen .dr-banner,
+#dailyListeningScreen .dr-card-sub,
+#dailyListeningScreen .dr-rec-status,
+#dailyListeningScreen .dr-loading,
+#dailyListeningScreen .dr-empty         { font-size: 16px !important; }
+
+/* Advanced Teamwork classes */
+#dailyAdvancedScreen .adv-ending        { font-size: 17px !important; }
+#dailyAdvancedScreen .adv-hint          { font-size: 15px !important; }
+#dailyAdvancedScreen .adv-prompt-verb   { font-size: 17px !important; }
+#dailyAdvancedScreen .adv-prompt-instr  { font-size: 16px !important; }
+#dailyAdvancedScreen .adv-locked-label  { font-size: 16px !important; }
+#dailyAdvancedScreen .dr-banner,
+#dailyAdvancedScreen .dr-card-sub,
+#dailyAdvancedScreen .dr-loading,
+#dailyAdvancedScreen .dr-empty          { font-size: 16px !important; }
+
+/* Daily picker screen — uses the same dr-banner / menu-card text */
+#dailyScreen .dr-banner                 { font-size: 17px !important; }
+#dailyScreen .menu-desc                 { font-size: 19px !important; }
+#dailyScreen .menu-count                { font-size: 14px !important; }
+
+/* Point Shop classes */
+#shopScreen .shop-card .shop-desc       { font-size: 18px !important; }
+
+/* Gacha Showcase classes */
+#showcaseScreen .sc-card .sc-name       { font-size: 15px !important; }
+#showcaseScreen .sc-empty .em-sub       { font-size: 17px !important; }
 .back-row{margin-bottom:20px;}
 .section-head{background:#0d0d1f;border:2px solid rgba(255,255,255,0.2);border-radius:2px;padding:18px 22px;margin-bottom:20px;box-shadow:4px 4px 0 rgba(0,0,0,0.8);position:relative;overflow:hidden;}
 .section-head::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;}
@@ -1515,7 +1591,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
       <span class="chev">▼</span>
     </div>
     <div class="admin-section-body">
-      <div style="margin-bottom:8px;color:#b8c5dc;font-weight:600;">Open the Class Manager tool to schedule, edit, and manage classes across cohorts.</div>
+      <div style="margin-bottom:12px;color:#b8c5dc;font-weight:600;">Open the Class Manager tool to schedule, edit, and manage classes across cohorts.</div>
       <a class="btn btn-pink" href="https://cyinthehouse.github.io/classmanager/" target="_blank" rel="noopener noreferrer">📚 OPEN CLASS MANAGER</a>
     </div>
   </div>
@@ -5620,23 +5696,62 @@ async function _advmRenderManager(){
         '<div class="drm-row-actions">' + actions + '</div>' +
       '</div>';
     }
-    var liveHtml  = lives.map(renderRow).join('') || '<div style="color:#888;font-style:italic;font-family:var(--vt);">No live activity right now.</div>';
-    var draftHtml = drafts.map(renderRow).join('') || '<div style="color:#888;font-style:italic;font-family:var(--vt);">No drafts.</div>';
-    var arcHtml   = archived.map(renderRow).join('') || '<div style="color:#888;font-style:italic;font-family:var(--vt);">No archived activities.</div>';
+    var liveHtml  = lives.length    ? '<div class="drm-list">' + lives.map(renderRow).join('') + '</div>'    : '<div class="drm-help">No live activities right now.</div>';
+    var draftHtml = drafts.length   ? '<div class="drm-list">' + drafts.map(renderRow).join('') + '</div>'   : '<div class="drm-help">No drafts. Click "Generate new drill" above.</div>';
+    var arcHtml   = archived.length ? '<div class="drm-list">' + archived.map(renderRow).join('') + '</div>' : '<div class="drm-help">No archived activities.</div>';
+
+    // Build collapsible sections in the same shape as the Daily Reading Manager
+    // (using a local `section()` helper). State persisted in localStorage by key
+    // under 'advmSection_<key>' so admin's expand/collapse choices survive
+    // across page refreshes.
+    function section(key, headInner, bodyHtml){
+      var stored = '';
+      try { stored = localStorage.getItem('advmSection_' + key) || ''; } catch(e){}
+      var collapsed = stored === '1' ? ' collapsed' : '';
+      return '<div class="drm-section' + collapsed + '" data-advm-section="' + key + '">' +
+        '<div class="drm-head toggle" onclick="_advmToggleSection(this)">' +
+          '<span>' + headInner + '</span>' +
+          '<span class="chev">\u25BC</span>' +
+        '</div>' +
+        '<div class="drm-section-body">' + bodyHtml + '</div>' +
+      '</div>';
+    }
 
     host.innerHTML =
-      '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">' +
-        '<button id="advmGenBtn" class="btn btn-cyan" onclick="_advmGenerate()">✨ GENERATE NEW DRILL</button>' +
-      '</div>' +
-      '<div class="drm-section"><div class="drm-section-head">🟢 Live</div>' + liveHtml + '</div>' +
-      '<div class="drm-section"><div class="drm-section-head">📝 Drafts</div>' + draftHtml + '</div>' +
-      '<div class="drm-section"><div class="drm-section-head">📦 Archived</div>' + arcHtml + '</div>';
+      section('generate',
+        '✨ Generate with AI',
+        '<button id="advmGenBtn" class="btn btn-cyan btn-md" onclick="_advmGenerate()">✨ GENERATE NEW DRILL</button>' +
+        '<div class="drm-help" style="margin-top:8px;">One click generates 10 random verbs with a randomly-chosen grammar ending, plus the full 40-conjugation answer key. You can edit before publishing.</div>'
+      ) +
+      section('drafts',
+        '📝 Drafts (' + drafts.length + ')', draftHtml
+      ) +
+      section('live',
+        '🟢 Live (' + lives.length + ')', liveHtml
+      ) +
+      section('archived',
+        '📦 Archived (' + archived.length + ')', arcHtml
+      );
   } catch(e){
     console.error('advm render:', e);
     host.innerHTML = '<div style="color:#ff8a8a;">Error loading activities: ' + _esc(e.message || e) + '</div>';
   }
 }
 window._advmRenderManager = _advmRenderManager;
+
+/* Toggle for advanced-teamwork manager collapsible sections — mirrors
+ * the daily reading manager's _drmToggleSection but uses its own
+ * localStorage namespace. */
+function _advmToggleSection(headEl){
+  var section = headEl.closest('.drm-section');
+  if (!section) return;
+  var key = section.getAttribute('data-advm-section');
+  section.classList.toggle('collapsed');
+  try {
+    localStorage.setItem('advmSection_' + key, section.classList.contains('collapsed') ? '1' : '0');
+  } catch(e){}
+}
+window._advmToggleSection = _advmToggleSection;
 
 // One-click generation. Admin clicks GENERATE → webhook fires → ChatGPT
 // returns 10 random verbs + a randomly chosen grammar ending + the full
