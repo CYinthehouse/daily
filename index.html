@@ -326,13 +326,13 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .advm-input:focus{border-color:var(--cyan);}
 
 /* ─── APP FONT-SIZE ADJUSTER ───
- * --app-zoom is set on <body> (default 1.1) and persisted to localStorage.
+ * --app-zoom is set on <body> (default 1.2) and persisted to localStorage.
  * `zoom` scales the entire app uniformly (text + layout) — way simpler than
  * walking every fixed-px rule. Cross-browser supported as of Firefox 126.
  * Applied at body level so modals (which sit at the body level, outside #app)
  * scale along with everything else.
  */
-body { zoom: var(--app-zoom, 1.1); }
+body { zoom: var(--app-zoom, 1.2); }
 
 /* ─── DAILY READING ADMIN MANAGER ═══ */
 /* Admin-scoped readability override: force Noto Sans (bold) for everything inside
@@ -630,6 +630,18 @@ body { zoom: var(--app-zoom, 1.1); }
 
 /* ── SUBSCREEN HEADERS ── */
 .sub-screen{padding:32px 24px;max-width:1000px;margin:0 auto;}
+
+/* Sub-screen readability: bump base font-size on the daily / shop / showcase
+ * screens from 18px (body default) to 21px (~3 size steps up). Press Start 2P
+ * elements (titles, button labels, stat tallies) declare their own explicit
+ * font-size in CSS so they're unaffected. The admin screen is intentionally
+ * excluded — it has its own font overrides further down. */
+#dailyScreen,
+#dailyReadingScreen,
+#dailyListeningScreen,
+#dailyAdvancedScreen,
+#shopScreen,
+#showcaseScreen { font-size: 21px; }
 .back-row{margin-bottom:20px;}
 .section-head{background:#0d0d1f;border:2px solid rgba(255,255,255,0.2);border-radius:2px;padding:18px 22px;margin-bottom:20px;box-shadow:4px 4px 0 rgba(0,0,0,0.8);position:relative;overflow:hidden;}
 .section-head::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;}
@@ -4296,11 +4308,11 @@ function _adminRestoreSectionStates(){
  * text + layout together. Available everywhere except login (controls live
  * in #topBar which is hidden on the login screen).
  *
- * Default is 1.1 (≈one A+ step above 1.0). Calvin's retro fonts read
+ * Default is 1.2 (≈two A+ steps above 1.0). Calvin's retro fonts read
  * more comfortably at this size for most users — anyone who wants smaller
  * can use A− and their preference is remembered via localStorage.
  */
-const APP_ZOOM_DEFAULT = 1.1;
+const APP_ZOOM_DEFAULT = 1.2;
 const APP_ZOOM_MIN = 0.8;
 const APP_ZOOM_MAX = 1.5;
 const APP_ZOOM_STEP = 0.1;
@@ -4336,7 +4348,7 @@ window._fontReset = _fontReset;
  * once, wipe the listed UI prefs, then write the new version stamp and
  * behave normally afterward.
  */
-const APP_SETTINGS_VERSION = '2026-05-12-a';
+const APP_SETTINGS_VERSION = '2026-05-12-b';
 const APP_SETTINGS_VERSION_KEY = 'appSettingsVersion';
 // List of localStorage keys to wipe on a forced reset. Add new UI prefs here
 // if they ever need to be force-cleared in a future version bump.
