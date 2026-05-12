@@ -406,6 +406,31 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .advm-input:focus{border-color:var(--cyan);}
 
 /* ─── YODAFICATION — student-side form ─── */
+/* Red "time to graduate" disclaimer shown when the student has done this
+ * activity 15+ times OR their account is 35+ days old. */
+.yoda-grad-banner{
+  background:linear-gradient(135deg, #3a0e0e, #5a1414);
+  border:2px solid #ff4444;
+  border-radius:10px;
+  padding:14px 18px;
+  margin-bottom:18px;
+  text-align:center;
+  font-family:var(--vt);
+  box-shadow:0 0 0 1px rgba(255,68,68,0.2), 0 4px 14px rgba(255,68,68,0.15);
+}
+.yoda-grad-banner .big{
+  font-family:'Press Start 2P',monospace;
+  font-size:11px;
+  color:#ffd0d0;
+  text-shadow:var(--ps-outline-sm);
+  margin-bottom:6px;
+  letter-spacing:2px;
+}
+.yoda-grad-banner .sub{
+  font-size:17px;
+  color:#ffe6e6;
+  line-height:1.5;
+}
 .yoda-card{background:#10172a;border:2px solid #2a3650;border-radius:10px;padding:18px;margin-bottom:14px;}
 .yoda-card.current{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(65,192,255,0.18);}
 .yoda-card-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;margin-bottom:10px;}
@@ -2399,6 +2424,14 @@ async function _loadUserProfile(authUser){
     dailyAdvancedSubmittedFor: d.dailyAdvancedSubmittedFor || null,
     dailyAdvancedBonusFor: d.dailyAdvancedBonusFor || null,
     dailyYodaDoneFor: d.dailyYodaDoneFor || null,
+    // How many times this student has completed a Yodafication ever. Used
+    // alongside accountCreatedAt to decide when to show the "graduate from
+    // Yoda — try harder activities" disclaimer banner.
+    yodaCompletionCount: typeof d.yodaCompletionCount === 'number' ? d.yodaCompletionCount : 0,
+    // Account creation timestamp (Firestore Timestamp). Some legacy users
+    // may not have this — we treat missing as "very old account" so the
+    // disclaimer always applies to them, which is what we want.
+    accountCreatedAt: d.createdAt || null,
     isAdmin: !!(d.isAdmin || d.role === 'admin' || _isAdminEmail(d.username || authUser.email))
   };
   // Self-heal any negative values from earlier bugs
@@ -9391,6 +9424,48 @@ var _yodaState = {
   busy: false
 };
 
+// Threshold constants for the "time to graduate from Yoda" banner.
+// Either condition triggers it: enough lifetime completions OR account age.
+var YODA_GRAD_COMPLETIONS = 15;
+var YODA_GRAD_DAYS = 35;
+
+/**
+ * Returns the red graduation disclaimer banner HTML if the student should
+ * see it, or an empty string if not. Triggers when EITHER:
+ *   - they've completed Yodafication YODA_GRAD_COMPLETIONS+ times, OR
+ *   - their account is YODA_GRAD_DAYS+ days old.
+ *
+ * TEMPORARY: forced ON for everyone so Calvin can see the styling.
+ * To revert, delete the next two lines (the early `return` and its comment).
+ */
+function _yodaGradBannerHtml(){
+  // TEMP: always show — remove this return to restore threshold logic.
+  return '<div class="yoda-grad-banner">' +
+    '<div class="big">⚠️ TIME TO LEVEL UP</div>' +
+    '<div class="sub">After 30 days, please focus on more difficult activities. We must spread our wings and move to the harder activities now.</div>' +
+  '</div>';
+  /* eslint-disable-next-line no-unreachable */
+  if (!user) return '';
+  var completions = user.yodaCompletionCount || 0;
+  var daysOld = 0;
+  if (user.accountCreatedAt){
+    try {
+      var ms = user.accountCreatedAt.toMillis
+        ? user.accountCreatedAt.toMillis()
+        : (typeof user.accountCreatedAt === 'number' ? user.accountCreatedAt : null);
+      if (ms) daysOld = (Date.now() - ms) / (1000 * 60 * 60 * 24);
+    } catch(e){}
+  } else {
+    // No createdAt = legacy account, definitely older than 35d.
+    daysOld = 999;
+  }
+  if (completions < YODA_GRAD_COMPLETIONS && daysOld < YODA_GRAD_DAYS) return '';
+  return '<div class="yoda-grad-banner">' +
+    '<div class="big">⚠️ TIME TO LEVEL UP</div>' +
+    '<div class="sub">After 30 days, please focus on more difficult activities. We must spread our wings and move to the harder activities now.</div>' +
+  '</div>';
+}
+
 async function _yodaRender(){
   var host = document.getElementById('dailyYodaHost');
   if (!host) return;
@@ -9462,6 +9537,8 @@ function _yodaRenderForm(){
   if (!host) return;
   var sentences = (_yodaState.activity && _yodaState.activity.sentences) || [];
 
+  var gradHtml = _yodaGradBannerHtml();
+
   var introHtml =
     '<div class="dr-feed-banner active" style="margin-bottom:20px;">' +
       '<div class="big">🔀 ' + _esc(_yodaState.activity.title || 'YODAFICATION') + '</div>' +
@@ -9487,7 +9564,7 @@ function _yodaRenderForm(){
       '<button class="btn btn-green btn-lg sparkle-btn" id="yodaSubmitBtn" onclick="_yodaSubmit()">✅ SUBMIT ALL — EARN +1 EGG</button>' +
     '</div>';
 
-  host.innerHTML = introHtml + cardsHtml + submitHtml;
+  host.innerHTML = gradHtml + introHtml + cardsHtml + submitHtml;
   setTimeout(function(){
     var btn = document.getElementById('yodaSubmitBtn');
     if (btn && typeof addSparkles === 'function') addSparkles(btn);
@@ -9542,11 +9619,17 @@ async function _yodaSubmit(){
       if (d.dailyYodaDoneFor === todayKey) return;
       tx.update(acctRef, {
         gachaRolls: firebase.firestore.FieldValue.increment(1),
-        dailyYodaDoneFor: todayKey
+        dailyYodaDoneFor: todayKey,
+        // Lifetime count of Yodafication completions for this student. Used
+        // to decide when to nudge them toward harder activities (15+ done).
+        yodaCompletionCount: firebase.firestore.FieldValue.increment(1)
       });
       awarded = true;
     });
-    if (awarded) user.gachaRolls = (user.gachaRolls || 0) + 1;
+    if (awarded){
+      user.gachaRolls = (user.gachaRolls || 0) + 1;
+      user.yodaCompletionCount = (user.yodaCompletionCount || 0) + 1;
+    }
     user.dailyYodaDoneFor = todayKey;
     if (typeof updateCounts === 'function') updateCounts();
     playSfx(SOUND_WIN, 0.9);
@@ -9591,7 +9674,7 @@ function _yodaRenderDone(){
       '<ol style="margin:0 0 4px 22px;color:#cfd8e8;font-family:var(--vt);font-size:17px;line-height:1.6;">' + mineList + '</ol>' +
     '</div>';
   }).join('');
-  host.innerHTML = bannerHtml + keysHtml;
+  host.innerHTML = _yodaGradBannerHtml() + bannerHtml + keysHtml;
 }
 
 /* ═══════════════════════════════════════════════════════════
