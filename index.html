@@ -2939,7 +2939,7 @@ function _renderDailyPicker(){
     '</div>' +
     '<div class="menu-card daily yoda" onclick="_dailyOpen(\'yoda\')">' +
       '<div class="menu-icon">🔀</div>' +
-      '<div class="menu-title">YODA-<br>FICATION</div>' +
+      '<div class="menu-title">YODAFICATION</div>' +
       yodaBadge +
     '</div>';
 }
@@ -9548,9 +9548,9 @@ function _yodaRenderDone(){
   if (!host) return;
   var sentences = (_yodaState.activity && _yodaState.activity.sentences) || [];
   var bannerHtml =
-    '<div class="dr-feed-banner done">' +
+    '<div class="dr-feed-banner done" style="margin-bottom:20px;">' +
       '<div class="big">✅ +1 EGG EARNED</div>' +
-      '<div class="sub">Nice work! Your submission has been sent to your teacher for review. Come back tomorrow for a new yodafication.</div>' +
+      '<div class="sub">Nice work! Your submission has been sent to your teacher for review. Come back tomorrow for a new yodafication activity.</div>' +
     '</div>';
   // Show the student their own answers as a confirmation — but NOT the answer
   // key. The answer key is saved on the activity doc for admin review only.
