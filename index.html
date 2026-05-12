@@ -1647,6 +1647,12 @@ async function _loadUserProfile(authUser){
     points: Math.max(0, typeof d.points === 'number' ? d.points : 0),
     freeEggsUsed: !!d.freeEggsUsed,
     gachaCollection: d.gachaCollection || [],
+    // Cached count of cards in the gachaCollection subcollection. For legacy
+    // users not yet migrated this field is missing — fall back to the array
+    // length so the menu tile still shows the right number.
+    gachaCollectionCount: typeof d.gachaCollectionCount === 'number'
+      ? d.gachaCollectionCount
+      : (d.gachaCollection || []).length,
     extraHelpCredits: typeof d.extraHelpCredits === 'number' ? d.extraHelpCredits : 0,
     enrollment: d.enrollment || null,
     dailyReadingDoneFor: d.dailyReadingDoneFor || null,
@@ -2082,7 +2088,14 @@ function updateCounts(){
   var rollsChip = $('chipRolls'); if (rollsChip) rollsChip.textContent = '🪺 ' + (user.gachaRolls||0);
   var pointsChip = $('chipPoints'); if (pointsChip) pointsChip.textContent = '⭐ ' + (user.points||0);
   var cs = $('countShop'); if (cs) cs.textContent = (user.points||0) + ' pts';
-  var csc = $('countShowcase'); if (csc) csc.textContent = (user.gachaCollection||[]).length + ' cards';
+  var csc = $('countShowcase'); if (csc) {
+    // Prefer the cached count (works for users with thousands of cards in the
+    // subcollection); fall back to the in-memory array for not-yet-migrated users.
+    var n = (typeof user.gachaCollectionCount === 'number')
+      ? user.gachaCollectionCount
+      : (user.gachaCollection || []).length;
+    csc.textContent = n + ' cards';
+  }
   // Menu welcome
   var mw = $('menuWelcome');
   if (mw){
@@ -2919,12 +2932,32 @@ async function _drCommitParticipation(audioUrl, audioPath, audioMime){
   }
   await pairRef.update(update);
 
-  // Award egg + mark daily-done in user's account doc
-  await db.collection(TC).doc(user.id).update({
-    gachaRolls: firebase.firestore.FieldValue.increment(1),
-    dailyReadingDoneFor: todayKey
-  });
-  user.gachaRolls = (user.gachaRolls || 0) + 1;
+  // Award egg + mark daily-done in user's account doc.
+  // Wrapped in a transaction so simultaneous submissions (two tabs, fast
+  // double-tap, retry-after-network-blip) can't double-award the egg: we only
+  // credit if dailyReadingDoneFor !== todayKey inside the transaction.
+  var acctRef = db.collection(TC).doc(user.id);
+  var awarded = false;
+  try {
+    await db.runTransaction(async function(tx){
+      var snap = await tx.get(acctRef);
+      if (!snap.exists) return;
+      var d = snap.data() || {};
+      if (d.dailyReadingDoneFor === todayKey){
+        // Already credited today — skip the increment but still ensure the
+        // local flag matches reality.
+        return;
+      }
+      tx.update(acctRef, {
+        gachaRolls: firebase.firestore.FieldValue.increment(1),
+        dailyReadingDoneFor: todayKey
+      });
+      awarded = true;
+    });
+  } catch(e){
+    console.warn('_drCommitParticipation egg-award txn failed:', e);
+  }
+  if (awarded) user.gachaRolls = (user.gachaRolls || 0) + 1;
   user.dailyReadingDoneFor = todayKey;
   // Refresh top-bar chip + global CTA so the new egg is visible immediately
   if (typeof updateCounts === 'function') updateCounts();
@@ -3403,6 +3436,11 @@ window._dlSubmitRecording = _dlSubmitRecording;
 // Mark a level as completed: writes to recording subcollection + bumps user's
 // daily counter + grants 1 gachaRoll. `extraRecordingFields` carries level-specific
 // data (audio info for L1-3, sentence index for L4).
+//
+// The user-doc update is wrapped in a transaction so two parallel submissions
+// (two tabs, fast double-tap, retry-after-network-blip) can't both credit the
+// same level. We only increment gachaRolls if levels[key] is still false inside
+// the transaction.
 async function _dlMarkLevelDone(key, extraRecordingFields){
   var todayKey = _drTodayNYKey();
   var passageRef = db.collection(DR_PASSAGES_COLLECTION).doc(_dlState.passageId);
@@ -3410,7 +3448,7 @@ async function _dlMarkLevelDone(key, extraRecordingFields){
   var myName = (user && (user.displayName || user.username)) || 'Student';
   var myPhoto = (user && user.photoURL) || null;
 
-  // 1) Write/merge user's recording doc
+  // 1) Write/merge user's recording doc (idempotent — arrayUnion + merge:true)
   var recPatch = Object.assign({
     userName: myName,
     userPhoto: myPhoto,
@@ -3419,15 +3457,45 @@ async function _dlMarkLevelDone(key, extraRecordingFields){
   }, extraRecordingFields || {});
   await recRef.set(recPatch, { merge: true });
 
-  // 2) Update user's daily-listening progress object + add an egg
-  var current = _dlTodaysLevels();
-  current[key] = true;
-  await db.collection(TC).doc(user.id).update({
-    dailyListeningLevels: current,
-    gachaRolls: firebase.firestore.FieldValue.increment(1)
-  });
-  user.dailyListeningLevels = current;
-  user.gachaRolls = (user.gachaRolls || 0) + 1;
+  // 2) Update user's daily-listening progress object + add an egg — atomically.
+  var acctRef = db.collection(TC).doc(user.id);
+  var awarded = false;
+  var finalLevels = null;
+  try {
+    await db.runTransaction(async function(tx){
+      var snap = await tx.get(acctRef);
+      if (!snap.exists) return;
+      var d = snap.data() || {};
+      var existing = d.dailyListeningLevels || null;
+      // Build today's levels object from the *server* snapshot, not in-memory state.
+      var levels;
+      if (!existing || existing.date !== todayKey){
+        levels = { date: todayKey, l1: false, l2: false, l3: false, l4: false };
+      } else {
+        levels = {
+          date: existing.date,
+          l1: !!existing.l1, l2: !!existing.l2,
+          l3: !!existing.l3, l4: !!existing.l4
+        };
+      }
+      if (levels[key]){
+        // Already credited for this level today — don't double-award.
+        finalLevels = levels;
+        return;
+      }
+      levels[key] = true;
+      tx.update(acctRef, {
+        dailyListeningLevels: levels,
+        gachaRolls: firebase.firestore.FieldValue.increment(1)
+      });
+      awarded = true;
+      finalLevels = levels;
+    });
+  } catch(e){
+    console.warn('_dlMarkLevelDone egg-award txn failed:', e);
+  }
+  if (finalLevels) user.dailyListeningLevels = finalLevels;
+  if (awarded) user.gachaRolls = (user.gachaRolls || 0) + 1;
   // Refresh top-bar chip + global CTA so the new egg is visible immediately
   if (typeof updateCounts === 'function') updateCounts();
 }
@@ -5978,15 +6046,43 @@ window.adminToggleOverride = adminToggleOverride;
 var _scFilter = 'all';
 function renderShowcase(){
   if (!user) return;
-  db.collection(TC).doc(user.id).get().then(function(snap){
-    if (!snap.exists) return;
-    var d = snap.data();
-    user.gachaCollection = d.gachaCollection || [];
-    user.gachaRolls = typeof d.gachaRolls === 'number' ? d.gachaRolls : 0;
-    user.points = typeof d.points === 'number' ? d.points : 0;
+  // Show a loading state while we fetch
+  var body = $('showcaseBody');
+  if (body) body.innerHTML = '<div class="dr-loading" style="padding:40px;text-align:center;color:#888;">Loading your collection...</div>';
+
+  // Two reads in parallel:
+  //  - the user doc (for rolls, points, and the legacy gachaCollection array
+  //    on not-yet-migrated accounts)
+  //  - the gachaCollection subcollection (the new home for cards)
+  var userPromise = db.collection(TC).doc(user.id).get();
+  var cardsPromise = db.collection(TC).doc(user.id).collection('gachaCollection')
+    .orderBy('wonAt', 'desc')
+    .get()
+    .catch(function(e){ console.warn('Subcollection load failed:', e); return null; });
+
+  Promise.all([userPromise, cardsPromise]).then(function(out){
+    var snap = out[0], cardsSnap = out[1];
+    if (snap && snap.exists){
+      var d = snap.data();
+      user.gachaRolls = typeof d.gachaRolls === 'number' ? d.gachaRolls : 0;
+      user.points = typeof d.points === 'number' ? d.points : 0;
+      // Build the in-memory collection from the subcollection if it has data;
+      // otherwise fall back to the legacy array field on the user doc.
+      if (cardsSnap && !cardsSnap.empty){
+        var cards = [];
+        cardsSnap.forEach(function(doc){ cards.push(doc.data()); });
+        user.gachaCollection = cards;
+        user.gachaCollectionCount = cards.length;
+      } else {
+        user.gachaCollection = d.gachaCollection || [];
+        user.gachaCollectionCount = (typeof d.gachaCollectionCount === 'number')
+          ? d.gachaCollectionCount
+          : user.gachaCollection.length;
+      }
+    }
     updateTopBar(); updateCounts();
     _drawShowcase();
-  }).catch(function(){ _drawShowcase(); });
+  }).catch(function(e){ console.warn('renderShowcase:', e); _drawShowcase(); });
 }
 function _drawShowcase(){
   var col = user.gachaCollection || [];
@@ -7727,9 +7823,6 @@ async function _saveBatchResults(results){
     try {
         var totalPoints = results.reduce(function(s, r){ return s + (r.pointsEarned || 0); }, 0);
         var numRolls = results.length;
-        // Guard: never decrement more than the user actually has
-        // numRolls includes lost rolls — they still consume one roll from the user's balance
-        var safeDecrement = Math.min(numRolls, user.gachaRolls || 0);
         var acctRef = db.collection(TC).doc(user.id);
         var collectionEntries = results.filter(function(r){ return !r.lost; }).map(function(r){
             return {
@@ -7741,24 +7834,59 @@ async function _saveBatchResults(results){
                 wonAt: r.wonAt
             };
         });
-        var updatePayload = {
-            gachaRolls: firebase.firestore.FieldValue.increment(-safeDecrement),
-            points: firebase.firestore.FieldValue.increment(totalPoints)
-        };
-        // Only union into the collection if there's anything non-lost to add
-        if (collectionEntries.length > 0){
-            updatePayload.gachaCollection = firebase.firestore.FieldValue.arrayUnion.apply(
-                firebase.firestore.FieldValue, collectionEntries
-            );
+        // Run as a transaction so we can read the persisted balance and floor
+        // the decrement at 0 atomically. This matters because rollOne now
+        // pre-decrements the in-memory balance synchronously to prevent fast
+        // double-taps from over-spending — so in-memory `user.gachaRolls` no
+        // longer reflects the persisted balance at the moment we save.
+        // numRolls includes lost rolls — they still consume one roll each.
+        //
+        // We also write each won card as its own doc in the gachaCollection
+        // subcollection (instead of arrayUnion onto the parent doc) so the
+        // user's profile doc can never hit Firestore's 1 MiB cap as their
+        // collection grows.
+        var actualDecrement = 0;
+        await db.runTransaction(async function(tx){
+            var snap = await tx.get(acctRef);
+            if (!snap.exists) return;
+            var d = snap.data() || {};
+            var persistedRolls = typeof d.gachaRolls === 'number' ? d.gachaRolls : 0;
+            actualDecrement = Math.min(numRolls, Math.max(0, persistedRolls));
+            var updatePayload = {
+                gachaRolls: firebase.firestore.FieldValue.increment(-actualDecrement),
+                points: firebase.firestore.FieldValue.increment(totalPoints)
+            };
+            if (collectionEntries.length > 0){
+                // Bump cached count on the parent doc for cheap menu-tile rendering.
+                updatePayload.gachaCollectionCount = firebase.firestore.FieldValue.increment(collectionEntries.length);
+            }
+            // Only mark freeEggsUsed:true during the welcome-batch flow, not for every single roll
+            if (_eggBatchMode) updatePayload.freeEggsUsed = true;
+            tx.update(acctRef, updatePayload);
+            // Each new card becomes its own doc in the subcollection.
+            collectionEntries.forEach(function(entry){
+                var cardRef = acctRef.collection('gachaCollection').doc();
+                tx.set(cardRef, entry);
+            });
+        });
+        // In-memory: gachaRolls was already pre-decremented in rollOne (for the
+        // single-roll path) or never decremented (for the free-eggs batch path).
+        if (_eggBatchMode){
+            // Free-eggs batch: in-memory wasn't pre-decremented, so apply it now.
+            user.gachaRolls = Math.max(0, (user.gachaRolls || 0) - actualDecrement);
+        } else {
+            // Single-roll path: rollOne already decremented by 1 in-memory.
+            // If persisted was lower than expected (parallel session spent rolls),
+            // we've over-subtracted in-memory; next page action / refetch reconciles.
         }
-        // Only mark freeEggsUsed:true during the welcome-batch flow, not for every single roll
-        if (_eggBatchMode) updatePayload.freeEggsUsed = true;
-        await acctRef.update(updatePayload);
-        user.gachaRolls = Math.max(0, (user.gachaRolls || 0) - safeDecrement);
         user.points = (user.points || 0) + totalPoints;
         if (_eggBatchMode) user.freeEggsUsed = true;
         if (collectionEntries.length > 0){
+            // Keep the in-memory cache fresh so the showcase can render newly-won
+            // cards instantly without a refetch. The next showcase open does its
+            // own subcollection load anyway.
             user.gachaCollection = (user.gachaCollection || []).concat(collectionEntries);
+            user.gachaCollectionCount = (user.gachaCollectionCount || (user.gachaCollection.length - collectionEntries.length)) + collectionEntries.length;
         }
         updateTopBar(); updateCounts();
         if (totalPoints > 0){
@@ -7774,6 +7902,12 @@ async function _saveBatchResults(results){
 function rollOne(){
     if (!user || user.gachaRolls <= 0) return;
     playSelect();
+    // Decrement in-memory IMMEDIATELY so a fast second tap can't slip through
+    // before _saveBatchResults commits the decrement to Firestore. The actual
+    // Firestore decrement happens in _saveBatchResults; safeDecrement there
+    // floors the write at the persisted balance so this can never go negative.
+    user.gachaRolls = Math.max(0, (user.gachaRolls || 0) - 1);
+    updateTopBar(); updateCounts();
     _eggBatchMode = false;
     _eggQueue = [];
     _eggBatchResults = [];
