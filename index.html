@@ -210,7 +210,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   #dailyPickerGrid.has-yoda { grid-template-columns: repeat(3, 1fr); }
   #dailyPickerGrid.has-yoda > .menu-card.yoda { grid-column: 2 / 3; }
 }
-.menu-card{background:#0d0d1f;border:2px solid rgba(255,255,255,0.2);border-radius:2px;padding:40px 28px;text-align:center;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;position:relative;overflow:hidden;box-shadow:4px 4px 0 rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:center;}
+.menu-card{background:#0d0d1f;border:2px solid rgba(255,255,255,0.2);border-radius:2px;padding:40px 28px;text-align:center;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,border-color 0.15s;position:relative;overflow:hidden;box-shadow:4px 4px 0 rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:center;}
 .menu-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;}
 .menu-card.daily::before{background:var(--green);}
 .menu-card.shop::before{background:var(--gold);}
@@ -227,6 +227,23 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .menu-card.daily:hover .menu-count{background:rgba(57,255,20,0.15);color:var(--green);border-color:var(--green);}
 .menu-card.shop:hover .menu-count{background:rgba(255,215,0,0.15);color:var(--gold);border-color:var(--gold);}
 .menu-card.showcase:hover .menu-count{background:rgba(168,85,247,0.15);color:var(--purple);border-color:var(--purple);}
+
+/* Daily activity picker tiles (Teamwork Reading / Solo Reading / Advanced /
+ * Yodafication) get a different treatment from the main menu cards.
+ * Override the green top accent bar and switch the hover state to yellow
+ * so the highlight functions as an interaction cue, not constant clutter. */
+#dailyPickerGrid .menu-card.daily::before { background: transparent; }
+#dailyPickerGrid .menu-card.daily { border-color: #3a3a4a; }
+#dailyPickerGrid .menu-card.daily:hover {
+  border-color: var(--gold);
+  box-shadow: 4px 4px 0 rgba(0,0,0,0.8), 0 0 12px rgba(255,215,0,0.35);
+}
+#dailyPickerGrid .menu-card.daily:hover .menu-count {
+  background: rgba(255,215,0,0.15);
+  color: var(--gold);
+  border-color: var(--gold);
+}
+
 /* Daily tile in "Work in Progress" mode (admin-toggled, hidden from non-admins) */
 .menu-card.daily.wip{cursor:not-allowed;opacity:0.55;filter:grayscale(0.6);}
 .menu-card.daily.wip:hover{transform:none;box-shadow:4px 4px 0 rgba(0,0,0,0.8);border-color:rgba(255,255,255,0.2);}
@@ -241,7 +258,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .dr-passage-title{font-family:'Press Start 2P',monospace;font-size:13px;color:#ffd078;text-shadow:var(--ps-outline-sm);margin-bottom:12px;text-align:center;}
 .dr-sentence-box{background:rgba(0,0,0,0.4);border:2px solid #444;border-radius:8px;padding:18px;margin-bottom:14px;font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-size:20px;line-height:1.7;color:#fff;text-align:center;}
 .dr-sentence-box.mine{border-color:var(--cyan);background:rgba(65,192,255,0.12);}
-.dr-sentence-box.partner{border-color:#666;color:#bbb;font-size:16px;opacity:0.85;}
+.dr-sentence-box.partner{border-color:#666;color:#a8d6f0;font-size:16px;opacity:0.85;}
 .dr-sentence-label{font-family:var(--vt);font-size:12px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
 .dr-sentence-label.mine{color:var(--cyan);}
 .dr-status-row{display:flex;justify-content:space-between;align-items:center;font-family:var(--vt);font-size:12px;color:#888;margin-bottom:14px;padding:8px 12px;background:rgba(0,0,0,0.3);border-radius:6px;}
@@ -263,9 +280,9 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .dr-rec-status{font-family:var(--vt);font-size:13px;color:#aaa;min-height:18px;}
 
 /* ═══ DAILY READING — SOCIAL FEED ═══ */
-.dr-loading,.dr-empty{padding:32px;text-align:center;font-family:var(--vt);color:#bbb;background:rgba(0,0,0,0.25);border:1px solid #2a3650;border-radius:10px;margin-bottom:18px;}
+.dr-loading,.dr-empty{padding:32px;text-align:center;font-family:var(--vt);color:#a8d6f0;background:rgba(0,0,0,0.25);border:1px solid #2a3650;border-radius:10px;margin-bottom:18px;}
 .dr-empty .big{font-family:'Press Start 2P',monospace;color:#ff8c3c;font-size:14px;margin-bottom:8px;text-shadow:var(--ps-outline-sm);}
-.dr-empty .sub{font-size:13px;color:#bbb;}
+.dr-empty .sub{font-size:13px;color:#a8d6f0;}
 .dr-feed{display:flex;flex-direction:column;gap:14px;}
 .dr-feed-banner{padding:16px 20px;border-radius:10px;text-align:center;font-family:var(--vt);}
 .dr-feed-banner.active{background:linear-gradient(135deg,#1f3a6e,#0f2342);border:2px solid var(--cyan);}
@@ -322,7 +339,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .dl-lv-card.locked .dl-lv-num{background:rgba(255,255,255,0.05);border-color:#444;color:#666;}
 .dl-lv-meta{flex:1;min-width:200px;}
 .dl-lv-title{font-family:'Press Start 2P',monospace;font-size:11px;color:#ffd078;text-shadow:var(--ps-outline-sm);margin-bottom:4px;}
-.dl-lv-sub{font-family:var(--vt);font-size:13px;color:#bbb;}
+.dl-lv-sub{font-family:var(--vt);font-size:13px;color:#a8d6f0;}
 .dl-lv-status{font-family:var(--vt);font-size:11px;padding:4px 10px;border-radius:4px;letter-spacing:1px;}
 .dl-lv-status.done{background:rgba(57,255,20,0.2);color:#39ff14;border:1px solid #39ff14;}
 .dl-lv-status.open{background:rgba(255,140,60,0.18);color:#ff8c3c;border:1px solid #ff8c3c;}
@@ -369,7 +386,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .adv-prompt-meta{font-family:'Press Start 2P',monospace;font-size:11px;color:#ffd078;text-shadow:var(--ps-outline-sm);margin-bottom:10px;}
 .adv-prompt-verb{font-family:var(--vt);font-size:14px;color:#cfd8e8;margin-bottom:6px;}
 .adv-prompt-verb-word{font-family:'Noto Sans KR',sans-serif;font-size:32px;font-weight:700;color:#fff;margin-left:6px;}
-.adv-prompt-instr{font-family:var(--vt);font-size:13px;color:#bbb;margin:14px 0 16px 0;}
+.adv-prompt-instr{font-family:var(--vt);font-size:13px;color:#a8d6f0;margin:14px 0 16px 0;}
 .adv-prompt-nav-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
 .adv-answer-peek{margin-top:12px;padding:14px;background:rgba(57,255,20,0.15);border:2px solid #39ff14;border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:24px;color:#39ff14;font-weight:700;}
 .adv-nav{padding:12px;background:rgba(0,0,0,0.3);border:1px solid #2a3650;border-radius:10px;display:flex;flex-direction:column;gap:8px;}
@@ -1355,7 +1372,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .section-head.daily .sh-title{color:var(--green);text-shadow:var(--ps-outline-sm);}
 .section-head.shop .sh-title{color:var(--gold);text-shadow:var(--ps-outline-sm);}
 .section-head.showcase .sh-title{color:var(--purple);text-shadow:var(--ps-outline-sm);}
-.section-head .sh-sub{font-size:14px;color:#bbb;}
+.section-head .sh-sub{font-size:14px;color:#a8d6f0;}
 
 /* ── PLACEHOLDER GRIDS ── */
 .ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;}
@@ -2957,23 +2974,27 @@ function _renderDailyPicker(){
     : '<div class="menu-count">+1 EGG</div>';
   grid.innerHTML =
     '<div class="menu-card daily" onclick="_dailyOpen(\'reading\')">' +
-      '<div class="menu-icon">📖</div>' +
-      '<div class="menu-title">TEAMWORK<br>READING</div>' +
+      '<span class="menu-emoji">📖</span>' +
+      '<div class="grad-wrap"><div class="menu-name grad-text grad-cyan">TEAMWORK<br>READING</div></div>' +
+      '<div class="menu-desc">Pair up with a classmate and read a passage together.</div>' +
       readingBadge +
     '</div>' +
     '<div class="menu-card daily" onclick="_dailyOpen(\'listening\')">' +
-      '<div class="menu-icon">🎤</div>' +
-      '<div class="menu-title">SOLO<br>READING</div>' +
+      '<span class="menu-emoji">🎤</span>' +
+      '<div class="grad-wrap"><div class="menu-name grad-text grad-pink">SOLO<br>READING</div></div>' +
+      '<div class="menu-desc">Read aloud across four levels of difficulty.</div>' +
       listeningBadge +
     '</div>' +
     '<div class="menu-card daily" onclick="_dailyOpen(\'advanced\')">' +
-      '<div class="menu-icon">🏆</div>' +
-      '<div class="menu-title">ADVANCED<br>TEAMWORK</div>' +
+      '<span class="menu-emoji">🏆</span>' +
+      '<div class="grad-wrap"><div class="menu-name grad-text grad-gold">ADVANCED<br>TEAMWORK</div></div>' +
+      '<div class="menu-desc">Conjugate verbs in four tenses. Bigger bonus when 10 students join.</div>' +
       advBadge +
     '</div>' +
     '<div class="menu-card daily yoda" onclick="_dailyOpen(\'yoda\')">' +
-      '<div class="menu-icon">🔀</div>' +
-      '<div class="menu-title">YODAFICATION</div>' +
+      '<span class="menu-emoji">🔀</span>' +
+      '<div class="grad-wrap"><div class="menu-name grad-text grad-purple">YODAFICATION</div></div>' +
+      '<div class="menu-desc">Rewrite sentences in every valid word order.</div>' +
       yodaBadge +
     '</div>';
 }
@@ -6404,7 +6425,7 @@ function _drawShop(){
       '<div class="enroll-card" style="border-color:var(--cyan);">' +
         '<div class="enroll-title" style="color:var(--cyan);">🎟️ WEDNESDAY HELP CREDITS</div>' +
         '<div style="font-family:var(--ps);font-size:24px;color:var(--cyan);text-align:center;margin:12px 0;text-shadow:var(--ps-outline-sm);">' + helpCredits + '</div>' +
-        '<div style="font-size:13px;color:#bbb;text-align:center;">Redeem in Discord when you need a session.</div>' +
+        '<div style="font-size:13px;color:#a8d6f0;text-align:center;">Redeem in Discord when you need a session.</div>' +
       '</div>';
   }
 
