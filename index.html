@@ -252,6 +252,31 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 /* ═══ DAILY READING ACTIVITY ═══ */
 .dr-banner{background:linear-gradient(135deg,#1a3a5e,#0f2342);border:2px solid var(--cyan);border-radius:8px;padding:14px 18px;margin-bottom:24px;font-family:var(--vt);font-size:14px;color:var(--cyan);text-align:center;text-shadow:var(--ps-outline-sm);}
 .dr-banner b{color:var(--gold);}
+/* "How do I earn Points?" link inside the points banner. One size step
+ * smaller than the banner text on the daily picker (16px vs banner's 17px).
+ * Yellow text with subtle hover underline; opens the points-info modal. */
+.dr-banner-link{display:block;margin-top:10px;text-align:center;font-family:var(--vt);font-size:16px;color:var(--gold);text-decoration:underline;text-decoration-color:rgba(255,215,0,0.4);text-underline-offset:3px;cursor:pointer;background:transparent;border:none;padding:0;text-shadow:var(--ps-outline-sm);transition:color 0.15s,text-decoration-color 0.15s;}
+.dr-banner-link:hover{color:#fff5b0;text-decoration-color:var(--gold);}
+.dr-banner-link:focus{outline:none;color:#fff5b0;text-decoration-color:var(--gold);}
+
+/* ── POINTS INFO MODAL ──
+ * Triggered by "How do I earn Points?" link on the daily picker banner.
+ * Backdrop fades in with a blur sweep (0 → 6px) over 220ms so the menu
+ * recedes when the modal opens. Red ✕ in the corner closes the modal and
+ * the blur fades back out. Same retro/cyan aesthetic as other in-app modals. */
+.points-info-modal{position:fixed;inset:0;z-index:100002;background:rgba(0,0,0,0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);display:none;align-items:center;justify-content:center;padding:20px;transition:background 0.22s ease,backdrop-filter 0.22s ease,-webkit-backdrop-filter 0.22s ease;}
+.points-info-modal.show{display:flex;}
+.points-info-modal.visible{background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
+.points-info-inner{position:relative;background:linear-gradient(135deg,#0f172a,#1e293b);border:2px solid var(--cyan);border-radius:12px;padding:32px 28px 26px;max-width:520px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.6),0 0 0 1px rgba(65,192,255,0.15);transform:translateY(8px) scale(0.97);opacity:0;transition:transform 0.22s ease,opacity 0.22s ease;}
+.points-info-modal.visible .points-info-inner{transform:translateY(0) scale(1);opacity:1;}
+.points-info-title{font-family:'Press Start 2P',monospace;font-size:14px;color:var(--gold);text-shadow:var(--ps-outline-sm);margin-bottom:18px;text-align:center;letter-spacing:1px;}
+.points-info-body{font-family:var(--vt);font-size:19px;line-height:1.65;color:#e6ebf5;}
+.points-info-body p{margin:0 0 14px 0;}
+.points-info-body p:last-child{margin-bottom:0;}
+.points-info-body b{color:var(--gold);}
+.points-info-close{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:6px;background:#7f1d1d;border:2px solid #dc2626;color:#fff;font-family:'Press Start 2P',monospace;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:2px 2px 0 rgba(0,0,0,0.6);transition:background 0.15s,transform 0.1s;}
+.points-info-close:hover{background:#dc2626;transform:translate(-1px,-1px);box-shadow:3px 3px 0 rgba(0,0,0,0.6);}
+.points-info-close:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(0,0,0,0.6);}
 .dr-card{background:linear-gradient(135deg,rgba(255,140,60,0.15),rgba(255,90,30,0.08));border:3px solid #ff8c3c;border-radius:12px;padding:20px;margin-bottom:20px;position:relative;box-shadow:4px 4px 0 rgba(0,0,0,0.6);}
 .dr-card-title{font-family:'Press Start 2P',monospace;font-size:14px;color:#ff8c3c;text-shadow:var(--ps-outline-sm);margin-bottom:8px;}
 .dr-card-sub{font-family:var(--vt);font-size:13px;color:#aaa;margin-bottom:14px;line-height:1.5;}
@@ -1310,11 +1335,22 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 #dailyReadingScreen .dr-slot-role       { font-size: 14px !important; }
 #dailyReadingScreen .dr-slot-audio-empty{ font-size: 15px !important; }
 #dailyReadingScreen .dr-feed-hidden-note{ font-size: 16px !important; }
-#dailyReadingScreen .dr-loading,
-#dailyReadingScreen .dr-empty           { font-size: 17px !important; }
-#dailyReadingScreen .dr-empty .sub      { font-size: 16px !important; }
+#dailyReadingScreen .dr-loading         { font-size: 17px !important; }
 #dailyReadingScreen .dr-feed-banner.active .sub,
 #dailyReadingScreen .dr-feed-banner.done .sub { font-size: 16px !important; }
+
+/* Unified "No activity available" empty-state sizing across every daily
+ * sub-screen. Keep all four pages (Reading, Listening, Advanced, Yoda)
+ * locked to the same readable size — container 17px, .sub 16px — so the
+ * empty state doesn't change shape as students bounce between activities. */
+#dailyReadingScreen .dr-empty,
+#dailyListeningScreen .dr-empty,
+#dailyAdvancedScreen .dr-empty,
+#dailyYodaScreen .dr-empty              { font-size: 17px !important; }
+#dailyReadingScreen .dr-empty .sub,
+#dailyListeningScreen .dr-empty .sub,
+#dailyAdvancedScreen .dr-empty .sub,
+#dailyYodaScreen .dr-empty .sub         { font-size: 16px !important; }
 
 /* Activity banner sub-text (VCR mono) on every daily sub-screen.
  * The `.big` heading is Press Start 2P and stays at its native size; only
@@ -1335,8 +1371,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 #dailyListeningScreen .dr-banner,
 #dailyListeningScreen .dr-card-sub,
 #dailyListeningScreen .dr-rec-status,
-#dailyListeningScreen .dr-loading,
-#dailyListeningScreen .dr-empty         { font-size: 16px !important; }
+#dailyListeningScreen .dr-loading       { font-size: 16px !important; }
 
 /* Advanced Teamwork classes */
 #dailyAdvancedScreen .adv-ending        { font-size: 17px !important; }
@@ -1346,8 +1381,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 #dailyAdvancedScreen .adv-locked-label  { font-size: 16px !important; }
 #dailyAdvancedScreen .dr-banner,
 #dailyAdvancedScreen .dr-card-sub,
-#dailyAdvancedScreen .dr-loading,
-#dailyAdvancedScreen .dr-empty          { font-size: 16px !important; }
+#dailyAdvancedScreen .dr-loading        { font-size: 16px !important; }
 
 /* Daily picker screen — uses the same dr-banner / menu-card text.
  * NOTE: do NOT bump .menu-count or .menu-desc here. The picker tiles must
@@ -1695,6 +1729,21 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   </div>
   <div id="drBanner" class="dr-banner"></div>
   <div id="dailyPickerGrid" class="menu-grid" style="margin-top:18px;"></div>
+</div>
+
+<!-- ═══ POINTS INFO MODAL ═══
+ * Explains how points are earned (via gacha eggs from daily activities).
+ * Triggered by the "How do I earn Points?" link in the points banner on the
+ * daily picker screen. Click-outside or red ✕ closes. -->
+<div id="pointsInfoModal" class="points-info-modal" onclick="_closePointsInfoFromBackdrop(event)">
+  <div class="points-info-inner" onclick="event.stopPropagation()">
+    <button type="button" class="points-info-close" onclick="_closePointsInfo()" aria-label="Close">✕</button>
+    <div class="points-info-title">⭐ HOW TO EARN POINTS</div>
+    <div class="points-info-body">
+      <p>You'll earn <b>POINTS</b> by opening Eggs! You earn Eggs by completing daily activities.</p>
+      <p>The points you earn is determined by the rarity of the monster that comes out of the egg. We based this on Gachapon, where you roll for a random collectible item! In this case, you get a random cute monster and points to redeem for classes.</p>
+    </div>
+  </div>
 </div>
 
 <!-- ═══ DAILY: READING ═══ -->
@@ -2929,11 +2978,53 @@ function renderDaily(){
   var banner = document.getElementById('drBanner');
   if (banner){
     var pts = (user && user.points) || 0;
-    banner.innerHTML = 'YOU HAVE <b>' + pts + '</b> POINTS — earn enough and you can redeem a <b>CLASS</b>!';
+    banner.innerHTML = 'YOU HAVE <b>' + pts + '</b> POINTS — earn enough and you can redeem a <b>CLASS</b>!' +
+      '<button type="button" class="dr-banner-link" onclick="_openPointsInfo()">How do I earn Points?</button>';
   }
   // Render the picker grid (3 activity tiles)
   _renderDailyPicker();
 }
+
+/* "How do I earn Points?" modal. Two-phase open so we can transition the
+ * backdrop blur/opacity from 0 → full (the .show class flips display:flex,
+ * then a frame later .visible kicks the CSS transitions). Close reverses
+ * the order so the blur fades back out before the element hides. */
+function _openPointsInfo(){
+  var m = document.getElementById('pointsInfoModal');
+  if (!m) return;
+  try { playSelect && playSelect(); } catch(e){}
+  m.classList.add('show');
+  // Force layout flush before adding .visible so the transition runs.
+  // eslint-disable-next-line no-unused-expressions
+  m.offsetHeight;
+  requestAnimationFrame(function(){ m.classList.add('visible'); });
+}
+window._openPointsInfo = _openPointsInfo;
+
+function _closePointsInfo(){
+  var m = document.getElementById('pointsInfoModal');
+  if (!m) return;
+  m.classList.remove('visible');
+  // Wait for the fade-out transition to finish before hiding the element
+  // entirely; otherwise display:none kills the animation mid-flight.
+  setTimeout(function(){ m.classList.remove('show'); }, 230);
+}
+window._closePointsInfo = _closePointsInfo;
+
+// Clicking the dimmed backdrop closes; clicks inside the inner card don't
+// bubble (stopped via onclick on .points-info-inner).
+function _closePointsInfoFromBackdrop(e){
+  if (e && e.target && e.target.id === 'pointsInfoModal') _closePointsInfo();
+}
+window._closePointsInfoFromBackdrop = _closePointsInfoFromBackdrop;
+
+// ESC key closes the modal when it's open.
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape'){
+    var m = document.getElementById('pointsInfoModal');
+    if (m && m.classList.contains('show')) _closePointsInfo();
+  }
+});
 
 // Render the activity-picker grid using the same card style as the main menu.
 function _renderDailyPicker(){
@@ -2971,7 +3062,7 @@ function _renderDailyPicker(){
   } else if (advSubmitted){
     advBadge = '<div class="menu-count">+1 EARNED · WAITING FOR 10</div>';
   } else {
-    advBadge = '<div class="menu-count">+1 EGG (+2 IF 10 JOIN)</div>';
+    advBadge = '<div class="menu-count">UP TO +2 EGGS</div>';
   }
   // ─── Yodafication tile ───
   var yodaDone = (user && user.dailyYodaDoneFor === todayKey);
@@ -6429,9 +6520,9 @@ function _drawShop(){
   if (helpCredits > 0){
     creditsHtml =
       '<div class="enroll-card" style="border-color:var(--cyan);">' +
-        '<div class="enroll-title" style="color:var(--cyan);">🎟️ WEDNESDAY HELP CREDITS</div>' +
+        '<div class="enroll-title" style="color:var(--cyan);">🎟️ WEDNESDAY CLASS CREDITS</div>' +
         '<div style="font-family:var(--ps);font-size:24px;color:var(--cyan);text-align:center;margin:12px 0;text-shadow:var(--ps-outline-sm);">' + helpCredits + '</div>' +
-        '<div style="font-size:13px;color:#a8d6f0;text-align:center;">Redeem in Discord when you need a session.</div>' +
+        '<div style="font-size:13px;color:#a8d6f0;text-align:center;">Redeem in Discord to join a Wednesday group class with Mr. Calvin.</div>' +
       '</div>';
   }
 
@@ -6442,7 +6533,7 @@ function _drawShop(){
     '<div class="shop-card"' + (helpReason ? ' title="' + esc(helpReason) + '"' : '') + ' style="' + (canBuyHelp ? '' : 'opacity:0.5;cursor:not-allowed;') + '">' +
       '<div class="shop-icon">🎟️</div>' +
       '<div class="shop-name">WEDNESDAY<br>EXTRA HELP</div>' +
-      '<div class="shop-desc">One 1-on-1 session to work through anything.</div>' +
+      '<div class="shop-desc">Group class with Mr. Calvin — Wednesdays at 8 PM ET (New York). Ask any questions you have.</div>' +
       '<div class="shop-price"><span style="color:var(--gold);">⭐ ' + PRICE_EXTRA_HELP + '</span> <span style="color:#888;font-size:13px;">pts</span></div>' +
       '<button class="btn btn-cyan btn-md sparkle-btn" onclick="buyExtraHelp()" ' + (canBuyHelp ? '' : 'disabled') + '>' +
         (canBuyHelp ? 'PURCHASE' : 'LOCKED') +
@@ -6481,7 +6572,20 @@ function _drawShop(){
 
   var itemsHtml = helpCardHtml + sixCardHtml;
 
-  grid.innerHTML = statusHtml + creditsHtml + '<div class="shop-grid">' + itemsHtml + '</div>';
+  // Admin-only dev controls (testing the purchase flows). Renders a small
+  // dashed-border card at the bottom with a +1000 points button. Gated by
+  // user.isAdmin so it never appears to students. Safe to leave in prod.
+  var devHtml = '';
+  if (user && user.isAdmin){
+    devHtml =
+      '<div style="margin-top:24px;padding:14px 16px;border:2px dashed #ff77ff;border-radius:8px;background:rgba(255,119,255,0.05);">' +
+        '<div style="font-family:var(--ps);font-size:10px;color:#ff77ff;text-shadow:var(--ps-outline-sm);margin-bottom:8px;letter-spacing:1px;">🛠️ DEV CONTROLS (ADMIN ONLY)</div>' +
+        '<div style="font-size:12px;color:#aaa;margin-bottom:10px;">For testing purchase flows. Not visible to students.</div>' +
+        '<button class="btn btn-pink btn-sm" onclick="devAddPoints(1000)">+1000 POINTS</button>' +
+      '</div>';
+  }
+
+  grid.innerHTML = statusHtml + creditsHtml + '<div class="shop-grid">' + itemsHtml + '</div>' + devHtml;
 
   // Attach sparkles to any new sparkle-btn items
   setTimeout(function(){
@@ -6496,11 +6600,16 @@ function _fmtDate(iso){
   } catch(e){ return iso; }
 }
 
-/* ═══ BUY: WEDNESDAY EXTRA HELP ═══ */
+/* ═══ BUY: WEDNESDAY EXTRA HELP ═══
+ * Despite the legacy variable/function names (extraHelpCredits, buyExtraHelp),
+ * this purchases a credit for a Wednesday GROUP class with Mr. Calvin where
+ * students can ask any questions they have — not a 1-on-1. Fires a distinct
+ * webhook event (purchase.wednesday_class) so Make.com can branch separately
+ * from the 6-week purchase. */
 async function buyExtraHelp(){
   if (!user) return;
   if ((user.points||0) < PRICE_EXTRA_HELP){ toast('Not enough points.', 'var(--pink)'); return; }
-  if (!confirm('Purchase 1 Wednesday Extra Help session for ' + PRICE_EXTRA_HELP + ' points?\n\nYou currently have ' + user.points + ' points.')) return;
+  if (!confirm('Purchase 1 Wednesday Group Class credit for ' + PRICE_EXTRA_HELP + ' points?\n\nThis lets you join a Wednesday group class with Mr. Calvin to ask any questions you have.\n\nYou currently have ' + user.points + ' points.')) return;
   playSelect();
   try {
     await db.collection(TC).doc(user.id).update({
@@ -6509,13 +6618,13 @@ async function buyExtraHelp(){
     });
     user.points -= PRICE_EXTRA_HELP;
     user.extraHelpCredits = (user.extraHelpCredits || 0) + 1;
-    toast('+1 EXTRA HELP CREDIT', 'var(--cyan)');
+    toast('+1 WEDNESDAY CLASS CREDIT', 'var(--cyan)');
     playSfx(SOUND_WIN, 0.9);
-    fireWebhook('purchase.extra_help', {
+    fireWebhook('purchase.wednesday_class', {
       classType: 'Wednesday',
       classDate: null,
       pointsSpent: PRICE_EXTRA_HELP,
-      item: 'wednesday_extra_help',
+      item: 'wednesday_class',
       newCreditBalance: user.extraHelpCredits,
       remainingPoints: user.points
     });
@@ -6526,6 +6635,28 @@ async function buyExtraHelp(){
   }
 }
 window.buyExtraHelp = buyExtraHelp;
+
+/* ═══ DEV: GRANT POINTS ═══
+ * Admin-only helper to top up points for testing the shop. Gated server-side
+ * by the wildcard admin rule in Firestore — non-admins would be blocked even
+ * if they manually called this. Skips webhook/sound/toast styling for the
+ * 6-week purchase since it's not a real purchase. */
+async function devAddPoints(n){
+  if (!user || !user.isAdmin){ toast('Admin only.', 'var(--pink)'); return; }
+  var amt = (typeof n === 'number' && n > 0) ? n : 1000;
+  try {
+    await db.collection(TC).doc(user.id).update({
+      points: firebase.firestore.FieldValue.increment(amt)
+    });
+    user.points = (user.points || 0) + amt;
+    toast('+' + amt + ' POINTS (DEV)', 'var(--pink)');
+    updateTopBar(); updateCounts(); _drawShop();
+  } catch(e){
+    toast('Dev grant failed: ' + (e.message || e), 'var(--pink)');
+    console.error('devAddPoints:', e);
+  }
+}
+window.devAddPoints = devAddPoints;
 
 /* ═══ BUY: 6-WEEK PROGRAM ═══ */
 /* ═══ POLICY TEXT (6-Week) ═══ */
@@ -9401,6 +9532,7 @@ async function _yodaPublish(id){
   });
   batch.update(db.collection(YODA_COLLECTION).doc(id), {
     status: 'live',
+    livedAt: firebase.firestore.FieldValue.serverTimestamp(),
     publishedAt: firebase.firestore.FieldValue.serverTimestamp(),
     scheduledFor: null
   });
@@ -9498,16 +9630,35 @@ async function _yodaRender(){
     }
   } catch(e){}
 
-  var liveSnap = await db.collection(YODA_COLLECTION).where('status','==','live').limit(1).get().catch(function(){ return null; });
-  if (!liveSnap || liveSnap.empty){
+  // Find a live yodafication that isn't expired by NY-3am rollover. Matches
+  // the pattern used by Reading/Listening/Advanced — DB doc stays in 'live'
+  // until admin archives, but it's visually treated as expired the next day.
+  var liveSnap = await db.collection(YODA_COLLECTION).where('status','==','live').get().catch(function(){ return null; });
+  var doc = null;
+  if (liveSnap && !liveSnap.empty){
+    var fresh = [];
+    liveSnap.forEach(function(d){
+      if (_drIsExpired(d.data())) return;
+      fresh.push(d);
+    });
+    if (fresh.length){
+      // Most recent livedAt wins if multiple are live (shouldn't usually happen)
+      fresh.sort(function(a, b){
+        var aMs = (a.data().livedAt && a.data().livedAt.toMillis) ? a.data().livedAt.toMillis() : 0;
+        var bMs = (b.data().livedAt && b.data().livedAt.toMillis) ? b.data().livedAt.toMillis() : 0;
+        return bMs - aMs;
+      });
+      doc = fresh[0];
+    }
+  }
+  if (!doc){
     host.innerHTML =
       '<div class="dr-empty">' +
-        '<div class="big">📭 NO ACTIVITY TODAY</div>' +
-        '<div class="sub">There\'s no yodafication available right now. Check back tomorrow!</div>' +
+        '<div class="big">📭 NO ACTIVITY AVAILABLE</div>' +
+        '<div class="sub">Sorry, the deadline has passed! Wait for the next daily activity to be posted.</div>' +
       '</div>';
     return;
   }
-  var doc = liveSnap.docs[0];
   _yodaState.activityId = doc.id;
   _yodaState.activity = doc.data();
 
