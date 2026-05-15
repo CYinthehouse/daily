@@ -341,6 +341,14 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .dr-me-tag{display:inline-block;background:var(--cyan);color:#000;font-size:9px;font-family:'Press Start 2P',monospace;padding:2px 5px;border-radius:3px;margin-left:6px;vertical-align:middle;}
 .dr-slot-sentence{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-size:17px;line-height:1.5;color:#fff;padding:8px 10px;background:rgba(0,0,0,0.3);border-radius:6px;border-left:3px solid #2a3650;}
 .dr-slot.empty .dr-slot-sentence{color:#9aa3b8;font-style:italic;border-left-color:#3a4a6e;}
+/* "For your reference" keyword strip — sits right under the sentence box at
+ * a smaller size. Korean is bold, English is gray italic, separated by a
+ * small middle-dot. Visible only when sentenceData.keywords was populated
+ * at AI-generation time; older passages skip this entirely. */
+.dr-slot-reference{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-size:13px;line-height:1.65;color:#a8b8d0;padding:6px 10px 4px;margin-top:4px;}
+.dr-slot-reference .dr-ref-label{font-family:var(--vt);font-size:12px;color:#7a8aa8;font-style:italic;letter-spacing:0.3px;}
+.dr-slot-reference .dr-ref-ko{color:#e2e8f0;font-weight:600;}
+.dr-slot-reference .dr-ref-en{color:#8a9bb8;font-style:italic;}
 .dr-slot-audio{width:100%;height:36px;}
 .dr-slot-audio-empty{font-family:var(--vt);font-size:12px;color:#5e6e8e;font-style:italic;padding:6px 4px;}
 .dr-rec-host{margin:10px 0;padding:14px;background:linear-gradient(135deg,rgba(65,192,255,0.12),rgba(65,192,255,0.04));border:2px solid var(--cyan);border-radius:8px;}
@@ -1458,7 +1466,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
  * height is bumped to 130px so the *visible* cropped region matches the
  * original 110px slot, keeping layout unchanged. Negative margins absorb
  * the extra rendered height so the chip below doesn't get pushed down. */
-.sc-card img{width:100%;height:130px;margin:-10px 0;clip-path:inset(10px 0);-webkit-clip-path:inset(10px 0);object-fit:contain;pointer-events:none;user-select:none;-webkit-user-drag:none;}
+.sc-card img{width:100%;height:130px;margin:-10px 0;clip-path:inset(10px 0);-webkit-clip-path:inset(10px 0);object-fit:contain;pointer-events:none;user-select:none;-webkit-user-drag:none;background:#0a0a15;}
 .sc-card .sc-name{font-size:12px;color:#fff;text-align:center;line-height:1.3;font-family:var(--vt);word-break:break-word;}
 .sc-card .sc-rarity{font-family:var(--ps);font-size:7px;letter-spacing:1px;padding:4px 8px;border-radius:2px;margin-top:auto;}
 
@@ -1632,6 +1640,62 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .admin-row .ar-dates{font-size:13px;color:#aaa;}
 .admin-row .ar-signed{font-size:12px;color:#aaa;margin-top:6px;font-style:italic;}
 .admin-row .ar-actions{display:flex;gap:6px;flex-wrap:wrap;}
+
+/* ── SUBMISSION REVIEW MODAL ──
+ * Shared modal used by Daily Reading Manager, Advanced Teamwork Manager,
+ * and Solo Reading review. Per-type renderers (_subRevDR / _subRevAdv /
+ * _subRevSolo) populate #subRevBody with submission cards. Each card
+ * exposes a "Send feedback" form that writes a message into the student's
+ * inbox subcollection.
+ *
+ * Same fade-in-blur animation pattern as the points-info and policy modals
+ * so the admin experience feels consistent.
+ *
+ * z-index sits above all other admin UI but below toast (99999). */
+.subrev-overlay{position:fixed;inset:0;z-index:100050;background:rgba(0,0,0,0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);display:none;align-items:center;justify-content:center;padding:20px;font-family:var(--vt);transition:background 0.22s ease,backdrop-filter 0.22s ease,-webkit-backdrop-filter 0.22s ease;}
+.subrev-overlay.show{display:flex;}
+.subrev-overlay.visible{background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
+.subrev-modal{position:relative;background:#0f172a;border:2px solid #2a3458;border-radius:10px;max-width:780px;width:100%;max-height:calc(100vh - 40px);display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,0.6);transform:translateY(8px) scale(0.97);opacity:0;transition:transform 0.22s ease,opacity 0.22s ease;overflow:hidden;}
+.subrev-overlay.visible .subrev-modal{transform:translateY(0) scale(1);opacity:1;}
+.subrev-close{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:6px;background:#7f1d1d;border:2px solid #dc2626;color:#fff;font-family:'Press Start 2P',monospace;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:2px 2px 0 rgba(0,0,0,0.6);transition:background 0.15s,transform 0.1s;z-index:5;}
+.subrev-close:hover{background:#dc2626;transform:translate(-1px,-1px);box-shadow:3px 3px 0 rgba(0,0,0,0.6);}
+.subrev-head{padding:20px 56px 16px 22px;border-bottom:1px solid #2a3458;background:#0a0f1c;flex-shrink:0;}
+.subrev-title{font-family:'Press Start 2P',monospace;font-size:13px;color:#fff;letter-spacing:1px;line-height:1.5;}
+.subrev-sub{font-family:var(--vt);font-size:13px;color:#9aa3b8;margin-top:8px;}
+.subrev-body{padding:18px 22px;overflow-y:auto;flex:1 1 auto;min-height:0;max-height:70vh;scrollbar-width:thin;scrollbar-color:#475569 rgba(255,255,255,0.04);}
+.subrev-body::-webkit-scrollbar{width:10px;}
+.subrev-body::-webkit-scrollbar-track{background:rgba(255,255,255,0.04);}
+.subrev-body::-webkit-scrollbar-thumb{background:#475569;border-radius:0;border:2px solid #0f172a;}
+.subrev-body::-webkit-scrollbar-thumb:hover{background:#64748b;}
+.subrev-loading{text-align:center;color:#9aa3b8;font-style:italic;padding:30px 10px;}
+.subrev-empty{text-align:center;color:#9aa3b8;padding:30px 10px;font-family:var(--vt);font-size:14px;}
+/* Each submission renders as its own card. Audio playback + text answers
+ * inside, with the feedback form attached at the bottom of each card so
+ * the admin can grade as they go. */
+.subrev-card{background:#141b30;border:1px solid #2a3458;border-radius:8px;padding:16px;margin-bottom:14px;}
+.subrev-card:last-child{margin-bottom:0;}
+.subrev-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+.subrev-card-name{font-family:var(--vt);font-size:15px;color:#f1f5f9;font-weight:600;}
+.subrev-card-name .subrev-card-email{display:block;font-size:12px;color:#94a3b8;font-weight:400;margin-top:2px;}
+.subrev-card-meta{font-family:var(--vt);font-size:12px;color:#94a3b8;}
+.subrev-card-content{margin-bottom:14px;}
+.subrev-card-content audio{width:100%;max-width:380px;margin-top:6px;}
+.subrev-card-content .subrev-level{margin-bottom:10px;}
+.subrev-card-content .subrev-level-label{font-family:'Press Start 2P',monospace;font-size:9px;color:#a0aef7;letter-spacing:1px;margin-bottom:4px;text-transform:uppercase;}
+.subrev-card-content .subrev-answer-row{padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:6px;margin-bottom:6px;font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-size:14px;color:#e2e8f0;line-height:1.5;}
+.subrev-card-content .subrev-answer-label{font-family:var(--vt);font-size:11px;color:#94a3b8;display:block;margin-bottom:3px;letter-spacing:0.5px;text-transform:uppercase;}
+.subrev-feedback{border-top:1px solid #2a3458;padding-top:12px;margin-top:8px;}
+.subrev-feedback-label{font-family:'Press Start 2P',monospace;font-size:9px;color:#a0aef7;letter-spacing:1px;margin-bottom:6px;text-transform:uppercase;}
+.subrev-feedback-input{width:100%;padding:10px 12px;background:#0d1424;border:1px solid #334155;border-radius:6px;color:#f1f5f9;font-family:'Noto Sans',sans-serif;font-size:14px;outline:none;resize:vertical;min-height:60px;box-sizing:border-box;}
+.subrev-feedback-input:focus{border-color:#0891b2;}
+.subrev-feedback-actions{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap;}
+.subrev-feedback-score{width:80px;padding:8px 10px;background:#0d1424;border:1px solid #334155;border-radius:6px;color:#f1f5f9;font-family:var(--vt);font-size:14px;outline:none;box-sizing:border-box;}
+.subrev-feedback-score:focus{border-color:#0891b2;}
+.subrev-feedback-send{padding:9px 16px;background:#0891b2;border:1px solid #0e7490;border-radius:6px;color:#fff;font-family:'Press Start 2P',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:background 0.15s;}
+.subrev-feedback-send:hover:not(:disabled){background:#0e7490;}
+.subrev-feedback-send:disabled{opacity:0.5;cursor:not-allowed;}
+.subrev-feedback-status{font-family:var(--vt);font-size:12px;color:#22c55e;}
+.subrev-feedback-status.error{color:#ef4444;}
 
 /* ── POLICY MODAL ── */
 /* Policy overlay fades in AND blurs in over 220ms to match the points-info
@@ -2036,6 +2100,24 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
     </div>
     <div class="admin-section-body">
       <div id="adminBody"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ADMIN: SUBMISSION REVIEW MODAL ═══
+ * Shared across all three activity types (Advanced Teamwork, Daily Reading
+ * pairs, Solo Reading levels). Header carries the activity title; body is
+ * populated by per-type render functions in JS (_subRev*). Feedback form
+ * at the bottom writes to the selected student's inbox subcollection. -->
+<div id="subRevOverlay" class="subrev-overlay" onclick="_subRevBackdrop(event)">
+  <div class="subrev-modal" onclick="event.stopPropagation()">
+    <button type="button" class="subrev-close" onclick="_subRevClose()" aria-label="Close">✕</button>
+    <div class="subrev-head">
+      <div class="subrev-title" id="subRevTitle">Submissions</div>
+      <div class="subrev-sub" id="subRevSub"></div>
+    </div>
+    <div class="subrev-body" id="subRevBody">
+      <div class="subrev-loading">Loading submissions…</div>
     </div>
   </div>
 </div>
@@ -3642,10 +3724,15 @@ function _drInitialsAvatar(name, photoURL){
 
 // Render one pair card in the feed. `assigned` = true means this is the slot
 // the user must record into right now; the card sprouts the recording controls.
-function _drRenderPairCard(pair, assignedRole, sentences){
+function _drRenderPairCard(pair, assignedRole, sentences, sentenceData){
   var pairIndex = pair.pairIndex || 0;
   var s1 = sentences[pairIndex * 2] || '';
   var s2 = sentences[pairIndex * 2 + 1] || '';
+  // Per-sentence keyword reference data, when available. Optional — older
+  // passages have no sentenceData and these come back undefined, which the
+  // slotHTML renderer treats as "skip the reference line".
+  var d1 = (sentenceData && sentenceData[pairIndex * 2]) || null;
+  var d2 = (sentenceData && sentenceData[pairIndex * 2 + 1]) || null;
   var assigned = !!assignedRole;
   var cardCls = 'dr-pair-card';
   if (assigned) cardCls += ' assigned';
@@ -3666,7 +3753,7 @@ function _drRenderPairCard(pair, assignedRole, sentences){
   var slot2IsMe = pair.reader2Uid === user.id;
   var slot2NeedsJoin = slot1Filled && !slot2Filled; // half-filled = needs partner
 
-  function slotHTML(roleNum, filled, name, photo, audioUrl, isMe, needsJoin, sentence){
+  function slotHTML(roleNum, filled, name, photo, audioUrl, isMe, needsJoin, sentence, data){
     var bang = needsJoin ? '<span class="dr-bang">!</span>' : '';
     var meTag = isMe ? '<span class="dr-me-tag">YOU</span>' : '';
     var avatar = filled
@@ -3676,6 +3763,19 @@ function _drRenderPairCard(pair, assignedRole, sentences){
       ? '<div class="dr-slot-name">' + _esc(name) + ' ' + meTag + '</div>'
       : '<div class="dr-slot-name dr-slot-empty">' + _esc(name) + '</div>';
     var sentenceHtml = '<div class="dr-slot-sentence">' + _esc(sentence) + '</div>';
+    // "For your reference" — Korean keyword (English meaning) list under
+    // the sentence, when the passage was generated with keyword data.
+    // Older passages have no `data.keywords` so the line is omitted entirely.
+    var referenceHtml = '';
+    if (data && Array.isArray(data.keywords) && data.keywords.length){
+      var kwStr = data.keywords.map(function(kw){
+        return '<span class="dr-ref-ko">' + _esc(kw.ko) + '</span> <span class="dr-ref-en">(' + _esc(kw.en) + ')</span>';
+      }).join(' &nbsp;·&nbsp; ');
+      referenceHtml =
+        '<div class="dr-slot-reference">' +
+          '<span class="dr-ref-label">For your reference:</span> ' + kwStr +
+        '</div>';
+    }
     var audio = audioUrl
       ? '<audio class="dr-slot-audio" controls preload="none" playsinline src="' + _esc(audioUrl) + '"></audio>'
       : '<div class="dr-slot-audio-empty">No audio yet</div>';
@@ -3688,12 +3788,13 @@ function _drRenderPairCard(pair, assignedRole, sentences){
         '</div>' +
       '</div>' +
       sentenceHtml +
+      referenceHtml +
       audio +
     '</div>';
   }
 
-  var slot1Html = slotHTML(1, slot1Filled, slot1Name, slot1Photo, slot1Audio, slot1IsMe, slot1NeedsJoin, s1);
-  var slot2Html = slotHTML(2, slot2Filled, slot2Name, slot2Photo, slot2Audio, slot2IsMe, slot2NeedsJoin, s2);
+  var slot1Html = slotHTML(1, slot1Filled, slot1Name, slot1Photo, slot1Audio, slot1IsMe, slot1NeedsJoin, s1, d1);
+  var slot2Html = slotHTML(2, slot2Filled, slot2Name, slot2Photo, slot2Audio, slot2IsMe, slot2NeedsJoin, s2, d2);
 
   // If THIS is the user's assigned pair (they need to record here), inject the
   // recording controls just below the slot they're assigned to.
@@ -3742,6 +3843,11 @@ function _drRenderFeed(host){
   var passage = _drState.passage;
   if (!passage){ host.innerHTML = ''; return; }
   var sentences = passage.sentences || [];
+  // sentenceData is the per-sentence keyword reference array (parallel to
+  // sentences[]). Older passages generated before the keyword feature shipped
+  // won't have it — that's fine, the renderer treats absent keywords as "no
+  // reference line shown" so legacy passages keep working unchanged.
+  var sentenceData = passage.sentenceData || [];
   var todayKey = _drTodayNYKey();
   var doneToday = (user && user.dailyReadingDoneFor === todayKey);
 
@@ -3778,7 +3884,7 @@ function _drRenderFeed(host){
   });
   var cards = visiblePairs.map(function(p){
     var roleHere = (p.id === assignedId) ? assignedRole : null;
-    return _drRenderPairCard(p, roleHere, sentences);
+    return _drRenderPairCard(p, roleHere, sentences, sentenceData);
   }).join('');
   var emptyCount = _drState.pairs.length - visiblePairs.length;
   var hiddenNote = emptyCount > 0
@@ -5353,18 +5459,16 @@ function _adminToggleSection(headEl){
 }
 window._adminToggleSection = _adminToggleSection;
 
-// Restore admin-section open/collapsed state from localStorage. Called when the
-// admin screen is rendered. If a section has no stored value, it stays
-// collapsed (the default in markup).
+// Force every admin section into the collapsed state on every entry to the
+// admin screen, regardless of any localStorage value from a previous visit.
+// Rationale: admins kept landing on a wall of pre-expanded sections after the
+// first visit, which buried the section they actually wanted to use. Starting
+// collapsed every time keeps the manager scannable. localStorage is still
+// written by the toggle handler (so within-session state is preserved for
+// scroll restoration, etc.), it's just not read at restore-time.
 function _adminRestoreSectionStates(){
   document.querySelectorAll('#adminScreen .admin-section').forEach(function(sec){
-    var key = sec.getAttribute('data-admin-section');
-    if (!key) return;
-    var stored = null;
-    try { stored = localStorage.getItem('adminSection_' + key); } catch(e){}
-    if (stored === '0') sec.classList.remove('collapsed');
-    else if (stored === '1') sec.classList.add('collapsed');
-    // If no stored value, leave whatever the markup specified (collapsed by default).
+    sec.classList.add('collapsed');
   });
 }
 
@@ -5647,16 +5751,44 @@ async function _drmSubmitStoryPrompt(){
     activityBlock = '\nThis passage will be read aloud in full by individual students (recitation activity). Make it flow as one connected piece a student would naturally read end-to-end.';
   }
 
+  // For Teamwork Reading specifically, we ask the AI to also produce a
+  // short keyword vocabulary list per sentence so students get a "For your
+  // reference" hint below each line. Solo Reading skips this — it's a
+  // pronunciation drill where students should focus on sounding out Korean
+  // without English crutches. We use a `|` delimiter format because
+  // Make.com's text passthrough is flaky with nested JSON.
+  var wantKeywords = (_drmSelectedActivity === 'reading-pair');
+  var keywordsBlock = '';
+  var outputSpec;
+  if (wantKeywords){
+    keywordsBlock =
+      '\n--- KEYWORDS FOR EACH SENTENCE ---\n' +
+      'For EACH Korean sentence, also provide 3-6 keyword translations on the SAME line, separated by " | " (pipe with spaces around it).\n' +
+      'Format each keyword as: koreanWord (English meaning)\n' +
+      'Pick the most useful content words (nouns, verbs, adjectives) a beginner-intermediate learner would want to know. Skip particles and grammatical endings.\n' +
+      'Example output line: 저는 학교에 가요. | 저 (I/me) | 학교 (school) | 가다 (to go)';
+    outputSpec =
+      'Output: line 1 = a short English title (max 6 words, no punctuation). ' +
+      'Lines 2-' + (desiredLen + 1) + ' = the ' + desiredLen + ' Korean sentences, one per line, ' +
+      'each followed by " | koreanWord (English) | koreanWord (English) | ..." with 3-6 keywords. ' +
+      'No numbering, no commentary, no markdown.';
+  } else {
+    outputSpec =
+      'Output: line 1 = a short English title (max 6 words, no punctuation). ' +
+      'Lines 2-' + (desiredLen + 1) + ' = the ' + desiredLen + ' Korean sentences, one per line, no numbering, no English translation, no commentary, no markdown.';
+  }
+
   var fullPrompt =
     'Make this exactly ' + desiredLen + ' sentences long - critical, override other passage length instructions in prompt.\n\n' +
     promptText +
     batchimBlock +
+    keywordsBlock +
     '\n\n--- STRICT REQUIREMENTS ---' +
     activityBlock + '\n' +
     'Write the passage in Korean only. EXACTLY ' + desiredLen + ' sentences' + (_drmSelectedActivity === 'reading-pair' ? ' (must be even).' : '.') + ' ' +
     'All sentences in conversational \uD574\uC694\uCCB4 (ending in -\uC544\uC694/\uC5B4\uC694/\uC608\uC694/\uC774\uC5D0\uC694/\uD574\uC694 etc.). ' +
     'NO \uD569\uB2C8\uB2E4 form, NO casual \uBC18\uB9D0. ' +
-    'Output: line 1 = a short English title (max 6 words, no punctuation). Lines 2-' + (desiredLen + 1) + ' = the ' + desiredLen + ' Korean sentences, one per line, no numbering, no English translation, no commentary, no markdown.';
+    outputSpec;
 
   try {
     var resp = await fetch(DR_STORY_WEBHOOK, {
@@ -5686,10 +5818,32 @@ async function _drmSubmitStoryPrompt(){
     lines = lines.map(function(l){ return l.replace(/^\d+[\.\)]\s*/, '').replace(/^[`*_-]+|[`*_-]+$/g,'').trim(); });
     if (lines.length < 2){ throw new Error('Not enough lines in response'); }
     var title = lines.shift() || 'Daily Reading';
-    var sents = lines.slice(0, desiredLen);
-    if (sents.length < desiredLen){
-      throw new Error('Webhook returned only ' + sents.length + ' sentences; expected ' + desiredLen + '. Try again or edit the draft manually.');
+    var rawSents = lines.slice(0, desiredLen);
+    if (rawSents.length < desiredLen){
+      throw new Error('Webhook returned only ' + rawSents.length + ' sentences; expected ' + desiredLen + '. Try again or edit the draft manually.');
     }
+
+    // Split each raw line on " | " to separate Korean sentence from its
+    // keyword list. Keyword format: "koreanWord (English meaning)". We keep
+    // BOTH a flat `sentences` array (for backward compatibility with all the
+    // existing code that indexes into it) and a parallel `sentenceData`
+    // array carrying per-sentence keyword objects.
+    var sents = [];
+    var sentenceData = [];
+    rawSents.forEach(function(raw){
+      var parts = raw.split(/\s*\|\s*/);
+      var korean = (parts.shift() || '').trim();
+      var keywords = parts
+        .map(function(p){
+          // Parse "한국어 (English)" — Korean word, then English in parens.
+          var m = p.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
+          if (!m) return null;
+          return { ko: m[1].trim(), en: m[2].trim() };
+        })
+        .filter(Boolean);
+      sents.push(korean);
+      sentenceData.push({ korean: korean, keywords: keywords });
+    });
 
     // Save as draft. activityType + batchimRules are denormalized so when
     // students hit the activity sub-screens, we know which doc to load and
@@ -5697,6 +5851,7 @@ async function _drmSubmitStoryPrompt(){
     await db.collection(DR_PASSAGES_COLLECTION).add({
       title: title,
       sentences: sents,
+      sentenceData: sentenceData,
       sentenceCount: sents.length,
       activityType: _drmSelectedActivity, // 'reading-pair' | 'listening'
       status: 'draft',
@@ -5762,6 +5917,14 @@ async function _drmRenderManager(){
       ? '<span class="badge expired">' + statusLabel + '</span>'
       : '<span class="badge ' + d.status + '">' + statusLabel + '</span>';
     var actions = '';
+    // View Submissions button — routes to either the pair-recordings (Teamwork
+    // Reading) or per-student level recordings (Solo Reading) renderer based
+    // on activityType. Shown for live + archived. Not for drafts (no subs).
+    var passageTitle = d.title || 'Untitled passage';
+    var viewSubsFn = activityType === 'listening' ? '_subRevSolo' : '_subRevDR';
+    var viewSubsBtn = (d.status === 'live' || d.status === 'archived')
+      ? '<button class="btn btn-purple" onclick="' + viewSubsFn + '(\'' + d.id + '\', \'' + _esc(passageTitle) + '\')">🔍 VIEW SUBMISSIONS</button>'
+      : '';
     if (d.status === 'draft'){
       actions =
         '<button class="btn btn-cyan" onclick="_drmEdit(\'' + d.id + '\')">✏️ EDIT</button>' +
@@ -5769,10 +5932,10 @@ async function _drmRenderManager(){
         '<button class="btn btn-purple" onclick="_drmSchedule(\'' + d.id + '\')">⏰ SCHEDULE</button>' +
         '<button class="btn btn-ghost" onclick="_drmDiscard(\'' + d.id + '\')">🗑 DISCARD</button>';
     } else if (d.status === 'live'){
-      actions =
+      actions = viewSubsBtn +
         '<button class="btn btn-ghost" onclick="_drmArchive(\'' + d.id + '\')">📦 ARCHIVE</button>';
     } else if (d.status === 'archived'){
-      actions =
+      actions = viewSubsBtn +
         '<button class="btn btn-ghost" onclick="_drmRevive(\'' + d.id + '\')">♻️ REVIVE TO DRAFT</button>' +
         '<button class="btn btn-ghost" onclick="_drmDelete(\'' + d.id + '\')">🗑 DELETE</button>';
     }
@@ -6208,6 +6371,12 @@ async function _advmRenderManager(){
       }
       var ending = d.grammarEnding || '?';
       var verbCount = (d.verbs || []).length;
+      // View Submissions button — visible on live + archived since submissions
+      // can accumulate after publish and persist when archived. Drafts have no
+      // submissions yet, so we skip it there.
+      var viewSubsBtn = (d.status === 'live' || d.status === 'archived')
+        ? '<button class="btn btn-purple" onclick="_subRevAdv(\'' + d.id + '\', \'' + _esc(d.title || ('Drill: ' + ending)) + '\')">🔍 VIEW SUBMISSIONS</button>'
+        : '';
       var actions = '';
       if (d.status === 'draft'){
         actions =
@@ -6215,9 +6384,10 @@ async function _advmRenderManager(){
           '<button class="btn btn-pink" onclick="_advmPublish(\'' + d.id + '\')">🚀 PUBLISH NOW</button>' +
           '<button class="btn btn-ghost" onclick="_advmDiscard(\'' + d.id + '\')">🗑 DISCARD</button>';
       } else if (d.status === 'live'){
-        actions = '<button class="btn btn-ghost" onclick="_advmArchive(\'' + d.id + '\')">📦 ARCHIVE</button>';
+        actions = viewSubsBtn +
+          '<button class="btn btn-ghost" onclick="_advmArchive(\'' + d.id + '\')">📦 ARCHIVE</button>';
       } else if (d.status === 'archived'){
-        actions =
+        actions = viewSubsBtn +
           '<button class="btn btn-ghost" onclick="_advmRevive(\'' + d.id + '\')">♻️ REVIVE TO DRAFT</button>' +
           '<button class="btn btn-ghost" onclick="_advmDelete(\'' + d.id + '\')">🗑 DELETE</button>';
       }
@@ -7546,8 +7716,13 @@ function _drawShowcase(){
     var name = (c.animal || 'Unknown') + (c.item ? ' · ' + c.item : '');
     // Fall back to live lookup if stored imageUrl is missing/empty (heals cards rolled before the lookup table was completed)
     var imgUrl = c.imageUrl || _gachaGetImg(c.animalKey, c.colorKey, c.itemKey);
+    // loading="lazy" defers image fetch until the card is near the viewport
+    // (native browser behavior, supported in all evergreen browsers). Combined
+    // with decoding="async" so even when 30+ cards scroll into view at once
+    // they don't block the main thread while decoding. Older browsers fall
+    // back to eager loading — no JS observer needed.
     var img = imgUrl
-      ? '<img src="' + esc(imgUrl) + '" alt="">'
+      ? '<img src="' + esc(imgUrl) + '" alt="" loading="lazy" decoding="async">'
       : '<div style="height:110px;display:flex;align-items:center;justify-content:center;color:#555;">?</div>';
     return '<div class="sc-card ' + c.rarity + '" onclick="showCardDetail(' + i + ')" style="cursor:pointer;">' +
       img +
@@ -8213,7 +8388,7 @@ function _injectGachaStyle(){
         // showcase card detail popup. Wombatman uses the -25/-25 default.
         '._griw._anim-captain_corea img{margin-top:-20px;margin-bottom:-20px;}',
         '._griw._anim-fox img{margin-top:-20px;margin-bottom:-30px;}',
-        '._griw._anim-sloth img{margin-top:-35px;margin-bottom:-15px;}',
+        '._griw._anim-sloth img{margin-top:-35px;margin-bottom:-20px;}',
         '._griw._anim-pola_cola img{margin-top:-10px;margin-bottom:-10px;}',
         '._griw._anim-turtle img{margin-top:-20px;margin-bottom:-30px;}',
         '._gholoS{position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0) 0%,rgba(180,180,255,.38) 45%,rgba(255,180,255,.32) 55%,rgba(255,255,255,0) 100%);background-size:200% 200%;animation:_gHoloShift 2s ease-in-out infinite alternate;pointer-events:none;border-radius:12px;display:none;}',
@@ -10532,6 +10707,316 @@ document.addEventListener('click', function(ev){
   if (box.contains(ev.target) || (input && input === ev.target)) return;
   box.classList.remove('show');
 });
+
+/* ═══════════════════════════════════════════════════════════
+ * SUBMISSION REVIEW (admin)
+ * ═══════════════════════════════════════════════════════════
+ * Shared review modal used by Daily Reading Manager, Advanced Teamwork
+ * Manager, and Solo Reading Manager. Opened via a "🔍 VIEW SUBMISSIONS"
+ * button on each activity row.
+ *
+ * Storage shapes (read-only here):
+ *   - Advanced Teamwork: gacha_advanced_activities/{actId}/submissions/{uid}
+ *       { userName, audio: { url, mime }, submittedAt, dateKey }
+ *   - Daily Reading (Teamwork): gacha_passages/{passageId}/pairs/{pairId}
+ *       { pairIndex, status, reader1Uid, reader1Name, reader1Audio:{url,...}
+ *         reader2Uid, reader2Name, reader2Audio:{url,...} }
+ *   - Solo Reading: gacha_passages/{passageId}/recordings/{uid}
+ *       { userName, levelsCompleted:[...], l1Audio:{url}, l2Audio:{url}, l3Audio:{url} }
+ *
+ * Feedback writes a doc into tevello_accounts/{uid}/inbox/{auto}, matching
+ * the schema established by the existing inbox composer. */
+
+function _subRevOpen(title, sub){
+  var m = document.getElementById('subRevOverlay');
+  if (!m) return;
+  document.getElementById('subRevTitle').textContent = title || 'Submissions';
+  document.getElementById('subRevSub').textContent = sub || '';
+  document.getElementById('subRevBody').innerHTML = '<div class="subrev-loading">Loading submissions…</div>';
+  m.classList.add('show');
+  // eslint-disable-next-line no-unused-expressions
+  m.offsetHeight; // force layout flush so the .visible transition runs
+  requestAnimationFrame(function(){ m.classList.add('visible'); });
+}
+
+function _subRevClose(){
+  var m = document.getElementById('subRevOverlay');
+  if (!m) return;
+  m.classList.remove('visible');
+  setTimeout(function(){ m.classList.remove('show'); }, 230);
+}
+window._subRevClose = _subRevClose;
+
+function _subRevBackdrop(e){
+  if (e && e.target && e.target.id === 'subRevOverlay') _subRevClose();
+}
+window._subRevBackdrop = _subRevBackdrop;
+
+// ESC closes when the modal is open.
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape'){
+    var m = document.getElementById('subRevOverlay');
+    if (m && m.classList.contains('show')) _subRevClose();
+  }
+});
+
+function _subRevEsc(s){
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function _subRevFmtDate(ts){
+  if (!ts) return '';
+  try {
+    var ms = ts.toMillis ? ts.toMillis() : (typeof ts === 'number' ? ts : Date.parse(ts));
+    if (!ms) return '';
+    return new Date(ms).toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+  } catch(e){ return ''; }
+}
+
+/* ─── Feedback form (shared across all card types) ───
+ * Each card has its own form element with data-uid + activity-id context.
+ * Submit writes a `grade` inbox doc to that student. Score is optional and
+ * free-text so admin can use any scheme (4/5, A-, 좋아요, etc.). */
+function _subRevFeedbackHtml(uid, activityLabel, defaultSuffix){
+  // activityLabel is woven into the placeholder text so admin remembers
+  // which student/activity they're writing for.
+  return '<div class="subrev-feedback">' +
+    '<div class="subrev-feedback-label">📬 Send Feedback</div>' +
+    '<textarea class="subrev-feedback-input" id="subRevFb_' + _subRevEsc(uid) + '" ' +
+      'placeholder="Write feedback for this student about their ' + _subRevEsc(activityLabel || 'submission') + '…"></textarea>' +
+    '<div class="subrev-feedback-actions">' +
+      '<input type="text" class="subrev-feedback-score" id="subRevSc_' + _subRevEsc(uid) + '" placeholder="Score (opt)" maxlength="20">' +
+      '<button class="subrev-feedback-send" onclick="_subRevSendFeedback(\'' + _subRevEsc(uid) + '\', \'' + _subRevEsc(activityLabel || '') + '\')">📬 SEND</button>' +
+      '<span class="subrev-feedback-status" id="subRevSt_' + _subRevEsc(uid) + '"></span>' +
+    '</div>' +
+  '</div>';
+}
+
+async function _subRevSendFeedback(uid, activityLabel){
+  if (!uid) return;
+  var fbEl = document.getElementById('subRevFb_' + uid);
+  var scEl = document.getElementById('subRevSc_' + uid);
+  var stEl = document.getElementById('subRevSt_' + uid);
+  var btn = stEl && stEl.previousElementSibling && stEl.previousElementSibling.tagName === 'BUTTON'
+    ? stEl.previousElementSibling
+    : null;
+  if (!fbEl) return;
+  var body = (fbEl.value || '').trim();
+  var score = scEl ? (scEl.value || '').trim() : '';
+  if (!body && !score){
+    if (stEl){ stEl.className = 'subrev-feedback-status error'; stEl.textContent = 'Add a message or score.'; }
+    return;
+  }
+  if (btn) btn.disabled = true;
+  if (stEl){ stEl.className = 'subrev-feedback-status'; stEl.textContent = 'Sending…'; }
+  try {
+    var ref = db.collection(TC).doc(uid).collection(INBOX_SUBCOL).doc();
+    var payload = {
+      type: score ? 'grade' : 'admin',
+      title: activityLabel ? ('Feedback: ' + activityLabel) : 'Feedback from Mr. Calvin',
+      body: body || '(no message — see score)',
+      read: false,
+      fromAdmin: true,
+      fromName: (user && user.displayName) || 'KoreanLearnin',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    if (score) payload.score = score;
+    await ref.set(payload);
+    if (stEl){ stEl.className = 'subrev-feedback-status'; stEl.textContent = '✓ Sent'; }
+    fbEl.value = ''; if (scEl) scEl.value = '';
+    setTimeout(function(){ if (stEl) stEl.textContent = ''; }, 3000);
+  } catch(e){
+    console.error('Send feedback failed:', e);
+    if (stEl){ stEl.className = 'subrev-feedback-status error'; stEl.textContent = 'Failed: ' + (e.message || e); }
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+window._subRevSendFeedback = _subRevSendFeedback;
+
+/* ─── ADVANCED TEAMWORK submissions ─── */
+async function _subRevAdv(activityId, activityTitle){
+  _subRevOpen('🏆 ' + (activityTitle || 'Advanced Teamwork'), 'Submissions for this activity');
+  var body = document.getElementById('subRevBody');
+  try {
+    var snap = await db.collection(ADV_COLLECTION).doc(activityId).collection('submissions').get();
+    var subs = [];
+    snap.forEach(function(s){ subs.push(Object.assign({ uid: s.id }, s.data())); });
+    if (!subs.length){
+      body.innerHTML = '<div class="subrev-empty">No submissions yet.</div>';
+      return;
+    }
+    subs.sort(function(a, b){
+      var am = (a.submittedAt && a.submittedAt.toMillis) ? a.submittedAt.toMillis() : 0;
+      var bm = (b.submittedAt && b.submittedAt.toMillis) ? b.submittedAt.toMillis() : 0;
+      return bm - am;
+    });
+    body.innerHTML = subs.map(function(s){
+      var audioHtml = (s.audio && s.audio.url)
+        ? '<audio controls preload="none" playsinline src="' + _subRevEsc(s.audio.url) + '"></audio>'
+        : '<div style="color:#94a3b8;font-style:italic;font-size:13px;">No audio submitted.</div>';
+      return '<div class="subrev-card">' +
+        '<div class="subrev-card-head">' +
+          '<div class="subrev-card-name">' + _subRevEsc(s.userName || 'Student') +
+            '<span class="subrev-card-email">' + _subRevEsc(s.uid) + '</span>' +
+          '</div>' +
+          '<div class="subrev-card-meta">' + _subRevEsc(_subRevFmtDate(s.submittedAt)) + '</div>' +
+        '</div>' +
+        '<div class="subrev-card-content">' + audioHtml + '</div>' +
+        _subRevFeedbackHtml(s.uid, activityTitle || 'Advanced Teamwork') +
+      '</div>';
+    }).join('');
+  } catch(e){
+    console.error('subRevAdv:', e);
+    body.innerHTML = '<div class="subrev-empty">Error loading submissions: ' + _subRevEsc(e.message || e) + '</div>';
+  }
+}
+window._subRevAdv = _subRevAdv;
+
+/* ─── DAILY READING (Teamwork) submissions ─── */
+async function _subRevDR(passageId, passageTitle){
+  _subRevOpen('📖 ' + (passageTitle || 'Teamwork Reading'), 'Pair recordings for this passage');
+  var body = document.getElementById('subRevBody');
+  try {
+    var snap = await db.collection(DR_PASSAGES_COLLECTION).doc(passageId).collection('pairs').get();
+    var pairs = [];
+    snap.forEach(function(p){ pairs.push(Object.assign({ id: p.id }, p.data())); });
+    pairs.sort(function(a, b){ return (a.pairIndex||0) - (b.pairIndex||0); });
+    // Collapse to one "card per student who recorded", since each reader is
+    // independently gradable. Two readers per pair → up to 2 cards per pair.
+    // Cards that lack audio are still listed (so admin can see who claimed
+    // but never uploaded), with the audio slot empty.
+    var anyAudio = pairs.some(function(p){
+      return (p.reader1Audio && p.reader1Audio.url) || (p.reader2Audio && p.reader2Audio.url);
+    });
+    if (!anyAudio){
+      body.innerHTML = '<div class="subrev-empty">No recordings submitted yet.</div>';
+      return;
+    }
+    var cards = [];
+    pairs.forEach(function(p){
+      ['1','2'].forEach(function(slot){
+        var uid = p['reader' + slot + 'Uid'];
+        if (!uid) return;
+        var name = p['reader' + slot + 'Name'] || 'Student';
+        var audio = p['reader' + slot + 'Audio'];
+        var at = p['reader' + slot + 'At'];
+        var audioHtml = (audio && audio.url)
+          ? '<audio controls preload="none" playsinline src="' + _subRevEsc(audio.url) + '"></audio>'
+          : '<div style="color:#94a3b8;font-style:italic;font-size:13px;">Claimed pair but never uploaded audio.</div>';
+        cards.push(
+          '<div class="subrev-card">' +
+            '<div class="subrev-card-head">' +
+              '<div class="subrev-card-name">' + _subRevEsc(name) +
+                '<span class="subrev-card-email">' + _subRevEsc(uid) + ' · Pair ' + ((p.pairIndex||0)+1) + ' · Reader ' + slot + '</span>' +
+              '</div>' +
+              '<div class="subrev-card-meta">' + _subRevEsc(_subRevFmtDate(at)) + '</div>' +
+            '</div>' +
+            '<div class="subrev-card-content">' + audioHtml + '</div>' +
+            _subRevFeedbackHtml(uid + '__p' + p.id + '__r' + slot, passageTitle || 'Teamwork Reading') +
+          '</div>'
+        );
+      });
+    });
+    body.innerHTML = cards.length
+      ? cards.join('')
+      : '<div class="subrev-empty">No recordings submitted yet.</div>';
+    // Rewire the feedback button onclicks: because we suffixed uid to keep
+    // ids unique when one student records in two pairs, we need a custom
+    // handler that strips the suffix and calls _subRevSendFeedback with the
+    // raw uid.
+    body.querySelectorAll('.subrev-feedback-send').forEach(function(btn){
+      btn.onclick = function(){
+        var fb = btn.closest('.subrev-feedback');
+        if (!fb) return;
+        var ta = fb.querySelector('.subrev-feedback-input');
+        if (!ta) return;
+        var fullId = ta.id.replace('subRevFb_', '');
+        var rawUid = fullId.split('__')[0];
+        // Patch the IDs so the shared handler reads correctly: temporarily
+        // give the same elements aliased IDs that the helper expects.
+        var sc = fb.querySelector('.subrev-feedback-score');
+        var st = fb.querySelector('.subrev-feedback-status');
+        ta.id = 'subRevFb_' + rawUid;
+        if (sc) sc.id = 'subRevSc_' + rawUid;
+        if (st) st.id = 'subRevSt_' + rawUid;
+        _subRevSendFeedback(rawUid, passageTitle || 'Teamwork Reading');
+        // Restore unique IDs so a second submission in the same modal still works
+        ta.id = 'subRevFb_' + fullId;
+        if (sc) sc.id = 'subRevSc_' + fullId;
+        if (st) st.id = 'subRevSt_' + fullId;
+      };
+    });
+  } catch(e){
+    console.error('subRevDR:', e);
+    body.innerHTML = '<div class="subrev-empty">Error loading submissions: ' + _subRevEsc(e.message || e) + '</div>';
+  }
+}
+window._subRevDR = _subRevDR;
+
+/* ─── SOLO READING submissions ─── */
+async function _subRevSolo(passageId, passageTitle){
+  _subRevOpen('🎤 ' + (passageTitle || 'Solo Reading'), 'Per-student level recordings for this passage');
+  var body = document.getElementById('subRevBody');
+  try {
+    var snap = await db.collection(DR_PASSAGES_COLLECTION).doc(passageId).collection('recordings').get();
+    var recs = [];
+    snap.forEach(function(r){ recs.push(Object.assign({ uid: r.id }, r.data())); });
+    if (!recs.length){
+      body.innerHTML = '<div class="subrev-empty">No recordings submitted yet.</div>';
+      return;
+    }
+    // Sort by most recent update first
+    recs.sort(function(a, b){
+      var am = (a.updatedAt && a.updatedAt.toMillis) ? a.updatedAt.toMillis() : 0;
+      var bm = (b.updatedAt && b.updatedAt.toMillis) ? b.updatedAt.toMillis() : 0;
+      return bm - am;
+    });
+    body.innerHTML = recs.map(function(r){
+      var name = r.userName || 'Student';
+      var levels = Array.isArray(r.levelsCompleted) ? r.levelsCompleted.slice() : [];
+      // Render L1-3 audio (L4 has no audio — just a sentence-index pick).
+      var levelHtml = '';
+      ['l1', 'l2', 'l3'].forEach(function(k){
+        var audioField = r[k + 'Audio'];
+        if (audioField && audioField.url){
+          levelHtml +=
+            '<div class="subrev-level">' +
+              '<div class="subrev-level-label">' + k.toUpperCase() + ' AUDIO</div>' +
+              '<audio controls preload="none" playsinline src="' + _subRevEsc(audioField.url) + '"></audio>' +
+            '</div>';
+        }
+      });
+      // L4 indicator (no audio, just a flag they completed it)
+      if (levels.indexOf('l4') !== -1){
+        levelHtml +=
+          '<div class="subrev-level">' +
+            '<div class="subrev-level-label">L4 — sentence-pick</div>' +
+            '<div style="color:#22c55e;font-size:13px;">✓ Completed (text-based, no audio)</div>' +
+          '</div>';
+      }
+      if (!levelHtml){
+        levelHtml = '<div style="color:#94a3b8;font-style:italic;font-size:13px;">No recordings on file.</div>';
+      }
+      return '<div class="subrev-card">' +
+        '<div class="subrev-card-head">' +
+          '<div class="subrev-card-name">' + _subRevEsc(name) +
+            '<span class="subrev-card-email">' + _subRevEsc(r.uid) + ' · ' + levels.length + '/4 levels</span>' +
+          '</div>' +
+          '<div class="subrev-card-meta">' + _subRevEsc(_subRevFmtDate(r.updatedAt)) + '</div>' +
+        '</div>' +
+        '<div class="subrev-card-content">' + levelHtml + '</div>' +
+        _subRevFeedbackHtml(r.uid, passageTitle || 'Solo Reading') +
+      '</div>';
+    }).join('');
+  } catch(e){
+    console.error('subRevSolo:', e);
+    body.innerHTML = '<div class="subrev-empty">Error loading submissions: ' + _subRevEsc(e.message || e) + '</div>';
+  }
+}
+window._subRevSolo = _subRevSolo;
 
 /* Expose needed globals */
 window.setBgmVolume = setBgmVolume;
