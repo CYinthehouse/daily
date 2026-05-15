@@ -1350,11 +1350,12 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 #dailyAdvancedScreen .dr-empty          { font-size: 16px !important; }
 
 /* Daily picker screen — uses the same dr-banner / menu-card text.
- * NOTE: do NOT bump .menu-count here. The badges use Press Start 2P (pixel
- * font) by design and look correct at their native 10px. Bumping them
- * makes them comically large. */
+ * NOTE: do NOT bump .menu-count or .menu-desc here. The picker tiles must
+ * match the main Gacha Arcade menu cards exactly (same 16px description,
+ * same 10px Press Start 2P badges). Bumping them throws off vertical
+ * rhythm and inflates the cards. The dr-banner sits OUTSIDE the cards so
+ * it can still get a readability bump. */
 #dailyScreen .dr-banner                 { font-size: 17px !important; }
-#dailyScreen .menu-desc                 { font-size: 19px !important; }
 
 /* Point Shop classes */
 #shopScreen .shop-card .shop-desc       { font-size: 18px !important; }
@@ -2616,13 +2617,6 @@ async function doSignup(){
   var emailLower = email.toLowerCase();
   err.style.color = '#888'; err.textContent = 'Creating account...';
   try {
-    // Heads-up to legacy users: don't create a fresh Firebase Auth account if there's
-    // already a legacy doc with this email — guide them to log in instead so they get
-    // the migration flow.
-    var legacy = await db.collection(TC).where('username','==',emailLower).limit(1).get();
-    if (!legacy.empty){
-      err.style.color = '#ff4444'; err.textContent = 'Email already registered! Try logging in.'; return;
-    }
     var cred;
     try {
       cred = await auth.createUserWithEmailAndPassword(emailLower, pass);
@@ -2634,6 +2628,18 @@ async function doSignup(){
         err.style.color = '#ff4444'; err.textContent = 'Password is too weak (6+ characters).'; return;
       }
       err.style.color = '#ff4444'; err.textContent = 'Error: ' + (createErr.message || createErr.code); return;
+    }
+    // Legacy check: now that we're signed in, we can read tevello_accounts. If
+    // a legacy doc already exists with this email, roll back the freshly-created
+    // auth account and tell them to log in instead (so they get the migration flow).
+    try {
+      var legacy = await db.collection(TC).where('username','==',emailLower).limit(1).get();
+      if (!legacy.empty){
+        try { await cred.user.delete(); } catch(e){ console.warn('Rollback auth user failed:', e); }
+        err.style.color = '#ff4444'; err.textContent = 'Email already registered! Try logging in.'; return;
+      }
+    } catch(legacyErr){
+      console.warn('Legacy email check failed (continuing):', legacyErr);
     }
     var uid = cred.user.uid;
     await db.collection(TC).doc(uid).set({
