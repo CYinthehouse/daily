@@ -1418,7 +1418,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .ph-card .ph-soon{font-family:var(--ps);font-size:7px;color:#555;letter-spacing:2px;text-shadow:none;}
 
 /* ── SHOWCASE ── */
-.showcase-stats{background:#0a0a15;border:2px solid rgba(255,255,255,0.15);border-radius:2px;padding:14px 18px;margin-bottom:16px;display:flex;gap:18px;flex-wrap:wrap;font-family:var(--ps);font-size:9px;color:#ccc;box-shadow:3px 3px 0 rgba(0,0,0,0.8);text-shadow:var(--ps-outline-sm);}
+.showcase-stats{background:#0a0a15;border:2px solid rgba(255,255,255,0.15);border-radius:2px;padding:14px 18px;margin-bottom:16px;display:flex;gap:18px;flex-wrap:wrap;font-family:var(--ps);font-size:11px;color:#ccc;box-shadow:3px 3px 0 rgba(0,0,0,0.8);text-shadow:var(--ps-outline-sm);}
 .showcase-stats .stat-num{color:var(--gold);}
 .showcase-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
 /* Base filter button. Color/styling is INTENTIONALLY locked to gray here so
@@ -1428,7 +1428,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
  * !important is required because something in the cascade — possibly an
  * earlier rule we couldn't track down — was still painting YELLOW/GREEN
  * text in their rarity colors even when not active. */
-.filter-btn{background:#0a0a15;border:2px solid rgba(255,255,255,0.25);color:#aaa;padding:8px 12px;border-radius:2px;font-family:var(--ps);font-size:9px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,0.8);transition:all 0.1s;text-shadow:var(--ps-outline-sm);}
+.filter-btn{background:#0a0a15;border:2px solid rgba(255,255,255,0.25);color:#aaa;padding:9px 14px;border-radius:2px;font-family:var(--ps);font-size:11px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,0.8);transition:all 0.1s;text-shadow:var(--ps-outline-sm);}
 .filter-btn.holo:not(.active),
 .filter-btn.pink:not(.active),
 .filter-btn.red:not(.active),
@@ -1704,7 +1704,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   .welcome-egg-wrap{margin:0 -20px -26px -20px;}
   .showcase-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;}
   .sc-card img{height:108px;}
-  .showcase-stats{font-size:8px;gap:10px;}
+  .showcase-stats{font-size:10px;gap:10px;}
   .shop-grid{grid-template-columns:1fr;gap:14px;}
   .shop-card{padding:22px 18px;}
   .shop-card .shop-icon{font-size:38px;}
@@ -6616,7 +6616,29 @@ function _cancelPolicy(){
 
 function renderShop(){
   if (!user) return;
-  _maybeExpireEnrollment().then(function(){ _drawShop(); });
+  // Pull a fresh copy of the user doc on every shop open. The admin may have
+  // set start/end dates, the class level, or admin override since the student
+  // logged in, and renderShop reads from the local user object — without this
+  // refresh, the shop would show stale "Awaiting start date" / status / level
+  // indefinitely until next login. Fire-and-forget: if the refresh fails we
+  // still render with whatever we have.
+  _refreshEnrollmentFromFirestore()
+    .then(function(){ return _maybeExpireEnrollment(); })
+    .then(function(){ _drawShop(); });
+}
+
+// Refresh enrollment + balance fields from Firestore so the shop reflects
+// any admin-side edits made since login. Updates the in-memory user object
+// in place; never throws (errors are logged and swallowed).
+function _refreshEnrollmentFromFirestore(){
+  if (!user || !user.id) return Promise.resolve();
+  return db.collection(TC).doc(user.id).get().then(function(snap){
+    if (!snap.exists) return;
+    var d = snap.data() || {};
+    user.enrollment = d.enrollment || null;
+    if (typeof d.points === 'number') user.points = d.points;
+    if (typeof d.extraHelpCredits === 'number') user.extraHelpCredits = d.extraHelpCredits;
+  }).catch(function(e){ console.warn('Shop enrollment refresh failed:', e); });
 }
 
 function _drawShop(){
