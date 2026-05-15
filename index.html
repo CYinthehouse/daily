@@ -2437,9 +2437,17 @@ function hideAllScreens(){
 }
 
 let _toastTimer = null;
+let _toastBlankTimer = null;
 function toast(msg, col){
   var t = $('toast');
+  // Cancel any in-flight fade-out timer AND the deferred "blank textContent"
+  // timer from a previous toast call. The blanking timer was previously
+  // un-tracked, which created a race: toast A schedules blank-out at T+2.9s;
+  // if toast B fires at T+2.8s, toast B's textContent gets blanked when A's
+  // timer finally fires. Result: empty toast rectangle. Track both timers
+  // and clear them on every new call.
   if (_toastTimer){ clearTimeout(_toastTimer); _toastTimer = null; }
+  if (_toastBlankTimer){ clearTimeout(_toastBlankTimer); _toastBlankTimer = null; }
   t.style.transition = 'none';
   t.style.opacity = '0';
   t.style.borderColor = col || 'var(--cyan)';
@@ -2452,7 +2460,10 @@ function toast(msg, col){
       _toastTimer = setTimeout(function(){
         t.style.transition = 'opacity 0.3s';
         t.style.opacity = '0';
-        setTimeout(function(){ t.textContent = '\u00a0'; }, 300);
+        _toastBlankTimer = setTimeout(function(){
+          t.textContent = '\u00a0';
+          _toastBlankTimer = null;
+        }, 300);
         _toastTimer = null;
       }, 2600);
     });
@@ -6638,13 +6649,32 @@ async function buyExtraHelp(){
     user.extraHelpCredits = (user.extraHelpCredits || 0) + 1;
     toast('+1 WEDNESDAY CLASS CREDIT', 'var(--cyan)');
     playSfx(SOUND_WIN, 0.9);
+    // Build an enrollment-shaped object so every mapping in the existing Make
+    // scenario (which was built around the 6-week payload) resolves cleanly —
+    // no router or new DM template needed. Fields mirror the 6-week shape;
+    // values are populated to make sense for a one-off Wednesday class credit.
+    var nowIso = new Date().toISOString();
+    var enrollment = {
+      type: 'wednesday_class',
+      classLevel: 'Wednesday Group Class',
+      status: 'credit_purchased',
+      purchasedAt: nowIso,
+      startDate: 'Next Wednesday 8 PM ET',
+      endDate: null,
+      adminOverride: false,
+      signedName: user.displayName || user.username || '',
+      signedAt: nowIso,
+      signedPolicyVersion: null
+    };
     fireWebhook('purchase.wednesday_class', {
-      classType: 'Wednesday',
+      classType: 'Wednesday Group Class',
       classDate: null,
       pointsSpent: PRICE_EXTRA_HELP,
       item: 'wednesday_class',
+      enrollment: enrollment,
       newCreditBalance: user.extraHelpCredits,
-      remainingPoints: user.points
+      remainingPoints: user.points,
+      signedName: enrollment.signedName
     });
     updateTopBar(); updateCounts(); _drawShop();
   } catch(e){
