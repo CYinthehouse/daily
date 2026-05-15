@@ -6455,9 +6455,15 @@ function fireWebhook(event, payload){
       timestamp: new Date().toISOString(),
       userId: user ? user.id : null
     }, payload || {});
+    // NOTE: do NOT use mode:'no-cors' here. The browser silently strips
+    // custom headers in no-cors mode — including Content-Type:application/json,
+    // which gets downgraded to text/plain. Make.com only auto-parses JSON
+    // payloads when the Content-Type header survives intact, so without this
+    // the webhook bundle arrives as one giant text field called `value`
+    // instead of as structured fields like `event`, `enrollment.classLevel`,
+    // etc. Make.com webhooks accept CORS requests, so this is safe.
     fetch(MAKE_WEBHOOK_URL, {
       method: 'POST',
-      mode: 'no-cors', // Make.com webhooks don't need CORS; avoids preflight/network errors
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     }).catch(function(e){ console.warn('Webhook failed:', e); });
