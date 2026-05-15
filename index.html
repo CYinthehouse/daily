@@ -255,7 +255,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 /* "How do I earn Points?" link inside the points banner. One size step
  * smaller than the banner text on the daily picker (16px vs banner's 17px).
  * Yellow text with subtle hover underline; opens the points-info modal. */
-.dr-banner-link{display:block;margin-top:10px;text-align:center;font-family:var(--vt);font-size:16px;color:var(--gold);text-decoration:underline;text-decoration-color:rgba(255,215,0,0.4);text-underline-offset:3px;cursor:pointer;background:transparent;border:none;padding:0;text-shadow:var(--ps-outline-sm);transition:color 0.15s,text-decoration-color 0.15s;}
+.dr-banner-link{display:block;width:fit-content;margin:10px auto 0;text-align:center;font-family:var(--vt);font-size:16px;color:var(--gold);text-decoration:underline;text-decoration-color:rgba(255,215,0,0.4);text-underline-offset:3px;cursor:pointer;background:transparent;border:none;padding:0;text-shadow:var(--ps-outline-sm);transition:color 0.15s,text-decoration-color 0.15s;}
 .dr-banner-link:hover{color:#fff5b0;text-decoration-color:var(--gold);}
 .dr-banner-link:focus{outline:none;color:#fff5b0;text-decoration-color:var(--gold);}
 
@@ -1421,7 +1421,17 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .showcase-stats{background:#0a0a15;border:2px solid rgba(255,255,255,0.15);border-radius:2px;padding:14px 18px;margin-bottom:16px;display:flex;gap:18px;flex-wrap:wrap;font-family:var(--ps);font-size:9px;color:#ccc;box-shadow:3px 3px 0 rgba(0,0,0,0.8);text-shadow:var(--ps-outline-sm);}
 .showcase-stats .stat-num{color:var(--gold);}
 .showcase-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+/* Base filter button. Color/styling is INTENTIONALLY locked to gray here so
+ * a filter-btn with a rarity class but no .active (e.g. `filter-btn yellow`)
+ * doesn't inherit the rarity color. Only `.filter-btn.<rarity>.active`
+ * rules below paint the rarity color. */
 .filter-btn{background:#0a0a15;border:2px solid rgba(255,255,255,0.25);color:#aaa;padding:8px 12px;border-radius:2px;font-family:var(--ps);font-size:9px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,0.8);transition:all 0.1s;text-shadow:var(--ps-outline-sm);}
+.filter-btn.holo:not(.active),
+.filter-btn.pink:not(.active),
+.filter-btn.red:not(.active),
+.filter-btn.yellow:not(.active),
+.filter-btn.green:not(.active),
+.filter-btn.blue:not(.active){color:#aaa;border-color:rgba(255,255,255,0.25);background:#0a0a15;}
 .filter-btn:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 rgba(0,0,0,0.8);}
 .filter-btn.active{background:rgba(168,85,247,0.15);border-color:var(--purple);color:var(--purple);}
 .filter-btn.holo.active{border-color:#dde;color:#fff;background:linear-gradient(90deg,rgba(180,180,255,0.18),rgba(255,180,255,0.18));}
@@ -1431,12 +1441,23 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .filter-btn.green.active{border-color:#639922;color:#639922;background:rgba(99,153,34,0.18);}
 .filter-btn.blue.active{border-color:#378add;color:#378add;background:rgba(55,138,221,0.15);}
 
-.showcase-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;}
-.sc-card{background:#0a0a15;border:2px solid;border-radius:2px;padding:12px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform 0.15s,box-shadow 0.15s;box-shadow:3px 3px 0 rgba(0,0,0,0.8);}
+.showcase-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;align-items:stretch;}
+/* Showcase card is a flex column; the .sc-rarity chip uses margin-top:auto
+ * to push itself to the bottom of the card regardless of how tall the
+ * .sc-name above it grew (1-line vs 3-line names). All chips line up at
+ * the same Y position across the grid because the grid uses
+ * align-items:stretch so every card matches the tallest row sibling. */
+.sc-card{background:#0a0a15;border:2px solid;border-radius:2px;padding:12px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform 0.15s,box-shadow 0.15s;box-shadow:3px 3px 0 rgba(0,0,0,0.8);height:100%;}
 .sc-card:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(0,0,0,0.8);}
-.sc-card img{width:100%;height:110px;object-fit:contain;pointer-events:none;user-select:none;-webkit-user-drag:none;}
+/* Showcase thumbnails: gacha render images have extra padding/floor at top
+ * and bottom. Crop 10px off each end so the character fills more of the
+ * thumbnail. clip-path:inset removes the unwanted area without distorting;
+ * height is bumped to 130px so the *visible* cropped region matches the
+ * original 110px slot, keeping layout unchanged. Negative margins absorb
+ * the extra rendered height so the chip below doesn't get pushed down. */
+.sc-card img{width:100%;height:130px;margin:-10px 0;clip-path:inset(10px 0);-webkit-clip-path:inset(10px 0);object-fit:contain;pointer-events:none;user-select:none;-webkit-user-drag:none;}
 .sc-card .sc-name{font-size:12px;color:#fff;text-align:center;line-height:1.3;font-family:var(--vt);word-break:break-word;}
-.sc-card .sc-rarity{font-family:var(--ps);font-size:7px;letter-spacing:1px;padding:4px 8px;border-radius:2px;}
+.sc-card .sc-rarity{font-family:var(--ps);font-size:7px;letter-spacing:1px;padding:4px 8px;border-radius:2px;margin-top:auto;}
 
 .sc-card.holo{border-color:#dde;}
 .sc-card.pink{border-color:#d4537e;}
@@ -1480,12 +1501,31 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .vol-row .vp-val.gold{color:var(--gold);}
 
 /* ── SHOP ── */
-.shop-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;}
-.shop-card{background:#0d0d1f;border:2px solid rgba(255,255,255,0.2);border-radius:2px;padding:40px 28px;text-align:center;box-shadow:4px 4px 0 rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:center;gap:14px;position:relative;overflow:hidden;}
+/* Shop grid uses a fixed 7-row template so every card aligns row-for-row:
+ *   row 1: icon          row 5: level-wrap   (or empty spacer on Wednesday)
+ *   row 2: name          row 6: button
+ *   row 3: desc (flex)   row 7: locked-reason
+ *   row 4: price
+ * Each card declares `display: grid` with `grid-template-rows: subgrid` so its
+ * own rows snap to the shared 7-row track from the parent .shop-grid. End
+ * result: ⭐ 100 lines up with ⭐ 1000, PURCHASE lines up with LOCKED, even
+ * though only the 6-Week card has the CLASS LEVEL dropdown in row 5.
+ *
+ * Subgrid support: Chrome 117+, Safari 16+, Firefox 71+ — all evergreen now.
+ * On older browsers the cards just fall back to their previous flex layout
+ * (slight misalignment of price/button) without breaking. */
+.shop-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  grid-template-rows:repeat(7, auto);
+  grid-auto-rows:auto;
+  gap:24px;
+}
+.shop-card{background:#0d0d1f;border:2px solid rgba(255,255,255,0.2);border-radius:2px;padding:40px 28px;text-align:center;box-shadow:4px 4px 0 rgba(0,0,0,0.8);position:relative;overflow:hidden;display:grid;grid-row:span 7;grid-template-rows:subgrid;gap:14px;justify-items:center;align-items:start;}
 .shop-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--gold);}
 .shop-card .shop-icon{font-size:52px;line-height:1;margin-bottom:6px;}
 .shop-card .shop-name{font-family:var(--ps);font-size:clamp(9px,1.6vw,12px);color:#fff;text-shadow:var(--ps-outline-sm);line-height:1.5;}
-.shop-card .shop-desc{font-size:16px;font-family:var(--vt);color:#fff;line-height:1.7;flex:1;}
+.shop-card .shop-desc{font-size:16px;font-family:var(--vt);color:#fff;line-height:1.7;align-self:start;}
 .shop-card .shop-price{font-family:var(--ps);font-size:16px;text-shadow:var(--ps-outline-sm);margin:6px 0 4px;}
 .shop-card button{width:100%;}
 /* Locked-state buttons: neutral gray so locked items don't look "active" in
@@ -1510,6 +1550,10 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
  * so it's readable without straining. */
 .shop-card .shop-locked-reason{font-size:15px;color:#ff9090;margin-top:10px;text-align:center;font-style:italic;font-family:var(--vt);line-height:1.5;}
 .shop-level-wrap{width:100%;display:flex;flex-direction:column;gap:8px;align-items:stretch;margin-top:4px;}
+/* Invisible spacers — occupy a subgrid row so cards line up element-for-element
+ * even when one card doesn't have a level dropdown or locked-reason. */
+.shop-level-spacer,
+.shop-locked-spacer{width:100%;}
 /* CLASS LEVEL label now matches the description font-size so it doesn't read
  * as a tiny afterthought next to the prose above it. */
 .shop-level-label{font-family:var(--ps);font-size:11px;color:var(--gold);text-shadow:var(--ps-outline-sm);letter-spacing:1px;text-align:left;}
@@ -1518,15 +1562,38 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .shop-level-select:disabled{cursor:not-allowed;opacity:0.6;}
 
 /* ── ENROLLMENT STATUS CARD ── */
-.enroll-card{background:#0d0d1f;border:2px solid var(--gold);border-radius:2px;padding:20px 22px;margin-bottom:20px;box-shadow:4px 4px 0 rgba(0,0,0,0.8);}
-.enroll-card .enroll-title{font-family:var(--ps);font-size:11px;color:var(--gold);text-shadow:var(--ps-outline-sm);margin-bottom:10px;letter-spacing:1px;}
-.enroll-card .enroll-status{display:inline-block;font-family:var(--ps);font-size:9px;padding:4px 10px;border-radius:2px;margin-bottom:10px;letter-spacing:1px;}
+/* ── Enrollment status card ──
+ * Used for the 6-week PENDING / ACTIVE status banner above the shop items.
+ * Design goals:
+ *   1. Yellow is reserved for the status badge ONLY when status=pending.
+ *      Title, border, and meta text use neutral tones so the eye knows
+ *      yellow = "this is a status indicator", not a generic accent.
+ *   2. Border is muted (subtle white-alpha) so the card reads as info,
+ *      not as an alert/warning.
+ *   3. Title row holds [📚 YOUR 6-WEEK PROGRAM] + [PENDING badge] inline
+ *      via flexbox, so the status sits where the eye looks first.
+ *   4. Cancel fee is visually attached to the cancel button via a small
+ *      grouped wrapper (.enroll-cancel-group) — tight spacing, thin
+ *      separator, all inside one box so it reads as a single unit. */
+.enroll-card{background:#0d0d1f;border:2px solid rgba(255,255,255,0.15);border-radius:2px;padding:20px 22px;margin-bottom:20px;box-shadow:4px 4px 0 rgba(0,0,0,0.8);}
+.enroll-card .enroll-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+.enroll-card .enroll-title{font-family:var(--ps);font-size:14px;color:#fff;text-shadow:var(--ps-outline-sm);letter-spacing:1px;}
+.enroll-card .enroll-status{display:inline-block;font-family:var(--ps);font-size:9px;padding:4px 10px;border-radius:2px;letter-spacing:1px;flex-shrink:0;}
 .enroll-card .enroll-status.pending{background:rgba(245,200,66,0.15);color:var(--gold);border:1px solid var(--gold);}
 .enroll-card .enroll-status.active{background:rgba(57,255,20,0.15);color:var(--green);border:1px solid var(--green);}
 .enroll-card .enroll-status.completed{background:rgba(136,136,136,0.15);color:#888;border:1px solid #888;}
 .enroll-card .enroll-status.cancelled{background:rgba(255,119,119,0.15);color:var(--pink);border:1px solid var(--pink);}
 .enroll-card .enroll-meta{font-size:15px;color:#ddd;line-height:1.8;margin-bottom:14px;}
-.enroll-card .enroll-actions{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.enroll-card .enroll-meta .awaiting{color:#aaa;font-style:italic;}
+.enroll-card .enroll-actions{display:flex;flex-direction:column;align-items:stretch;gap:0;}
+/* Cancel button + fee form a single visual unit. Button bottom edge meets
+ * the fee strip with no gap, and the fee strip uses a subtle background
+ * tint to read as an extension of the button rather than a floating note. */
+.enroll-cancel-group{display:flex;flex-direction:column;align-items:stretch;max-width:340px;margin:0 auto;}
+.enroll-cancel-group .btn{border-bottom-left-radius:0;border-bottom-right-radius:0;margin-bottom:0;}
+.enroll-cancel-fee{font-size:13px;color:#aaa;text-align:center;padding:8px 12px;background:rgba(255,119,119,0.06);border:1px solid rgba(255,119,119,0.25);border-top:none;border-bottom-left-radius:4px;border-bottom-right-radius:4px;line-height:1.4;}
+.enroll-cancel-fee .fee-amount{color:#ff7777;font-weight:600;}
+.enroll-cancel-fee.locked-reason{background:rgba(136,136,136,0.06);border-color:rgba(136,136,136,0.25);font-style:italic;color:#888;}
 
 /* ── ADMIN ── */
 .section-head.admin .sh-title{color:var(--pink);}
@@ -1554,15 +1621,35 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .admin-row .ar-actions{display:flex;gap:6px;flex-wrap:wrap;}
 
 /* ── POLICY MODAL ── */
-.policy-overlay{position:fixed;inset:0;z-index:10000010;background:rgba(0,0,0,0.85);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px;font-family:var(--vt);animation:weFade 0.25s ease both;}
+/* Policy overlay fades in AND blurs in over 220ms to match the points-info
+ * modal animation. The blur is animated via the `policyBlurIn` keyframe
+ * (background opacity + backdrop-filter blur both ramp from 0 to their
+ * final values) rather than baked in from frame 1, so the menu visibly
+ * recedes when the modal opens. */
+.policy-overlay{position:fixed;inset:0;z-index:10000010;background:rgba(0,0,0,0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);display:flex;align-items:center;justify-content:center;padding:20px;font-family:var(--vt);animation:policyBlurIn 0.22s ease forwards;}
+@keyframes policyBlurIn{
+  from{background:rgba(0,0,0,0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);}
+  to{background:rgba(0,0,0,0.85);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);}
+}
 .policy-modal{background:#0d0d1f;border:3px solid var(--gold);border-radius:2px;max-width:560px;width:100%;max-height:calc(100vh - 40px);display:flex;flex-direction:column;box-shadow:0 0 40px rgba(255,215,0,0.35),6px 6px 0 rgba(0,0,0,0.85);overflow:hidden;animation:wePop 0.3s cubic-bezier(0.34,1.56,0.64,1) both;}
-.policy-head{padding:20px 24px 16px;border-bottom:2px solid rgba(255,215,0,0.25);background:#0a0a1a;}
+.policy-head{padding:20px 24px 16px;border-bottom:2px solid rgba(255,215,0,0.25);background:#0a0a1a;flex-shrink:0;}
 .policy-title{font-family:var(--ps);font-size:13px;line-height:1.6;color:var(--gold);text-shadow:var(--ps-outline-sm);letter-spacing:1px;text-align:center;}
 .policy-sub{font-family:var(--vt);font-size:13px;color:#ccc;text-align:center;margin-top:8px;}
-.policy-body{padding:18px 24px;overflow-y:auto;flex:1;font-size:14px;color:#ddd;line-height:1.7;}
+/* Body is the ONLY scrollable region. `min-height:0` is the magic property
+ * that makes flex children actually shrink and trigger overflow:auto — without
+ * it, a flex child's default min-height:auto sizes to content and the overflow
+ * never engages, which made the policy text spill past the modal's clipped
+ * area. Hard `max-height` cap makes the scrollable area predictable.
+ * Custom gold scrollbar so students can see at a glance that the body scrolls
+ * (default scrollbars on dark bg are nearly invisible). */
+.policy-body{padding:18px 24px;overflow-y:auto;flex:1 1 auto;min-height:0;max-height:42vh;font-size:14px;color:#ddd;line-height:1.7;scrollbar-width:thin;scrollbar-color:var(--gold) rgba(255,215,0,0.08);}
+.policy-body::-webkit-scrollbar{width:10px;}
+.policy-body::-webkit-scrollbar-track{background:rgba(255,215,0,0.06);border-left:1px solid rgba(255,215,0,0.15);}
+.policy-body::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#ffe066,#cc9900);border-radius:0;border:2px solid #0d0d1f;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.4);}
+.policy-body::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,var(--gold),#a87800);}
 .policy-body p{margin:0 0 14px;}
 .policy-body p:last-child{margin-bottom:0;}
-.policy-signoff{padding:18px 24px;border-top:2px solid rgba(255,215,0,0.25);background:#0a0a1a;display:flex;flex-direction:column;gap:14px;}
+.policy-signoff{padding:18px 24px;border-top:2px solid rgba(255,215,0,0.25);background:#0a0a1a;display:flex;flex-direction:column;gap:14px;flex-shrink:0;}
 .policy-check{display:flex;align-items:flex-start;gap:10px;cursor:pointer;user-select:none;}
 .policy-check input[type=checkbox]{position:absolute;opacity:0;pointer-events:none;}
 .policy-check-box{flex-shrink:0;width:22px;height:22px;border:2px solid var(--gold);background:#0d0d1f;display:inline-block;position:relative;margin-top:1px;box-shadow:2px 2px 0 rgba(0,0,0,0.8);}
@@ -1574,7 +1661,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .policy-name-input{width:100%;padding:12px 14px;background:#0d0d1f;border:2px solid rgba(255,215,0,0.4);border-radius:2px;color:#fff;font-family:var(--vt);font-size:16px;outline:none;box-shadow:2px 2px 0 rgba(0,0,0,0.8);box-sizing:border-box;}
 .policy-name-input:focus{border-color:var(--gold);}
 .policy-summary{font-size:14px;color:#ccc;background:rgba(255,215,0,0.06);border:1px dashed rgba(255,215,0,0.3);border-radius:2px;padding:12px 14px;line-height:1.7;}
-.policy-actions{padding:16px 24px 20px;display:flex;gap:12px;justify-content:flex-end;border-top:2px solid rgba(255,215,0,0.15);background:#0a0a1a;flex-wrap:wrap;}
+.policy-actions{padding:16px 24px 20px;display:flex;gap:12px;justify-content:flex-end;border-top:2px solid rgba(255,215,0,0.15);background:#0a0a1a;flex-wrap:wrap;flex-shrink:0;}
 .policy-actions .btn{min-width:130px;}
 
 /* ── MOBILE ── */
@@ -1603,7 +1690,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   .welcome-card{padding:14px 20px 26px;}
   .welcome-egg-wrap{margin:0 -20px -26px -20px;}
   .showcase-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;}
-  .sc-card img{height:88px;}
+  .sc-card img{height:108px;}
   .showcase-stats{font-size:8px;gap:10px;}
   .shop-grid{grid-template-columns:1fr;gap:14px;}
   .shop-card{padding:22px 18px;}
@@ -1616,7 +1703,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   .policy-modal{max-height:calc(100vh - 24px);}
   .policy-head{padding:16px 18px 12px;}
   .policy-title{font-size:11px;}
-  .policy-body{padding:14px 18px;font-size:13px;}
+  .policy-body{padding:14px 18px;font-size:13px;max-height:36vh;}
   .policy-signoff{padding:14px 18px;gap:12px;}
   .policy-actions{padding:12px 18px 16px;}
   .policy-actions .btn{flex:1;min-width:0;}
@@ -6534,23 +6621,34 @@ function _drawShop(){
     var policy = _cancelPolicy();
     var startLine = enr.startDate
       ? 'Class starts: <b>' + _fmtDate(enr.startDate) + '</b>'
-      : '<span style="color:#f5c842;">⏳ Awaiting start date from admin</span>';
+      : '<span class="awaiting">⏳ Awaiting start date from admin</span>';
     var endLine = enr.endDate ? '<br>Ends: <b>' + _fmtDate(enr.endDate) + '</b>' : '';
     var levelLine = enr.classLevel ? '<br>Level: <b>' + esc(enr.classLevel) + '</b>' : '';
 
+    // Cancel button + fee strip are rendered as a single grouped unit
+    // (.enroll-cancel-group) so the fee visually attaches to the button
+    // edge instead of floating beneath it.
     var cancelBtn;
     if (policy.canCancel){
-      cancelBtn = '<button class="btn btn-danger btn-sm" onclick="cancelEnrollment()">✕ CANCEL ENROLLMENT</button>' +
-                  '<div style="font-size:12px;color:#aaa;margin-top:6px;text-align:center;">Cancellation fee: <span style="color:#ff7777;">−' + CANCEL_FEE_POINTS + ' pts</span></div>';
+      cancelBtn =
+        '<div class="enroll-cancel-group">' +
+          '<button class="btn btn-danger btn-sm" onclick="cancelEnrollment()">✕ CANCEL ENROLLMENT</button>' +
+          '<div class="enroll-cancel-fee">Cancellation fee: <span class="fee-amount">−' + CANCEL_FEE_POINTS + ' pts</span></div>' +
+        '</div>';
     } else {
-      cancelBtn = '<button class="btn btn-danger btn-sm" disabled title="' + esc(policy.reason) + '" style="opacity:0.45;cursor:not-allowed;">✕ CANCEL ENROLLMENT</button>' +
-                  '<div style="font-size:12px;color:#888;margin-top:6px;text-align:center;font-style:italic;">' + esc(policy.reason) + '</div>';
+      cancelBtn =
+        '<div class="enroll-cancel-group">' +
+          '<button class="btn btn-danger btn-sm" disabled title="' + esc(policy.reason) + '">✕ CANCEL ENROLLMENT</button>' +
+          '<div class="enroll-cancel-fee locked-reason">' + esc(policy.reason) + '</div>' +
+        '</div>';
     }
 
     statusHtml =
       '<div class="enroll-card">' +
-        '<div class="enroll-title">📚 YOUR 6-WEEK PROGRAM</div>' +
-        '<div class="enroll-status ' + enr.status + '">' + enr.status.toUpperCase() + '</div>' +
+        '<div class="enroll-title-row">' +
+          '<div class="enroll-title">📚 YOUR 6-WEEK ENROLLMENT</div>' +
+          '<div class="enroll-status ' + enr.status + '">' + enr.status.toUpperCase() + '</div>' +
+        '</div>' +
         '<div class="enroll-meta">' + startLine + endLine + levelLine + '</div>' +
         '<div class="enroll-actions">' + cancelBtn + '</div>' +
       '</div>';
@@ -6562,18 +6660,25 @@ function _drawShop(){
   var creditsHtml = '';
 
   // ── Wednesday Extra Help card ──
+  // Empty placeholder divs occupy the same subgrid rows that the 6-Week card
+  // uses for its CLASS LEVEL dropdown and locked-reason. Without them the
+  // Wednesday card's button would jump up a row and break alignment with the
+  // 6-Week PURCHASE/LOCKED button across the .shop-grid subgrid.
   var canBuyHelp = pts >= PRICE_EXTRA_HELP;
   var helpReason = canBuyHelp ? '' : 'Not enough points.';
   var helpCardHtml =
     '<div class="shop-card"' + (helpReason ? ' title="' + esc(helpReason) + '"' : '') + '>' +
       '<div class="shop-icon">🎟️</div>' +
       '<div class="shop-name">WEDNESDAY<br>EXTRA HELP</div>' +
-      '<div class="shop-desc">Group class with Mr. Calvin — Wednesdays at 8 PM ET (New York). Ask any questions you have.</div>' +
+      '<div class="shop-desc">Group class w/ Mr. Calvin, Wednesdays at 8 PM Eastern (NY). Ask any questions you have.</div>' +
       '<div class="shop-price"><span style="color:var(--gold);">⭐ ' + PRICE_EXTRA_HELP + '</span> <span style="color:#888;font-size:13px;">pts</span></div>' +
+      '<div class="shop-level-spacer" aria-hidden="true"></div>' +
       '<button class="btn btn-cyan btn-md ' + (canBuyHelp ? 'sparkle-btn' : '') + '" onclick="buyExtraHelp()" ' + (canBuyHelp ? '' : 'disabled') + '>' +
         (canBuyHelp ? 'PURCHASE' : 'LOCKED') +
       '</button>' +
-      (helpReason ? '<div class="shop-locked-reason">' + esc(helpReason) + '</div>' : '') +
+      (helpReason
+        ? '<div class="shop-locked-reason">' + esc(helpReason) + '</div>'
+        : '<div class="shop-locked-spacer" aria-hidden="true"></div>') +
     '</div>';
 
   // ── 6-Week Program card (with class level selector) ──
@@ -6602,25 +6707,14 @@ function _drawShop(){
       '<button class="btn btn-gold btn-md ' + (canBuy6All ? 'sparkle-btn' : '') + '" onclick="buySixWeek()" ' + (canBuy6All ? '' : 'disabled') + '>' +
         (canBuy6All ? 'PURCHASE' : 'LOCKED') +
       '</button>' +
-      (sixReason ? '<div class="shop-locked-reason">' + esc(sixReason) + '</div>' : '') +
+      (sixReason
+        ? '<div class="shop-locked-reason">' + esc(sixReason) + '</div>'
+        : '<div class="shop-locked-spacer" aria-hidden="true"></div>') +
     '</div>';
 
   var itemsHtml = helpCardHtml + sixCardHtml;
 
-  // Admin-only dev controls (testing the purchase flows). Renders a small
-  // dashed-border card at the bottom with a +1000 points button. Gated by
-  // user.isAdmin so it never appears to students. Safe to leave in prod.
-  var devHtml = '';
-  if (user && user.isAdmin){
-    devHtml =
-      '<div style="margin-top:24px;padding:14px 16px;border:2px dashed #ff77ff;border-radius:8px;background:rgba(255,119,255,0.05);">' +
-        '<div style="font-family:var(--ps);font-size:10px;color:#ff77ff;text-shadow:var(--ps-outline-sm);margin-bottom:8px;letter-spacing:1px;">🛠️ DEV CONTROLS (ADMIN ONLY)</div>' +
-        '<div style="font-size:12px;color:#aaa;margin-bottom:10px;">For testing purchase flows. Not visible to students.</div>' +
-        '<button class="btn btn-pink btn-sm" onclick="devAddPoints(1000)">+1000 POINTS</button>' +
-      '</div>';
-  }
-
-  grid.innerHTML = statusHtml + creditsHtml + '<div class="shop-grid">' + itemsHtml + '</div>' + devHtml;
+  grid.innerHTML = statusHtml + creditsHtml + '<div class="shop-grid">' + itemsHtml + '</div>';
 
   // Attach sparkles to any new sparkle-btn items
   setTimeout(function(){
@@ -6689,28 +6783,6 @@ async function buyExtraHelp(){
   }
 }
 window.buyExtraHelp = buyExtraHelp;
-
-/* ═══ DEV: GRANT POINTS ═══
- * Admin-only helper to top up points for testing the shop. Gated server-side
- * by the wildcard admin rule in Firestore — non-admins would be blocked even
- * if they manually called this. Skips webhook/sound/toast styling for the
- * 6-week purchase since it's not a real purchase. */
-async function devAddPoints(n){
-  if (!user || !user.isAdmin){ toast('Admin only.', 'var(--pink)'); return; }
-  var amt = (typeof n === 'number' && n > 0) ? n : 1000;
-  try {
-    await db.collection(TC).doc(user.id).update({
-      points: firebase.firestore.FieldValue.increment(amt)
-    });
-    user.points = (user.points || 0) + amt;
-    toast('+' + amt + ' POINTS (DEV)', 'var(--pink)');
-    updateTopBar(); updateCounts(); _drawShop();
-  } catch(e){
-    toast('Dev grant failed: ' + (e.message || e), 'var(--pink)');
-    console.error('devAddPoints:', e);
-  }
-}
-window.devAddPoints = devAddPoints;
 
 /* ═══ BUY: 6-WEEK PROGRAM ═══ */
 /* ═══ POLICY TEXT (6-Week) ═══ */
@@ -7491,7 +7563,6 @@ function showCardDetail(idx){
   ro.innerHTML =
     '<div class="_grc" data-rarity="' + color.rarity + '" style="position:relative;">' +
       closeBtnHtml +
-      '<span class="_grb ' + color.badge + '">' + esc(color.name) + '</span>' +
       '<div class="_griw _detail _anim-' + animal.key + holoClass + glitterClass + '">' +
         '<div class="_gholoS"></div>' +
         '<div class="_gspov" id="_gspov_detail"></div>' +
@@ -8093,12 +8164,22 @@ function _injectGachaStyle(){
         '.badge-holo{background:linear-gradient(90deg,#b0b0ff,#e0e0ff,#ffb0ff,#b0b0ff);background-size:200% 100%;animation:_gHoloBdg 2s linear infinite;color:#222;}',
         '@keyframes _gHoloBdg{0%{background-position:0% 50%}100%{background-position:200% 50%}}',
         '.badge-pink{background:#d4537e;color:#fff;}.badge-red{background:#e24b4a;color:#fff;}.badge-yellow{background:#f5c842;color:#111;}.badge-green{background:#639922;color:#fff;}.badge-blue{background:#378add;color:#fff;}',
-        '._griw{width:153px;border-radius:10px;border:1px solid #222;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}',
+        '._griw{width:140px;border-radius:10px;border:1px solid #222;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}',
         '._griw img{width:100%;height:auto;display:block;margin-top:-20px;margin-bottom:-20px;pointer-events:none;-webkit-user-drag:none;user-select:none;}',
-        '._griw._detail{width:280px;}',
+        '._griw._detail{width:250px;}',
         '._griw._detail img{width:100%;height:auto;margin-top:-20px;margin-bottom:-20px;}',
-        // Pola Cola images crop tighter than the others — only trim 10px top + 10px bottom
-        '._griw._anim-pola_cola img{margin-top:-10px;margin-bottom:-10px;}',
+        // Per-character crop overrides. Wombatman uses the -20/-20 default.
+        // These apply to both the egg-crack reveal popup (._griw img) AND
+        // the showcase card detail popup (._griw._detail img) since both
+        // use the same negative-margin clipping system inside an
+        // overflow:hidden wrapper. Each character's source render sits
+        // differently in the frame, so tweak top/bottom to keep the
+        // character's head + feet in view across both popup sizes.
+        '._griw._anim-captain_corea img{margin-top:-15px;margin-bottom:-15px;}',
+        '._griw._anim-fox img{margin-top:-15px;margin-bottom:-25px;}',
+        '._griw._anim-sloth img{margin-top:-30px;margin-bottom:-10px;}',
+        '._griw._anim-pola_cola img{margin-top:-5px;margin-bottom:-5px;}',
+        '._griw._anim-turtle img{margin-top:-15px;margin-bottom:-25px;}',
         '._gholoS{position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0) 0%,rgba(180,180,255,.38) 45%,rgba(255,180,255,.32) 55%,rgba(255,255,255,0) 100%);background-size:200% 200%;animation:_gHoloShift 2s ease-in-out infinite alternate;pointer-events:none;border-radius:12px;display:none;}',
         '._griw.holo ._gholoS{display:block;}',
         '@keyframes _gHoloShift{0%{background-position:0% 0%}100%{background-position:100% 100%}}',
@@ -8117,14 +8198,18 @@ function _injectGachaStyle(){
         '._gholosc{position:absolute;inset:0;border-radius:12px;pointer-events:none;opacity:0;background:linear-gradient(115deg,transparent 0%,rgba(255,100,200,0) 30%,rgba(150,220,255,.3) 42%,rgba(255,255,255,.5) 50%,rgba(180,255,150,.3) 58%,rgba(255,180,100,0) 70%,transparent 100%);background-size:300% 300%;mix-blend-mode:screen;animation:_gHoloScan 5s ease-in-out infinite;}',
         '._griw.holo ._gholosc{display:block;}',
         '@keyframes _gHoloScan{0%{background-position:150% 150%;opacity:0}5%{opacity:1}14%{background-position:-50% -50%;opacity:0}100%{background-position:-50% -50%;opacity:0}}',
-        '._grc{background:#0e0e0e;border-radius:16px;padding:14px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;transform:scale(.85);transition:transform .4s cubic-bezier(.34,1.56,.64,1);max-width:340px;width:90vw;max-height:650px;overflow:hidden;}',
+        '._grc{background:#0e0e0e;border-radius:16px;padding:14px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;transform:scale(.85);transition:transform .4s cubic-bezier(.34,1.56,.64,1);max-width:420px;width:92vw;max-height:650px;overflow:hidden;}',
         '._gctr{display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:2px;color:#ccc;font-size:10px;letter-spacing:.1em;}',
         '._gcmb{font-size:8px;color:#ccc;letter-spacing:.06em;text-align:center;border-top:1px solid #333;padding-top:8px;margin-top:2px;width:100%;}',
         '._gcmb span{color:#f5c842;}',
         '._grrws{display:flex;flex-direction:column;gap:6px;width:100%;}',
         '._grrw{display:flex;align-items:center;gap:8px;font-size:7px;letter-spacing:.05em;text-transform:uppercase;padding:8px 10px;border-radius:6px;background:#141414;border:1px solid #2a2a2a;}',
         '._grrw ._grrl{flex:0 0 72px;color:#aaa;white-space:nowrap;border-right:1px solid #444;padding-right:8px;}',
-        '._grrw ._grrn{flex:1;color:#fff;font-size:8px;line-height:1.4;word-break:break-word;}',
+        // word-break:normal + overflow-wrap:break-word ensures the value text
+        // wraps ONLY at whitespace, never mid-word. Previously break-word was
+        // letting things like "CALICO CAT KIGURUMI" shatter into 4 lines
+        // ("CALICO / CAT / KIGURU / MI") when squeezed into a narrow column.
+        '._grrw ._grrn{flex:1;color:#fff;font-size:8px;line-height:1.4;word-break:normal;overflow-wrap:break-word;hyphens:none;}',
         '._grrw ._grrt{font-size:7px;padding:3px 6px;border-radius:4px;white-space:nowrap;text-align:center;flex-shrink:0;}',
         '._grrw ._grrp{color:#f5c842;font-size:8px;white-space:nowrap;text-align:right;flex-shrink:0;min-width:42px;}',
         '.tier-3{background:#1a0808;color:#e24b4a;border:1px solid #e24b4a55;}.tier-2{background:#081208;color:#639922;border:1px solid #63992255;}.tier-1{background:#08080e;color:#378add;border:1px solid #378add55;}',
@@ -8849,7 +8934,6 @@ function _revealCharacter(roll){
 
         var html =
             '<div class="_grc" data-rarity="' + roll.color.rarity + '">' +
-                '<span class="_grb ' + roll.color.badge + '">' + esc(roll.color.name) + '</span>' +
                 '<div class="_griw _anim-' + roll.animal.key + holoClass + glitterClass + '">' +
                     '<div class="_gholoS"></div>' +
                     '<div class="_gspov" id="_gspov"></div>' +
