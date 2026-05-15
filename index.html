@@ -1391,8 +1391,8 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
  * it can still get a readability bump. */
 #dailyScreen .dr-banner                 { font-size: 17px !important; }
 
-/* Point Shop classes */
-#shopScreen .shop-card .shop-desc       { font-size: 18px !important; }
+/* Point Shop classes — descriptions use the base 16px from .shop-card .shop-desc
+ * to match the Gacha Arcade menu cards exactly. No override needed. */
 
 /* Gacha Showcase classes */
 #showcaseScreen .sc-card .sc-name       { font-size: 15px !important; }
@@ -1480,15 +1480,39 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .vol-row .vp-val.gold{color:var(--gold);}
 
 /* ── SHOP ── */
-.shop-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;}
-.shop-card{background:#0d0d1f;border:2px solid rgba(255,255,255,0.2);border-radius:2px;padding:28px 22px;text-align:center;box-shadow:4px 4px 0 rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:center;gap:12px;}
-.shop-card .shop-icon{font-size:46px;line-height:1;}
-.shop-card .shop-name{font-family:var(--ps);font-size:12px;color:#fff;text-shadow:var(--ps-outline-sm);line-height:1.5;}
-.shop-card .shop-desc{font-size:15px;color:#ddd;line-height:1.6;flex:1;}
+.shop-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;}
+.shop-card{background:#0d0d1f;border:2px solid rgba(255,255,255,0.2);border-radius:2px;padding:40px 28px;text-align:center;box-shadow:4px 4px 0 rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:center;gap:14px;position:relative;overflow:hidden;}
+.shop-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--gold);}
+.shop-card .shop-icon{font-size:52px;line-height:1;margin-bottom:6px;}
+.shop-card .shop-name{font-family:var(--ps);font-size:clamp(9px,1.6vw,12px);color:#fff;text-shadow:var(--ps-outline-sm);line-height:1.5;}
+.shop-card .shop-desc{font-size:16px;font-family:var(--vt);color:#fff;line-height:1.7;flex:1;}
 .shop-card .shop-price{font-family:var(--ps);font-size:16px;text-shadow:var(--ps-outline-sm);margin:6px 0 4px;}
 .shop-card button{width:100%;}
-.shop-level-wrap{width:100%;display:flex;flex-direction:column;gap:6px;align-items:stretch;margin-top:4px;}
-.shop-level-label{font-family:var(--ps);font-size:9px;color:var(--gold);text-shadow:var(--ps-outline-sm);letter-spacing:1px;text-align:left;}
+/* Locked-state buttons: neutral gray so locked items don't look "active" in
+ * cyan or gold. The wrapper card no longer dims as a whole — only the button
+ * goes gray + cursor changes. Applies to both Wednesday and 6-week tiles. */
+.shop-card .btn:disabled,
+.shop-card button:disabled{
+  background:#3a3a4a !important;
+  border-color:#4a4a5a !important;
+  color:#888 !important;
+  text-shadow:none !important;
+  cursor:not-allowed !important;
+  opacity:1 !important;
+}
+.shop-card .btn:disabled:hover,
+.shop-card button:disabled:hover{
+  background:#3a3a4a !important;
+  border-color:#4a4a5a !important;
+  transform:none !important;
+}
+/* "Not enough points" / locked-reason explanation. Bumped from 12px to 15px
+ * so it's readable without straining. */
+.shop-card .shop-locked-reason{font-size:15px;color:#ff9090;margin-top:10px;text-align:center;font-style:italic;font-family:var(--vt);line-height:1.5;}
+.shop-level-wrap{width:100%;display:flex;flex-direction:column;gap:8px;align-items:stretch;margin-top:4px;}
+/* CLASS LEVEL label now matches the description font-size so it doesn't read
+ * as a tiny afterthought next to the prose above it. */
+.shop-level-label{font-family:var(--ps);font-size:11px;color:var(--gold);text-shadow:var(--ps-outline-sm);letter-spacing:1px;text-align:left;}
 .shop-level-select{width:100%;padding:12px 14px;background:#0a0a1a;border:2px solid rgba(255,215,0,0.4);border-radius:2px;color:#fff;font-family:var(--vt);font-size:16px;outline:none;box-shadow:2px 2px 0 rgba(0,0,0,0.8);cursor:pointer;appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50%),linear-gradient(135deg,var(--gold) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 12px) 50%;background-size:6px 6px,6px 6px;background-repeat:no-repeat;padding-right:36px;}
 .shop-level-select:focus{border-color:var(--gold);}
 .shop-level-select:disabled{cursor:not-allowed;opacity:0.6;}
@@ -6515,30 +6539,24 @@ function _drawShop(){
       '</div>';
   }
 
-  // Extra Help credits indicator (if any)
+  // Wednesday Class credits indicator removed per request. Credit balance is
+  // still tracked on the user doc (user.extraHelpCredits) and shown in the
+  // webhook payload to Make.com; just no on-screen card.
   var creditsHtml = '';
-  if (helpCredits > 0){
-    creditsHtml =
-      '<div class="enroll-card" style="border-color:var(--cyan);">' +
-        '<div class="enroll-title" style="color:var(--cyan);">🎟️ WEDNESDAY CLASS CREDITS</div>' +
-        '<div style="font-family:var(--ps);font-size:24px;color:var(--cyan);text-align:center;margin:12px 0;text-shadow:var(--ps-outline-sm);">' + helpCredits + '</div>' +
-        '<div style="font-size:13px;color:#a8d6f0;text-align:center;">Redeem in Discord to join a Wednesday group class with Mr. Calvin.</div>' +
-      '</div>';
-  }
 
   // ── Wednesday Extra Help card ──
   var canBuyHelp = pts >= PRICE_EXTRA_HELP;
   var helpReason = canBuyHelp ? '' : 'Not enough points.';
   var helpCardHtml =
-    '<div class="shop-card"' + (helpReason ? ' title="' + esc(helpReason) + '"' : '') + ' style="' + (canBuyHelp ? '' : 'opacity:0.5;cursor:not-allowed;') + '">' +
+    '<div class="shop-card"' + (helpReason ? ' title="' + esc(helpReason) + '"' : '') + '>' +
       '<div class="shop-icon">🎟️</div>' +
       '<div class="shop-name">WEDNESDAY<br>EXTRA HELP</div>' +
       '<div class="shop-desc">Group class with Mr. Calvin — Wednesdays at 8 PM ET (New York). Ask any questions you have.</div>' +
       '<div class="shop-price"><span style="color:var(--gold);">⭐ ' + PRICE_EXTRA_HELP + '</span> <span style="color:#888;font-size:13px;">pts</span></div>' +
-      '<button class="btn btn-cyan btn-md sparkle-btn" onclick="buyExtraHelp()" ' + (canBuyHelp ? '' : 'disabled') + '>' +
+      '<button class="btn btn-cyan btn-md ' + (canBuyHelp ? 'sparkle-btn' : '') + '" onclick="buyExtraHelp()" ' + (canBuyHelp ? '' : 'disabled') + '>' +
         (canBuyHelp ? 'PURCHASE' : 'LOCKED') +
       '</button>' +
-      (helpReason ? '<div style="font-size:12px;color:#ff9090;margin-top:8px;text-align:center;font-style:italic;">' + esc(helpReason) + '</div>' : '') +
+      (helpReason ? '<div class="shop-locked-reason">' + esc(helpReason) + '</div>' : '') +
     '</div>';
 
   // ── 6-Week Program card (with class level selector) ──
@@ -6553,7 +6571,7 @@ function _drawShop(){
   }).join('');
 
   var sixCardHtml =
-    '<div class="shop-card"' + (sixReason ? ' title="' + esc(sixReason) + '"' : '') + ' style="' + (canBuy6All ? '' : 'opacity:0.5;cursor:not-allowed;') + '">' +
+    '<div class="shop-card"' + (sixReason ? ' title="' + esc(sixReason) + '"' : '') + '>' +
       '<div class="shop-icon">📚</div>' +
       '<div class="shop-name">6-WEEK<br>PROGRAM</div>' +
       '<div class="shop-desc">Full cohort class, 6 weeks of live instruction.</div>' +
@@ -6564,10 +6582,10 @@ function _drawShop(){
           levelOptions +
         '</select>' +
       '</div>' +
-      '<button class="btn btn-gold btn-md sparkle-btn" onclick="buySixWeek()" ' + (canBuy6All ? '' : 'disabled') + '>' +
+      '<button class="btn btn-gold btn-md ' + (canBuy6All ? 'sparkle-btn' : '') + '" onclick="buySixWeek()" ' + (canBuy6All ? '' : 'disabled') + '>' +
         (canBuy6All ? 'PURCHASE' : 'LOCKED') +
       '</button>' +
-      (sixReason ? '<div style="font-size:12px;color:#ff9090;margin-top:8px;text-align:center;font-style:italic;">' + esc(sixReason) + '</div>' : '') +
+      (sixReason ? '<div class="shop-locked-reason">' + esc(sixReason) + '</div>' : '') +
     '</div>';
 
   var itemsHtml = helpCardHtml + sixCardHtml;
