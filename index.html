@@ -1424,22 +1424,25 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 /* Base filter button. Color/styling is INTENTIONALLY locked to gray here so
  * a filter-btn with a rarity class but no .active (e.g. `filter-btn yellow`)
  * doesn't inherit the rarity color. Only `.filter-btn.<rarity>.active`
- * rules below paint the rarity color. */
+ * rules below paint the rarity color.
+ * !important is required because something in the cascade — possibly an
+ * earlier rule we couldn't track down — was still painting YELLOW/GREEN
+ * text in their rarity colors even when not active. */
 .filter-btn{background:#0a0a15;border:2px solid rgba(255,255,255,0.25);color:#aaa;padding:8px 12px;border-radius:2px;font-family:var(--ps);font-size:9px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,0.8);transition:all 0.1s;text-shadow:var(--ps-outline-sm);}
 .filter-btn.holo:not(.active),
 .filter-btn.pink:not(.active),
 .filter-btn.red:not(.active),
 .filter-btn.yellow:not(.active),
 .filter-btn.green:not(.active),
-.filter-btn.blue:not(.active){color:#aaa;border-color:rgba(255,255,255,0.25);background:#0a0a15;}
+.filter-btn.blue:not(.active){color:#aaa !important;border-color:rgba(255,255,255,0.25) !important;background:#0a0a15 !important;}
 .filter-btn:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 rgba(0,0,0,0.8);}
 .filter-btn.active{background:rgba(168,85,247,0.15);border-color:var(--purple);color:var(--purple);}
-.filter-btn.holo.active{border-color:#dde;color:#fff;background:linear-gradient(90deg,rgba(180,180,255,0.18),rgba(255,180,255,0.18));}
-.filter-btn.pink.active{border-color:#d4537e;color:#d4537e;background:rgba(212,83,126,0.15);}
-.filter-btn.red.active{border-color:#e24b4a;color:#e24b4a;background:rgba(226,75,74,0.15);}
-.filter-btn.yellow.active{border-color:#f5c842;color:#f5c842;background:rgba(245,200,66,0.15);}
-.filter-btn.green.active{border-color:#639922;color:#639922;background:rgba(99,153,34,0.18);}
-.filter-btn.blue.active{border-color:#378add;color:#378add;background:rgba(55,138,221,0.15);}
+.filter-btn.holo.active{border-color:#dde !important;color:#fff !important;background:linear-gradient(90deg,rgba(180,180,255,0.18),rgba(255,180,255,0.18)) !important;}
+.filter-btn.pink.active{border-color:#d4537e !important;color:#d4537e !important;background:rgba(212,83,126,0.15) !important;}
+.filter-btn.red.active{border-color:#e24b4a !important;color:#e24b4a !important;background:rgba(226,75,74,0.15) !important;}
+.filter-btn.yellow.active{border-color:#f5c842 !important;color:#f5c842 !important;background:rgba(245,200,66,0.15) !important;}
+.filter-btn.green.active{border-color:#639922 !important;color:#639922 !important;background:rgba(99,153,34,0.18) !important;}
+.filter-btn.blue.active{border-color:#378add !important;color:#378add !important;background:rgba(55,138,221,0.15) !important;}
 
 .showcase-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;align-items:stretch;}
 /* Showcase card is a flex column; the .sc-rarity chip uses margin-top:auto
@@ -1570,30 +1573,40 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
  *      yellow = "this is a status indicator", not a generic accent.
  *   2. Border is muted (subtle white-alpha) so the card reads as info,
  *      not as an alert/warning.
- *   3. Title row holds [📚 YOUR 6-WEEK PROGRAM] + [PENDING badge] inline
- *      via flexbox, so the status sits where the eye looks first.
- *   4. Cancel fee is visually attached to the cancel button via a small
- *      grouped wrapper (.enroll-cancel-group) — tight spacing, thin
- *      separator, all inside one box so it reads as a single unit. */
-.enroll-card{background:#0d0d1f;border:2px solid rgba(255,255,255,0.15);border-radius:2px;padding:20px 22px;margin-bottom:20px;box-shadow:4px 4px 0 rgba(0,0,0,0.8);}
-.enroll-card .enroll-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;}
+ *   3. Collapsed by default via native <details>. The <summary> is the
+ *      whole title row [📚 YOUR 6-WEEK ENROLLMENT] [PENDING badge] [▾].
+ *      Clicking expands meta + cancel button. This keeps the shop quieter
+ *      when the student isn't actively managing their enrollment.
+ *   4. The PENDING badge sits inline immediately after the title (gap-driven,
+ *      not right-aligned via space-between) so the eye reads title → status
+ *      → expand chevron in one left-to-right sweep.
+ *   5. Cancellation fee is now plain text directly under the button — no
+ *      pink-tinted box. The button is the visual anchor; the fee is just
+ *      a small clarifying caption below it. */
+.enroll-card{background:#0d0d1f;border:2px solid rgba(255,255,255,0.15);border-radius:2px;margin-bottom:20px;box-shadow:4px 4px 0 rgba(0,0,0,0.8);}
+.enroll-card > summary{padding:18px 22px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:14px;flex-wrap:wrap;user-select:none;}
+.enroll-card > summary::-webkit-details-marker{display:none;}
+.enroll-card[open] > summary{padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.08);}
 .enroll-card .enroll-title{font-family:var(--ps);font-size:14px;color:#fff;text-shadow:var(--ps-outline-sm);letter-spacing:1px;}
 .enroll-card .enroll-status{display:inline-block;font-family:var(--ps);font-size:9px;padding:4px 10px;border-radius:2px;letter-spacing:1px;flex-shrink:0;}
 .enroll-card .enroll-status.pending{background:rgba(245,200,66,0.15);color:var(--gold);border:1px solid var(--gold);}
 .enroll-card .enroll-status.active{background:rgba(57,255,20,0.15);color:var(--green);border:1px solid var(--green);}
 .enroll-card .enroll-status.completed{background:rgba(136,136,136,0.15);color:#888;border:1px solid #888;}
 .enroll-card .enroll-status.cancelled{background:rgba(255,119,119,0.15);color:var(--pink);border:1px solid var(--pink);}
+/* Chevron auto-pushes right via margin-left:auto so it sits at the far edge
+ * of the summary row regardless of how wide the title + badge are. */
+.enroll-card .enroll-chevron{margin-left:auto;font-family:var(--ps);font-size:11px;color:#888;transition:transform 0.2s;flex-shrink:0;}
+.enroll-card[open] .enroll-chevron{transform:rotate(180deg);color:#fff;}
+.enroll-card .enroll-body{padding:14px 22px 20px;}
 .enroll-card .enroll-meta{font-size:15px;color:#ddd;line-height:1.8;margin-bottom:14px;}
 .enroll-card .enroll-meta .awaiting{color:#aaa;font-style:italic;}
-.enroll-card .enroll-actions{display:flex;flex-direction:column;align-items:stretch;gap:0;}
-/* Cancel button + fee form a single visual unit. Button bottom edge meets
- * the fee strip with no gap, and the fee strip uses a subtle background
- * tint to read as an extension of the button rather than a floating note. */
-.enroll-cancel-group{display:flex;flex-direction:column;align-items:stretch;max-width:340px;margin:0 auto;}
-.enroll-cancel-group .btn{border-bottom-left-radius:0;border-bottom-right-radius:0;margin-bottom:0;}
-.enroll-cancel-fee{font-size:13px;color:#aaa;text-align:center;padding:8px 12px;background:rgba(255,119,119,0.06);border:1px solid rgba(255,119,119,0.25);border-top:none;border-bottom-left-radius:4px;border-bottom-right-radius:4px;line-height:1.4;}
+.enroll-card .enroll-actions{display:flex;flex-direction:column;align-items:center;gap:6px;}
+/* Cancel button + fee. Fee is plain centered text under the button — no
+ * boxed wrapper, no pink background. Reads as a caption, not as a callout. */
+.enroll-cancel-group{display:flex;flex-direction:column;align-items:stretch;max-width:340px;width:100%;margin:0 auto;gap:8px;}
+.enroll-cancel-fee{font-size:13px;color:#aaa;text-align:center;line-height:1.4;}
 .enroll-cancel-fee .fee-amount{color:#ff7777;font-weight:600;}
-.enroll-cancel-fee.locked-reason{background:rgba(136,136,136,0.06);border-color:rgba(136,136,136,0.25);font-style:italic;color:#888;}
+.enroll-cancel-fee.locked-reason{font-style:italic;color:#888;}
 
 /* ── ADMIN ── */
 .section-head.admin .sh-title{color:var(--pink);}
@@ -6625,9 +6638,7 @@ function _drawShop(){
     var endLine = enr.endDate ? '<br>Ends: <b>' + _fmtDate(enr.endDate) + '</b>' : '';
     var levelLine = enr.classLevel ? '<br>Level: <b>' + esc(enr.classLevel) + '</b>' : '';
 
-    // Cancel button + fee strip are rendered as a single grouped unit
-    // (.enroll-cancel-group) so the fee visually attaches to the button
-    // edge instead of floating beneath it.
+    // Cancel button + fee. Fee is plain text under the button (no box).
     var cancelBtn;
     if (policy.canCancel){
       cancelBtn =
@@ -6643,15 +6654,21 @@ function _drawShop(){
         '</div>';
     }
 
+    // Use <details> for native collapse/expand. Collapsed by default — the
+    // summary row alone (title + badge + chevron) communicates status. Tap
+    // to expand for the meta (start/end/level) and the cancel controls.
     statusHtml =
-      '<div class="enroll-card">' +
-        '<div class="enroll-title-row">' +
+      '<details class="enroll-card">' +
+        '<summary>' +
           '<div class="enroll-title">📚 YOUR 6-WEEK ENROLLMENT</div>' +
           '<div class="enroll-status ' + enr.status + '">' + enr.status.toUpperCase() + '</div>' +
+          '<span class="enroll-chevron" aria-hidden="true">▾</span>' +
+        '</summary>' +
+        '<div class="enroll-body">' +
+          '<div class="enroll-meta">' + startLine + endLine + levelLine + '</div>' +
+          '<div class="enroll-actions">' + cancelBtn + '</div>' +
         '</div>' +
-        '<div class="enroll-meta">' + startLine + endLine + levelLine + '</div>' +
-        '<div class="enroll-actions">' + cancelBtn + '</div>' +
-      '</div>';
+      '</details>';
   }
 
   // Wednesday Class credits indicator removed per request. Credit balance is
@@ -8165,21 +8182,18 @@ function _injectGachaStyle(){
         '@keyframes _gHoloBdg{0%{background-position:0% 50%}100%{background-position:200% 50%}}',
         '.badge-pink{background:#d4537e;color:#fff;}.badge-red{background:#e24b4a;color:#fff;}.badge-yellow{background:#f5c842;color:#111;}.badge-green{background:#639922;color:#fff;}.badge-blue{background:#378add;color:#fff;}',
         '._griw{width:140px;border-radius:10px;border:1px solid #222;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}',
-        '._griw img{width:100%;height:auto;display:block;margin-top:-20px;margin-bottom:-20px;pointer-events:none;-webkit-user-drag:none;user-select:none;}',
+        '._griw img{width:100%;height:auto;display:block;margin-top:-25px;margin-bottom:-25px;pointer-events:none;-webkit-user-drag:none;user-select:none;}',
         '._griw._detail{width:250px;}',
-        '._griw._detail img{width:100%;height:auto;margin-top:-20px;margin-bottom:-20px;}',
-        // Per-character crop overrides. Wombatman uses the -20/-20 default.
-        // These apply to both the egg-crack reveal popup (._griw img) AND
-        // the showcase card detail popup (._griw._detail img) since both
-        // use the same negative-margin clipping system inside an
-        // overflow:hidden wrapper. Each character's source render sits
-        // differently in the frame, so tweak top/bottom to keep the
-        // character's head + feet in view across both popup sizes.
-        '._griw._anim-captain_corea img{margin-top:-15px;margin-bottom:-15px;}',
-        '._griw._anim-fox img{margin-top:-15px;margin-bottom:-25px;}',
-        '._griw._anim-sloth img{margin-top:-30px;margin-bottom:-10px;}',
-        '._griw._anim-pola_cola img{margin-top:-5px;margin-bottom:-5px;}',
-        '._griw._anim-turtle img{margin-top:-15px;margin-bottom:-25px;}',
+        '._griw._detail img{width:100%;height:auto;margin-top:-25px;margin-bottom:-25px;}',
+        // Per-character crop overrides. Each pair tightens an extra 5px on
+        // top and bottom vs. the original baseline so the character's body
+        // fills more of the frame in both the egg-crack reveal and the
+        // showcase card detail popup. Wombatman uses the -25/-25 default.
+        '._griw._anim-captain_corea img{margin-top:-20px;margin-bottom:-20px;}',
+        '._griw._anim-fox img{margin-top:-20px;margin-bottom:-30px;}',
+        '._griw._anim-sloth img{margin-top:-35px;margin-bottom:-15px;}',
+        '._griw._anim-pola_cola img{margin-top:-10px;margin-bottom:-10px;}',
+        '._griw._anim-turtle img{margin-top:-20px;margin-bottom:-30px;}',
         '._gholoS{position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0) 0%,rgba(180,180,255,.38) 45%,rgba(255,180,255,.32) 55%,rgba(255,255,255,0) 100%);background-size:200% 200%;animation:_gHoloShift 2s ease-in-out infinite alternate;pointer-events:none;border-radius:12px;display:none;}',
         '._griw.holo ._gholoS{display:block;}',
         '@keyframes _gHoloShift{0%{background-position:0% 0%}100%{background-position:100% 100%}}',
@@ -8200,21 +8214,27 @@ function _injectGachaStyle(){
         '@keyframes _gHoloScan{0%{background-position:150% 150%;opacity:0}5%{opacity:1}14%{background-position:-50% -50%;opacity:0}100%{background-position:-50% -50%;opacity:0}}',
         '._grc{background:#0e0e0e;border-radius:16px;padding:14px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;transform:scale(.85);transition:transform .4s cubic-bezier(.34,1.56,.64,1);max-width:420px;width:92vw;max-height:650px;overflow:hidden;}',
         '._gctr{display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:2px;color:#ccc;font-size:10px;letter-spacing:.1em;}',
-        '._gcmb{font-size:8px;color:#ccc;letter-spacing:.06em;text-align:center;border-top:1px solid #333;padding-top:8px;margin-top:2px;width:100%;}',
+        // Combined pull chance footer — bumped from 8px to 10px so the meta
+        // info under the stats table is readable without leaning in.
+        '._gcmb{font-size:10px;color:#ccc;letter-spacing:.06em;text-align:center;border-top:1px solid #333;padding-top:8px;margin-top:2px;width:100%;}',
         '._gcmb span{color:#f5c842;}',
         '._grrws{display:flex;flex-direction:column;gap:6px;width:100%;}',
-        '._grrw{display:flex;align-items:center;gap:8px;font-size:7px;letter-spacing:.05em;text-transform:uppercase;padding:8px 10px;border-radius:6px;background:#141414;border:1px solid #2a2a2a;}',
-        '._grrw ._grrl{flex:0 0 72px;color:#aaa;white-space:nowrap;border-right:1px solid #444;padding-right:8px;}',
+        // Stats rows: every text size bumped ~2px for legibility. The wider
+        // modal (420px) makes this comfortable. Label flex-basis bumped to
+        // 80px (was 72px) and percentage min-width to 50px (was 42px) so
+        // the bigger text doesn\'t crowd the value column.
+        '._grrw{display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:.05em;text-transform:uppercase;padding:9px 11px;border-radius:6px;background:#141414;border:1px solid #2a2a2a;}',
+        '._grrw ._grrl{flex:0 0 80px;color:#aaa;white-space:nowrap;border-right:1px solid #444;padding-right:8px;font-size:9px;}',
         // word-break:normal + overflow-wrap:break-word ensures the value text
         // wraps ONLY at whitespace, never mid-word. Previously break-word was
         // letting things like "CALICO CAT KIGURUMI" shatter into 4 lines
         // ("CALICO / CAT / KIGURU / MI") when squeezed into a narrow column.
-        '._grrw ._grrn{flex:1;color:#fff;font-size:8px;line-height:1.4;word-break:normal;overflow-wrap:break-word;hyphens:none;}',
-        '._grrw ._grrt{font-size:7px;padding:3px 6px;border-radius:4px;white-space:nowrap;text-align:center;flex-shrink:0;}',
-        '._grrw ._grrp{color:#f5c842;font-size:8px;white-space:nowrap;text-align:right;flex-shrink:0;min-width:42px;}',
+        '._grrw ._grrn{flex:1;color:#fff;font-size:10px;line-height:1.4;word-break:normal;overflow-wrap:break-word;hyphens:none;}',
+        '._grrw ._grrt{font-size:9px;padding:4px 7px;border-radius:4px;white-space:nowrap;text-align:center;flex-shrink:0;}',
+        '._grrw ._grrp{color:#f5c842;font-size:10px;white-space:nowrap;text-align:right;flex-shrink:0;min-width:50px;}',
         '.tier-3{background:#1a0808;color:#e24b4a;border:1px solid #e24b4a55;}.tier-2{background:#081208;color:#639922;border:1px solid #63992255;}.tier-1{background:#08080e;color:#378add;border:1px solid #378add55;}',
         /* See All Rarities button + popup */
-        '._gsrb{background:#1a1a2e;border:1px solid #378add;color:#378add;font-family:"Press Start 2P",monospace;font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:6px 14px;border-radius:6px;cursor:pointer;transition:background .2s,color .2s;margin-top:2px;}',
+        '._gsrb{background:#1a1a2e;border:1px solid #378add;color:#378add;font-family:"Press Start 2P",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:8px 16px;border-radius:6px;cursor:pointer;transition:background .2s,color .2s;margin-top:2px;}',
         '._gsrb:hover{background:#378add;color:#fff;}',
         '._grarov{position:fixed;inset:0;z-index:10000000;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;padding:20px;box-sizing:border-box;}',
         '._grarov.show{opacity:1;pointer-events:all;}',
