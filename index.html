@@ -551,6 +551,47 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   .recall-edit-row input:nth-child(3){grid-column:2;}
 }
 
+/* ─── WEEKLY BONUS BANNER (top of Daily Activities) ─── */
+.weekly-bonus-banner{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:12px;
+  font-family:'Press Start 2P',monospace;font-size:12px;color:#3a2600;
+  background:linear-gradient(135deg,#ffe16b 0%,#FFD700 45%,#f4b400 100%);
+  border:2px solid #cc9900;border-radius:8px;padding:16px 22px;cursor:pointer;
+  box-shadow:4px 4px 0 rgba(0,0,0,0.7);margin-bottom:18px;
+  position:relative;overflow:hidden;transition:transform 0.1s,box-shadow 0.1s;
+  text-shadow:0 1px 0 rgba(255,255,255,0.4);line-height:1.5;text-align:center;
+}
+.weekly-bonus-banner:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 rgba(0,0,0,0.7);}
+.weekly-bonus-banner:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,0.7);}
+.weekly-bonus-banner .wbb-emoji{font-size:20px;text-shadow:none;}
+.weekly-bonus-banner .wbb-chev{font-size:14px;text-shadow:none;}
+
+/* ─── DIARY — weekly activity ─── */
+.diary-composer{background:#10172a;border:2px solid #2a3650;border-radius:10px;padding:18px;margin-bottom:18px;}
+.diary-composer.locked{border-color:#39ff14;}
+.diary-field-label{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--cyan);text-shadow:var(--ps-outline-sm);margin-bottom:8px;letter-spacing:0.5px;}
+.diary-textarea{width:100%;min-height:170px;background:#0a0a15;border:2px solid rgba(255,255,255,0.2);border-radius:6px;color:#fff;padding:12px;font-family:'Noto Sans KR','Apple SD Gothic Neo','Noto Sans',sans-serif;font-size:16px;line-height:1.65;resize:vertical;box-sizing:border-box;outline:none;transition:border-color 0.12s;}
+.diary-textarea:focus{border-color:var(--cyan);}
+.diary-rec-host{margin:14px 0 4px;padding:14px;background:linear-gradient(135deg,rgba(255,119,119,0.12),rgba(255,119,119,0.04));border:2px solid #ff7777;border-radius:8px;}
+.diary-rec-label{font-family:'Press Start 2P',monospace;font-size:9px;color:#ff9b9b;text-shadow:var(--ps-outline-sm);text-align:center;margin-bottom:10px;line-height:1.5;}
+.diary-rec-controls{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.diary-rec-btn{width:62px;height:62px;border-radius:50%;border:3px solid #ff7777;background:rgba(255,119,119,0.12);color:#ff7777;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
+.diary-rec-btn:hover{background:rgba(255,119,119,0.22);}
+.diary-rec-btn.recording{background:rgba(255,0,0,0.25);border-color:#ff0000;animation:_drJoinPulse 0.9s ease-in-out infinite;}
+.diary-rec-status{font-family:var(--vt);font-size:13px;color:#cdd8ec;text-align:center;}
+.diary-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px;}
+
+/* Diary feed entry — Discord/social style, mirrors the Teamwork Reading cards */
+.diary-entry{background:#10172a;border:1px solid #2a3650;border-radius:10px;padding:14px;}
+.diary-entry.mine{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(65,192,255,0.2);}
+.diary-entry-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.diary-entry-meta{flex:1;min-width:0;}
+.diary-entry-name{font-family:'Noto Sans',sans-serif;font-weight:700;font-size:15px;color:#fff;}
+.diary-entry-when{font-family:var(--vt);font-size:11px;color:#7a8aa8;text-transform:uppercase;letter-spacing:1px;}
+.diary-entry-body{font-family:'Noto Sans KR','Apple SD Gothic Neo','Noto Sans',sans-serif;font-size:16px;line-height:1.7;color:#e8edf6;white-space:pre-wrap;word-wrap:break-word;padding:10px 12px;background:rgba(0,0,0,0.3);border-radius:6px;border-left:3px solid #2a3650;}
+.diary-entry.mine .diary-entry-body{border-left-color:var(--cyan);}
+.diary-entry-audio{width:100%;height:36px;margin-top:10px;}
+
 /* ─── APP FONT-SIZE ADJUSTER ───
  * --app-zoom is set on <body> (default 1.2) and persisted to localStorage.
  * `zoom` scales the entire app uniformly (text + layout) — way simpler than
@@ -1958,7 +1999,32 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
     <div class="sh-sub">Pick an activity. Complete one to earn an egg today. Resets every day at 3 AM NY time.</div>
   </div>
   <div id="drBanner" class="dr-banner"></div>
+  <div class="weekly-bonus-banner sparkle-btn" onclick="_openWeekly()">
+    <span class="wbb-emoji">⭐</span>
+    <span>SPECIAL BONUS: WEEKLY ACTIVITIES</span>
+    <span class="wbb-chev">▸</span>
+  </div>
   <div id="dailyPickerGrid" class="menu-grid" style="margin-top:18px;"></div>
+</div>
+
+<!-- ═══ WEEKLY: ACTIVITY PICKER ═══ -->
+<div id="weeklyScreen" class="sub-screen hidden">
+  <div class="back-row"><button class="btn btn-ghost btn-sm" onclick="_dailyShowPicker()">← BACK TO ACTIVITIES</button></div>
+  <div class="section-head daily">
+    <div class="sh-title">⭐ WEEKLY ACTIVITIES</div>
+    <div class="sh-sub">Bigger challenges, bigger rewards. Resets every Monday at 3 AM NY time.</div>
+  </div>
+  <div id="weeklyPickerGrid" class="menu-grid" style="margin-top:18px;"></div>
+</div>
+
+<!-- ═══ WEEKLY: DIARY ═══ -->
+<div id="weeklyDiaryScreen" class="sub-screen hidden">
+  <div class="back-row"><button class="btn btn-ghost btn-sm" onclick="_openWeekly()">← BACK TO WEEKLY</button></div>
+  <div class="section-head daily">
+    <div class="sh-title">📔 DIARY</div>
+    <div class="sh-sub">Write about your day in Korean. Add an optional voice recording of you reading it. Submit to earn 9 eggs — then read everyone else's entries.</div>
+  </div>
+  <div id="weeklyDiaryHost"></div>
 </div>
 
 <!-- ═══ POINTS INFO MODAL ═══
@@ -2598,7 +2664,7 @@ function _setBgmForScreen(screenId){
   var ambient = ['shopScreen','showcaseScreen','dailyScreen'];
   // Admin works with a lot of text + recordings — keeping silent so audio
   // playback (student recordings, etc.) doesn't compete with background music.
-  var silent  = ['dailyReadingScreen','dailyListeningScreen','dailyAdvancedScreen','dailyYodaScreen','dailyRecallScreen','inboxScreen','adminScreen'];
+  var silent  = ['dailyReadingScreen','dailyListeningScreen','dailyAdvancedScreen','dailyYodaScreen','dailyRecallScreen','weeklyDiaryScreen','inboxScreen','adminScreen'];
   if (ambient.indexOf(screenId) !== -1){
     menuBgmStop();
     if (gachaBgmAudio.paused) gachaBgmPlay();
@@ -2700,7 +2766,7 @@ function hide(id){
 }
 function showFade(id){ var el = $(id); if (!el) return; el.classList.remove('hidden','page-fade'); void el.offsetWidth; el.classList.add('page-fade'); }
 function hideAllScreens(){
-  ['loginScreen','menuScreen','dailyScreen','dailyReadingScreen','dailyListeningScreen','dailyAdvancedScreen','dailyYodaScreen','dailyRecallScreen','inboxScreen','shopScreen','showcaseScreen','adminScreen'].forEach(function(s){
+  ['loginScreen','menuScreen','dailyScreen','dailyReadingScreen','dailyListeningScreen','dailyAdvancedScreen','dailyYodaScreen','dailyRecallScreen','weeklyScreen','weeklyDiaryScreen','inboxScreen','shopScreen','showcaseScreen','adminScreen'].forEach(function(s){
     var el = $(s); if (el) el.classList.add('hidden');
   });
 }
@@ -2798,6 +2864,9 @@ async function _loadUserProfile(authUser){
     // NY-day key of the last Active Recall completion. Drives the daily-reset
     // gate + the picker tile's "DONE TODAY" badge, same pattern as the others.
     dailyRecallDoneFor: d.dailyRecallDoneFor || null,
+    // NY-WEEK key of the last Diary submission. Diary is a weekly activity —
+    // this resets every Monday 3 AM NY, gating the 9-egg award.
+    weeklyDiaryDoneFor: d.weeklyDiaryDoneFor || null,
     // How many times this student has completed a Yodafication ever. Used
     // alongside accountCreatedAt to decide when to show the "graduate from
     // Yoda — try harder activities" disclaimer banner.
@@ -10792,6 +10861,365 @@ async function _recallDelete(id){
   _recallRenderManager();
 }
 window._recallDelete = _recallDelete;
+
+/* ═══════════════════════════════════════════════════════════════════
+   WEEKLY ACTIVITIES — bonus tier
+   Reached via the gold "Special Bonus" banner on the Daily screen. For now
+   the only weekly activity is Diary. Weekly activities reset every Monday
+   at 3 AM NY time.
+   ═══════════════════════════════════════════════════════════════════ */
+const DIARY_COLLECTION = 'gacha_diary_entries';
+const DIARY_EGG_REWARD = 9;
+
+// NY-WEEK key for weekly-reset comparison. Weeks roll over Monday 3 AM NY:
+// we shift the clock back 3 hours, find that moment's NY date, then snap
+// back to the most recent Monday. The key is that Monday's YYYY-MM-DD.
+function _weekNYKey(){
+  // Shift back 3h so the Monday-3am rollover lines up with the day boundary.
+  var shifted = new Date(Date.now() - 3 * 3600 * 1000);
+  var y, m, d, wd;
+  try {
+    var fmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York',
+      year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short'
+    });
+    var parts = {};
+    fmt.formatToParts(shifted).forEach(function(p){ parts[p.type] = p.value; });
+    y = +parts.year; m = +parts.month; d = +parts.day;
+    var wdMap = { Sun:0, Mon:1, Tue:2, Wed:3, Thu:4, Fri:5, Sat:6 };
+    wd = wdMap[parts.weekday];
+  } catch(e){
+    y = shifted.getUTCFullYear(); m = shifted.getUTCMonth() + 1; d = shifted.getUTCDate();
+    wd = shifted.getUTCDay();
+  }
+  // Days since Monday (Mon=0 … Sun=6).
+  var sinceMon = (wd + 6) % 7;
+  // Subtract that many days from the NY date to land on Monday.
+  var base = new Date(Date.UTC(y, m - 1, d));
+  base.setUTCDate(base.getUTCDate() - sinceMon);
+  return base.toISOString().slice(0, 10); // e.g. "2026-05-18"
+}
+
+function _openWeekly(){
+  playSelect();
+  hideAllScreens(); show('topBar');
+  showFade('weeklyScreen');
+  _setBgmForScreen('weeklyScreen');
+  _renderWeeklyPicker();
+  try { window.scrollTo(0, 0); } catch(e){}
+}
+window._openWeekly = _openWeekly;
+
+function _renderWeeklyPicker(){
+  var grid = document.getElementById('weeklyPickerGrid');
+  if (!grid) return;
+  var weekKey = _weekNYKey();
+  var diaryDone = (user && user.weeklyDiaryDoneFor === weekKey);
+  var diaryBadge = diaryDone
+    ? '<div class="menu-count" style="border-color:var(--green);color:var(--green);">✅ DONE THIS WEEK</div>'
+    : '<div class="menu-count" style="border-color:var(--gold);color:var(--gold);">+' + DIARY_EGG_REWARD + ' EGGS</div>';
+  grid.innerHTML =
+    '<div class="menu-card daily" onclick="_openDiary()">' +
+      '<span class="menu-emoji">📔</span>' +
+      '<div class="grad-wrap"><div class="menu-name grad-text grad-gold">DIARY</div></div>' +
+      '<div class="menu-desc">Write about your day in Korean — add a voice recording, then read everyone\'s entries.</div>' +
+      diaryBadge +
+    '</div>';
+}
+
+/* ─── DIARY ─── */
+var _diaryState = {
+  mediaRecorder: null,
+  audioChunks: [],
+  recordedBlob: null,
+  recordedMime: '',
+  audioUrl: null,   // object URL for in-memory playback
+  recording: false,
+  busy: false
+};
+
+function _openDiary(){
+  playSelect();
+  hideAllScreens(); show('topBar');
+  showFade('weeklyDiaryScreen');
+  _setBgmForScreen('weeklyDiaryScreen');
+  _diaryRender();
+  try { window.scrollTo(0, 0); } catch(e){}
+}
+window._openDiary = _openDiary;
+
+async function _diaryRender(){
+  var host = document.getElementById('weeklyDiaryHost');
+  if (!host) return;
+  host.innerHTML = '<div class="dr-empty">Loading…</div>';
+
+  var weekKey = _weekNYKey();
+  var doneThisWeek = (user && user.weeklyDiaryDoneFor === weekKey);
+
+  // Reset transient recording state on each entry.
+  _diaryResetRecording();
+
+  var composerHtml;
+  if (doneThisWeek){
+    composerHtml =
+      '<div class="dr-feed-banner done" style="margin-bottom:18px;">' +
+        '<div class="big">✅ +' + DIARY_EGG_REWARD + ' EGGS EARNED</div>' +
+        '<div class="sub">You\'ve submitted this week\'s diary. Read everyone\'s entries below — a new week starts Monday at 3 AM NY.</div>' +
+      '</div>';
+  } else {
+    composerHtml =
+      '<div class="diary-composer" id="diaryComposer">' +
+        '<div class="diary-field-label">✍️ YOUR DIARY ENTRY (KOREAN)</div>' +
+        '<textarea class="diary-textarea" id="diaryText" placeholder="오늘 무엇을 했어요? Write a few sentences about your day…"></textarea>' +
+        '<div class="diary-rec-host">' +
+          '<div class="diary-rec-label">🎙 OPTIONAL — RECORD YOURSELF READING IT</div>' +
+          '<div class="diary-rec-controls">' +
+            '<button class="diary-rec-btn" id="diaryRecBtn" onclick="_diaryToggleRec()">🎤</button>' +
+            '<audio id="diaryRecPlayer" controls style="display:none;width:100%;max-width:320px;"></audio>' +
+            '<div id="diaryRecActionRow" style="display:none;gap:10px;flex-wrap:wrap;justify-content:center;">' +
+              '<button class="btn btn-ghost btn-sm" onclick="_diaryReRecord()">🔄 RE-RECORD</button>' +
+            '</div>' +
+            '<div class="diary-rec-status" id="diaryRecStatus">Tap the mic to record (optional).</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="diary-actions">' +
+          '<button class="btn btn-gold btn-lg sparkle-btn" id="diarySubmitBtn" onclick="_diarySubmit()">📔 SUBMIT — EARN +' + DIARY_EGG_REWARD + ' EGGS</button>' +
+        '</div>' +
+      '</div>';
+  }
+
+  host.innerHTML = composerHtml + '<div id="diaryFeedHost"><div class="dr-empty">Loading entries…</div></div>';
+
+  if (!doneThisWeek){
+    setTimeout(function(){
+      var btn = document.getElementById('diarySubmitBtn');
+      if (btn && typeof addSparkles === 'function') addSparkles(btn);
+    }, 50);
+  }
+
+  _diaryRenderFeed();
+}
+window._diaryRender = _diaryRender;
+
+// ─── Voice recording (optional) ───
+function _diaryResetRecording(){
+  if (_diaryState.audioUrl){ try { URL.revokeObjectURL(_diaryState.audioUrl); } catch(e){} }
+  if (_diaryState.mediaRecorder && _diaryState.recording){
+    try { _diaryState.mediaRecorder.stop(); } catch(e){}
+  }
+  _diaryState.mediaRecorder = null;
+  _diaryState.audioChunks = [];
+  _diaryState.recordedBlob = null;
+  _diaryState.recordedMime = '';
+  _diaryState.audioUrl = null;
+  _diaryState.recording = false;
+}
+
+async function _diaryToggleRec(){
+  if (_diaryState.recording){
+    if (_diaryState.mediaRecorder) { try { _diaryState.mediaRecorder.stop(); } catch(e){} }
+    return;
+  }
+  try {
+    var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    var mime = _drPickRecordingMime();
+    _diaryState.audioChunks = [];
+    _diaryState.mediaRecorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+    _diaryState.recordedMime = _diaryState.mediaRecorder.mimeType || mime || 'audio/webm';
+    _diaryState.mediaRecorder.ondataavailable = function(e){ if (e.data && e.data.size > 0) _diaryState.audioChunks.push(e.data); };
+    _diaryState.mediaRecorder.onstop = function(){
+      stream.getTracks().forEach(function(t){ t.stop(); });
+      var blob = new Blob(_diaryState.audioChunks, { type: _diaryState.recordedMime });
+      _diaryState.recordedBlob = blob;
+      if (_diaryState.audioUrl){ try { URL.revokeObjectURL(_diaryState.audioUrl); } catch(e){} }
+      _diaryState.audioUrl = URL.createObjectURL(blob);
+      var player = document.getElementById('diaryRecPlayer');
+      if (player){ player.src = _diaryState.audioUrl; player.style.display = 'block'; }
+      var actions = document.getElementById('diaryRecActionRow');
+      if (actions) actions.style.display = 'flex';
+      var btn = document.getElementById('diaryRecBtn');
+      if (btn){ btn.style.display = 'none'; }
+      var st = document.getElementById('diaryRecStatus');
+      if (st) st.textContent = 'Recording saved. Re-record if you want, or just submit.';
+      _diaryState.recording = false;
+    };
+    _diaryState.mediaRecorder.start();
+    _diaryState.recording = true;
+    var btn = document.getElementById('diaryRecBtn');
+    if (btn){ btn.classList.add('recording'); btn.textContent = '⏹'; }
+    var st = document.getElementById('diaryRecStatus');
+    if (st) st.textContent = 'Recording… tap again to stop.';
+  } catch(e){
+    toast('Microphone access denied.', 'var(--pink)');
+  }
+}
+window._diaryToggleRec = _diaryToggleRec;
+
+function _diaryReRecord(){
+  if (_diaryState.audioUrl){ try { URL.revokeObjectURL(_diaryState.audioUrl); } catch(e){} }
+  _diaryState.audioUrl = null;
+  _diaryState.recordedBlob = null;
+  _diaryState.audioChunks = [];
+  var player = document.getElementById('diaryRecPlayer');
+  if (player){ player.style.display = 'none'; player.src = ''; }
+  var actions = document.getElementById('diaryRecActionRow');
+  if (actions) actions.style.display = 'none';
+  var btn = document.getElementById('diaryRecBtn');
+  if (btn){ btn.style.display = ''; btn.textContent = '🎤'; btn.classList.remove('recording'); }
+  // Re-route through toggle within the same gesture (iOS gesture preservation).
+  _diaryToggleRec();
+}
+window._diaryReRecord = _diaryReRecord;
+
+// ─── Submit ───
+async function _diarySubmit(){
+  if (_diaryState.busy) return;
+  if (!user){ return; }
+
+  var textEl = document.getElementById('diaryText');
+  var text = (textEl && textEl.value || '').trim();
+  if (text.length < 10){
+    toast('Write a little more about your day first.', 'var(--pink)');
+    return;
+  }
+
+  var weekKey = _weekNYKey();
+  if (user.weeklyDiaryDoneFor === weekKey){
+    // Already submitted this week — just refresh to the done state.
+    _diaryRender();
+    return;
+  }
+
+  _diaryState.busy = true;
+  var btn = document.getElementById('diarySubmitBtn');
+  if (btn){ btn.disabled = true; btn.textContent = '⏳ SUBMITTING…'; }
+
+  try {
+    // Upload the optional voice recording first, if present.
+    var audioUrl = null, audioPath = null, audioMime = null;
+    if (_diaryState.recordedBlob){
+      if (btn) btn.textContent = '⏳ UPLOADING AUDIO…';
+      var ext = _drExtForMime(_diaryState.recordedMime);
+      audioPath = 'diaryAudio/' + weekKey + '/' + user.id + '_' + Date.now() + '.' + ext;
+      var ref = storage.ref().child(audioPath);
+      var snap = await ref.put(_diaryState.recordedBlob, { contentType: _diaryState.recordedMime || 'audio/webm' });
+      audioUrl = await snap.ref.getDownloadURL();
+      audioMime = _diaryState.recordedMime || '';
+    }
+
+    if (btn) btn.textContent = '⏳ SAVING…';
+
+    // Write the diary entry. Doc id = weekKey_uid so a student can only have
+    // one entry per week, and the security rule can verify ownership.
+    var entryId = weekKey + '_' + user.id;
+    await db.collection(DIARY_COLLECTION).doc(entryId).set({
+      uid: user.id,
+      userName: (user.displayName || user.username || 'Student'),
+      userEmail: user.username || '',
+      weekKey: weekKey,
+      text: text,
+      audioUrl: audioUrl,
+      audioPath: audioPath,
+      audioMime: audioMime,
+      submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // Award the eggs atomically — only if not already credited this week.
+    var acctRef = db.collection(TC).doc(user.id);
+    var awarded = false;
+    await db.runTransaction(async function(tx){
+      var s = await tx.get(acctRef);
+      if (!s.exists) return;
+      var d = s.data() || {};
+      if (d.weeklyDiaryDoneFor === weekKey) return;
+      tx.update(acctRef, {
+        gachaRolls: firebase.firestore.FieldValue.increment(DIARY_EGG_REWARD),
+        weeklyDiaryDoneFor: weekKey
+      });
+      awarded = true;
+    });
+    if (awarded){
+      user.gachaRolls = (user.gachaRolls || 0) + DIARY_EGG_REWARD;
+    }
+    user.weeklyDiaryDoneFor = weekKey;
+    if (typeof updateCounts === 'function') updateCounts();
+    try { playSfx(SOUND_WIN, 0.9); } catch(e){}
+
+    _diaryResetRecording();
+    _diaryRender();
+  } catch(e){
+    console.error('diary submit:', e);
+    toast('Submit failed. Try again.', 'var(--pink)');
+    if (btn){ btn.disabled = false; btn.textContent = '📔 SUBMIT — EARN +' + DIARY_EGG_REWARD + ' EGGS'; }
+  } finally {
+    _diaryState.busy = false;
+  }
+}
+window._diarySubmit = _diarySubmit;
+
+// ─── Feed: everyone's entries for the current week ───
+async function _diaryRenderFeed(){
+  var host = document.getElementById('diaryFeedHost');
+  if (!host) return;
+  var weekKey = _weekNYKey();
+
+  var entries = [];
+  try {
+    var snap = await db.collection(DIARY_COLLECTION).where('weekKey','==',weekKey).get();
+    snap.forEach(function(doc){ entries.push(Object.assign({ id: doc.id }, doc.data())); });
+  } catch(e){
+    host.innerHTML = '<div class="dr-feed-hidden-note">Couldn\'t load entries right now.</div>';
+    return;
+  }
+
+  if (!entries.length){
+    host.innerHTML = '<div class="dr-feed-hidden-note">No entries yet this week — be the first to submit!</div>';
+    return;
+  }
+
+  // Most recent first; the student's own entry floats to the top.
+  entries.sort(function(a, b){
+    var am = (a.submittedAt && a.submittedAt.toMillis) ? a.submittedAt.toMillis() : 0;
+    var bm = (b.submittedAt && b.submittedAt.toMillis) ? b.submittedAt.toMillis() : 0;
+    return bm - am;
+  });
+  entries.sort(function(a, b){
+    var aMine = (user && a.uid === user.id) ? 0 : 1;
+    var bMine = (user && b.uid === user.id) ? 0 : 1;
+    return aMine - bMine;
+  });
+
+  var cards = entries.map(function(e){
+    var mine = (user && e.uid === user.id);
+    var when = '';
+    if (e.submittedAt && e.submittedAt.toMillis){
+      try {
+        when = new Date(e.submittedAt.toMillis()).toLocaleDateString('en-US', { month:'short', day:'numeric' });
+      } catch(ex){}
+    }
+    var audioHtml = e.audioUrl
+      ? '<audio class="diary-entry-audio" controls preload="none" playsinline src="' + _esc(e.audioUrl) + '"></audio>'
+      : '';
+    return '<div class="diary-entry' + (mine ? ' mine' : '') + '">' +
+      '<div class="diary-entry-head">' +
+        '<div class="dr-avatar-wrap">' + _drInitialsAvatar(e.userName, null) + '</div>' +
+        '<div class="diary-entry-meta">' +
+          '<div class="diary-entry-name">' + _esc(e.userName || 'Student') +
+            (mine ? ' <span class="dr-me-tag">YOU</span>' : '') + '</div>' +
+          '<div class="diary-entry-when">' + (when || 'this week') + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="diary-entry-body">' + _esc(e.text || '') + '</div>' +
+      audioHtml +
+    '</div>';
+  }).join('');
+
+  host.innerHTML =
+    '<div class="dr-feed">' +
+      '<div class="dr-passage-title">「 This Week\'s Diaries 」</div>' +
+      '<div class="dr-feed-cards">' + cards + '</div>' +
+    '</div>';
+}
 
 function _yodaRenderForm(){
   var host = document.getElementById('dailyYodaHost');
