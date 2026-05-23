@@ -203,12 +203,16 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .menu-header{text-align:center;margin-bottom:44px;}
 .menu-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;}
 
-/* When the daily picker has its 4th tile (Yodafication), force a fixed
- * 3-column grid so the 4th tile drops to row 2 and centers in column 2.
- * Without this, auto-fit puts it flush-left on row 2. */
+/* When the daily picker has 5 tiles, force a fixed 3-column grid so the last
+ * two tiles drop to row 2 and center together. Without this, auto-fit puts
+ * them flush-left on row 2. */
 @media (min-width: 820px){
-  #dailyPickerGrid.has-yoda { grid-template-columns: repeat(3, 1fr); }
-  #dailyPickerGrid.has-yoda > .menu-card.yoda { grid-column: 2 / 3; }
+  #dailyPickerGrid.has-yoda { grid-template-columns: repeat(6, 1fr); }
+  #dailyPickerGrid.has-yoda > .menu-card { grid-column: span 2; }
+  /* Row 2 has 2 tiles (Yodafication + Active Recall): nudge them inward so
+   * the pair centers under the 3 tiles above. */
+  #dailyPickerGrid.has-yoda > .menu-card.yoda { grid-column: 2 / span 2; }
+  #dailyPickerGrid.has-yoda > .menu-card.recall { grid-column: 4 / span 2; }
 }
 .menu-card{background:#0d0d1f;border:2px solid rgba(255,255,255,0.2);border-radius:2px;padding:40px 28px;text-align:center;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,border-color 0.15s;position:relative;overflow:hidden;box-shadow:4px 4px 0 rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:center;}
 .menu-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;}
@@ -341,14 +345,19 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .dr-me-tag{display:inline-block;background:var(--cyan);color:#000;font-size:9px;font-family:'Press Start 2P',monospace;padding:2px 5px;border-radius:3px;margin-left:6px;vertical-align:middle;}
 .dr-slot-sentence{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-size:17px;line-height:1.5;color:#fff;padding:8px 10px;background:rgba(0,0,0,0.3);border-radius:6px;border-left:3px solid #2a3650;}
 .dr-slot.empty .dr-slot-sentence{color:#9aa3b8;font-style:italic;border-left-color:#3a4a6e;}
-/* "For your reference" keyword strip — sits right under the sentence box at
- * a smaller size. Korean is bold, English is gray italic, separated by a
- * small middle-dot. Visible only when sentenceData.keywords was populated
- * at AI-generation time; older passages skip this entirely. */
-.dr-slot-reference{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-size:13px;line-height:1.65;color:#a8b8d0;padding:6px 10px 4px;margin-top:4px;}
-.dr-slot-reference .dr-ref-label{font-family:var(--vt);font-size:12px;color:#7a8aa8;font-style:italic;letter-spacing:0.3px;}
-.dr-slot-reference .dr-ref-ko{color:#e2e8f0;font-weight:600;}
-.dr-slot-reference .dr-ref-en{color:#8a9bb8;font-style:italic;}
+/* "View Keywords" — collapsible Korean keyword (English meaning) reference,
+ * hidden behind a button so it doesn't clutter the read. Korean is bold,
+ * English is gray italic, separated by a small middle-dot. Button + panel
+ * appear only when sentenceData.keywords was populated at AI-generation time;
+ * older passages skip this entirely. */
+.dr-kw-block{margin-top:6px;}
+.dr-kw-btn{font-family:var(--vt);font-size:12px;letter-spacing:0.4px;color:#a8d6f0;background:rgba(65,192,255,0.1);border:1px solid #2a4a68;border-radius:6px;padding:5px 10px;cursor:pointer;transition:background 0.15s,border-color 0.15s;}
+.dr-kw-btn:hover{background:rgba(65,192,255,0.2);border-color:var(--cyan);}
+.dr-kw-panel{margin-top:6px;padding:8px 11px;background:rgba(0,0,0,0.22);border:1px dashed #2a3650;border-radius:6px;}
+.dr-kw-list{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-size:13px;line-height:1.7;color:#a8b8d0;}
+.dr-kw-list .dr-ref-ko{color:#e2e8f0;font-weight:600;}
+.dr-kw-list .dr-ref-en{color:#8a9bb8;font-style:italic;}
+.dr-kw-note{font-family:var(--vt);font-size:11px;color:#7a8aa8;font-style:italic;margin-top:6px;}
 .dr-slot-audio{width:100%;height:36px;}
 .dr-slot-audio-empty{font-family:var(--vt);font-size:12px;color:#5e6e8e;font-style:italic;padding:6px 4px;}
 .dr-rec-host{margin:10px 0;padding:14px;background:linear-gradient(135deg,rgba(65,192,255,0.12),rgba(65,192,255,0.04));border:2px solid var(--cyan);border-radius:8px;}
@@ -508,6 +517,39 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .yoda-edit-row input,.yoda-edit-row textarea{width:100%;background:#0d1424;color:#e6ebf5;border:1px solid #334155;border-radius:5px;padding:8px;font-family:'Noto Sans',sans-serif;font-size:14px;box-sizing:border-box;outline:none;}
 .yoda-edit-row textarea{min-height:80px;line-height:1.5;resize:vertical;}
 .yoda-edit-row .yoda-edit-labels{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+
+/* ─── ACTIVE RECALL — student-side flashcards ───
+ * Flip-card visuals adapted from the Lesson Portal: 3D rotateY flip, fixed
+ * container height, tap to flip. Korean on front, English on back. */
+.recall-banner{background:linear-gradient(135deg,rgba(65,192,255,0.18),rgba(168,85,247,0.12));border:2px solid var(--cyan);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:center;}
+.recall-banner .big{font-family:'Press Start 2P',monospace;font-size:13px;color:var(--cyan);text-shadow:var(--ps-outline-sm);line-height:1.5;}
+.recall-banner .sub{font-family:var(--vt);font-size:15px;color:#cdd8ec;margin-top:6px;line-height:1.5;}
+.recall-progress{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;font-family:'Press Start 2P',monospace;font-size:10px;color:#a8b8d0;text-shadow:var(--ps-outline-sm);}
+.recall-progress .recall-remain{color:var(--gold);}
+.recall-scene{perspective:1000px;width:100%;max-width:420px;margin:0 auto 18px;}
+.recall-card{width:100%;height:230px;position:relative;transform-style:preserve-3d;transition:transform 0.5s;cursor:pointer;}
+.recall-card.flipped{transform:rotateY(180deg);}
+.recall-face{position:absolute;inset:0;backface-visibility:hidden;background:#10172a;border:2px solid var(--cyan);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;box-shadow:4px 4px 0 rgba(0,0,0,0.8);}
+.recall-back-face{transform:rotateY(180deg);border-color:var(--gold);}
+.recall-hint{font-family:'Press Start 2P',monospace;font-size:9px;color:#7a8aa8;margin-bottom:14px;letter-spacing:1px;}
+.recall-main{font-family:'Noto Sans KR','Apple SD Gothic Neo','Noto Sans',sans-serif;font-size:clamp(24px,6vw,40px);color:#fff;text-align:center;line-height:1.35;font-weight:700;}
+.recall-tap-note{font-family:var(--vt);font-size:14px;color:#7a8aa8;font-style:italic;margin-top:14px;}
+.recall-grade-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:4px;}
+.recall-grade-row .btn{min-width:150px;}
+.recall-done-banner{background:linear-gradient(135deg,rgba(57,255,20,0.16),rgba(57,255,20,0.04));border:2px solid var(--green);border-radius:10px;padding:18px 16px;text-align:center;margin-bottom:18px;}
+.recall-done-banner .big{font-family:'Press Start 2P',monospace;font-size:13px;color:var(--green);text-shadow:var(--ps-outline-sm);line-height:1.5;}
+.recall-done-banner .sub{font-family:var(--vt);font-size:15px;color:#cdd8ec;margin-top:8px;line-height:1.5;}
+
+/* Active Recall manager: editable card rows, mirrors the yoda-edit-row look */
+.recall-edit-row{display:grid;grid-template-columns:auto 1fr 1fr auto;gap:8px;align-items:center;background:rgba(255,255,255,0.02);border:1px solid #2a3650;border-radius:6px;padding:8px 10px;margin-bottom:8px;}
+.recall-edit-row .recall-edit-num{font-family:'Press Start 2P',monospace;font-size:9px;color:#7a8aa8;}
+.recall-edit-row input{width:100%;background:#0d1424;color:#e6ebf5;border:1px solid #334155;border-radius:5px;padding:8px;font-family:'Noto Sans KR','Noto Sans',sans-serif;font-size:14px;box-sizing:border-box;outline:none;}
+.recall-edit-row input:focus{border-color:var(--cyan);}
+.recall-edit-del{background:rgba(255,68,68,0.12);border:1px solid rgba(255,68,68,0.4);color:#ff7777;border-radius:5px;padding:6px 10px;font-size:13px;cursor:pointer;}
+@media (max-width:560px){
+  .recall-edit-row{grid-template-columns:auto 1fr auto;}
+  .recall-edit-row input:nth-child(3){grid-column:2;}
+}
 
 /* ─── APP FONT-SIZE ADJUSTER ───
  * --app-zoom is set on <body> (default 1.2) and persisted to localStorage.
@@ -1982,6 +2024,18 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   <div id="dailyYodaHost"></div>
 </div>
 
+<!-- ═══ DAILY: ACTIVE RECALL ═══ -->
+<div id="dailyRecallScreen" class="sub-screen hidden">
+  <div class="back-row">
+    <button class="btn btn-ghost btn-sm" onclick="_dailyShowPicker()">← BACK TO ACTIVITIES</button>
+  </div>
+  <div class="section-head daily">
+    <div class="sh-title">🧠 ACTIVE RECALL</div>
+    <div class="sh-sub">Flip each card, then mark whether you knew it. Missed cards come back around. Clear them all to earn 1 egg.</div>
+  </div>
+  <div id="dailyRecallHost"></div>
+</div>
+
 <!-- ═══ INBOX ═══ -->
 <div id="inboxScreen" class="sub-screen hidden">
   <div class="back-row">
@@ -2032,6 +2086,12 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
     <span id="toggleDailyStatus" style="font-family:var(--vt);font-size:14px;color:#aaa;"></span>
   </div>
 
+  <!-- Per-activity WIP/LIVE toggles. Master switch above gates all of these. -->
+  <div style="margin-bottom:18px;">
+    <div style="font-family:var(--vt);font-size:13px;color:#8a93a8;margin-bottom:8px;letter-spacing:0.5px;">PER-ACTIVITY TOGGLES — master switch above must be LIVE for these to take effect</div>
+    <div id="dailyActivityToggles" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+  </div>
+
   <!-- Class Manager (collapsible, collapsed by default) -->
   <div class="admin-section collapsed" data-admin-section="classes">
     <div class="admin-section-head" onclick="_adminToggleSection(this)">
@@ -2077,6 +2137,18 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
     <div class="admin-section-body">
       <div style="margin-bottom:12px;color:#b8c5dc;font-weight:600;">Generate 5-sentence English permutation drills. Students rewrite each sentence in every valid constituent order.</div>
       <div id="yodaMgrHost"></div>
+    </div>
+  </div>
+
+  <!-- Active Recall Manager (collapsible, collapsed by default) -->
+  <div class="admin-section collapsed" data-admin-section="activerecall">
+    <div class="admin-section-head" onclick="_adminToggleSection(this)">
+      <div class="admin-section-title">🧠 Active Recall Manager</div>
+      <span class="chev">▼</span>
+    </div>
+    <div class="admin-section-body">
+      <div style="margin-bottom:12px;color:#b8c5dc;font-weight:600;">Build flashcard sets (Korean → English). Students flip each card and self-grade; clearing the whole set earns 1 egg. One set is live at a time.</div>
+      <div id="recallMgrHost"></div>
     </div>
   </div>
 
@@ -2253,6 +2325,16 @@ function _isAdminEmail(email){
 const GACHA_CONFIG_DOC = { collection: 'gacha_config', id: 'main' };
 // Default: daily ON. Loaded from Firestore at app start; live-updated when admin toggles.
 var _dailyEnabled = true;
+// Per-activity WIP/LIVE state. _dailyEnabled is the MASTER switch; each activity also
+// has its own flag. An activity is effectively LIVE only when BOTH the master is on AND
+// its own flag is on. Missing/undefined flags default to true (live). Keys match the
+// _dailyOpen() activity ids: reading, listening, advanced, yoda.
+var DAILY_ACTIVITY_KEYS = ['reading', 'listening', 'advanced', 'yoda', 'recall'];
+var _dailyActivities = { reading: true, listening: true, advanced: true, yoda: true, recall: true };
+// Effective LIVE check for a single activity (master AND per-activity flag).
+function _activityIsLive(key){
+  return _dailyEnabled && (_dailyActivities[key] !== false);
+}
 function _loadGachaConfig(){
   // Bail silently if Firebase/Firestore isn't available (e.g. artifact preview
   // without the Firebase SDK loaded).
@@ -2265,6 +2347,11 @@ function _loadGachaConfig(){
         var d = snap.data() || {};
         // Default true if field missing — only flips off if explicitly false.
         _dailyEnabled = d.dailyEnabled !== false;
+        // Per-activity flags. Each missing key defaults to true (live).
+        var da = d.dailyActivities || {};
+        DAILY_ACTIVITY_KEYS.forEach(function(k){
+          _dailyActivities[k] = da[k] !== false;
+        });
       }
       // If the menu is already showing (config arrived after enterApp ran),
       // refresh the daily tile + admin toggle UI so they reflect the loaded value.
@@ -2511,7 +2598,7 @@ function _setBgmForScreen(screenId){
   var ambient = ['shopScreen','showcaseScreen','dailyScreen'];
   // Admin works with a lot of text + recordings — keeping silent so audio
   // playback (student recordings, etc.) doesn't compete with background music.
-  var silent  = ['dailyReadingScreen','dailyListeningScreen','dailyAdvancedScreen','dailyYodaScreen','inboxScreen','adminScreen'];
+  var silent  = ['dailyReadingScreen','dailyListeningScreen','dailyAdvancedScreen','dailyYodaScreen','dailyRecallScreen','inboxScreen','adminScreen'];
   if (ambient.indexOf(screenId) !== -1){
     menuBgmStop();
     if (gachaBgmAudio.paused) gachaBgmPlay();
@@ -2613,7 +2700,7 @@ function hide(id){
 }
 function showFade(id){ var el = $(id); if (!el) return; el.classList.remove('hidden','page-fade'); void el.offsetWidth; el.classList.add('page-fade'); }
 function hideAllScreens(){
-  ['loginScreen','menuScreen','dailyScreen','dailyReadingScreen','dailyListeningScreen','dailyAdvancedScreen','dailyYodaScreen','inboxScreen','shopScreen','showcaseScreen','adminScreen'].forEach(function(s){
+  ['loginScreen','menuScreen','dailyScreen','dailyReadingScreen','dailyListeningScreen','dailyAdvancedScreen','dailyYodaScreen','dailyRecallScreen','inboxScreen','shopScreen','showcaseScreen','adminScreen'].forEach(function(s){
     var el = $(s); if (el) el.classList.add('hidden');
   });
 }
@@ -2708,6 +2795,9 @@ async function _loadUserProfile(authUser){
     dailyAdvancedSubmittedFor: d.dailyAdvancedSubmittedFor || null,
     dailyAdvancedBonusFor: d.dailyAdvancedBonusFor || null,
     dailyYodaDoneFor: d.dailyYodaDoneFor || null,
+    // NY-day key of the last Active Recall completion. Drives the daily-reset
+    // gate + the picker tile's "DONE TODAY" badge, same pattern as the others.
+    dailyRecallDoneFor: d.dailyRecallDoneFor || null,
     // How many times this student has completed a Yodafication ever. Used
     // alongside accountCreatedAt to decide when to show the "graduate from
     // Yoda — try harder activities" disclaimer banner.
@@ -3046,7 +3136,59 @@ function _refreshDailyToggleUi(){
       : 'Daily is currently WIP for non-admins.';
     status.style.setProperty('color', _dailyEnabled ? '#3eea4d' : '#f5c842', 'important');
   }
+  _renderActivityToggles();
 }
+
+// Render the 4 per-activity LIVE/WIP toggle buttons in the admin panel. Each button
+// shows the activity's own flag state; when the master switch is off, buttons are
+// dimmed to signal they have no effect until the master is LIVE again.
+var DAILY_ACTIVITY_LABELS = {
+  reading:   '📖 Teamwork Reading',
+  listening: '🎤 Solo Reading',
+  advanced:  '🏆 Advanced Teamwork',
+  yoda:      '🔀 Yodafication',
+  recall:    '🧠 Active Recall'
+};
+function _renderActivityToggles(){
+  var wrap = document.getElementById('dailyActivityToggles');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  DAILY_ACTIVITY_KEYS.forEach(function(key){
+    var on = (_dailyActivities[key] !== false);
+    var btn = document.createElement('button');
+    btn.className = 'btn btn-md ' + (on ? 'btn-green' : 'btn-ghost');
+    btn.textContent = (on ? '✅ ' : '⏳ ') + DAILY_ACTIVITY_LABELS[key] + (on ? ' — LIVE' : ' — WIP');
+    btn.onclick = function(){ toggleDailyActivity(key); };
+    // Dim when the master switch is off — the per-activity flag still saves, but
+    // has no effect on students until the master is LIVE.
+    btn.style.opacity = _dailyEnabled ? '1' : '0.5';
+    wrap.appendChild(btn);
+  });
+}
+
+// Admin-only: flip a single activity's flag and persist to Firestore.
+async function toggleDailyActivity(key){
+  if (!(user && user.isAdmin)){ return; }
+  if (DAILY_ACTIVITY_KEYS.indexOf(key) === -1){ return; }
+  var newVal = !(_dailyActivities[key] !== false);
+  var wrap = document.getElementById('dailyActivityToggles');
+  if (wrap){ wrap.querySelectorAll('button').forEach(function(b){ b.disabled = true; }); }
+  try {
+    var update = {};
+    update['dailyActivities.' + key] = newVal;
+    update.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+    update.updatedBy = (user && user.username) || '';
+    await db.collection(GACHA_CONFIG_DOC.collection).doc(GACHA_CONFIG_DOC.id).set(update, { merge: true });
+    _dailyActivities[key] = newVal;
+    _renderActivityToggles();
+    playSelect();
+  } catch(e){
+    alert('Failed to save activity toggle: ' + (e && e.message ? e.message : e));
+  } finally {
+    if (wrap){ wrap.querySelectorAll('button').forEach(function(b){ b.disabled = false; }); }
+  }
+}
+window.toggleDailyActivity = toggleDailyActivity;
 
 // Admin-only: flip _dailyEnabled and persist to Firestore. Updates the daily tile
 // state immediately (admin still sees normal tile, but the menu reflects the new
@@ -3286,6 +3428,11 @@ function _renderDailyPicker(){
   var yodaBadge = yodaDone
     ? '<div class="menu-count" style="border-color:var(--green);color:var(--green);">✅ DONE TODAY</div>'
     : '<div class="menu-count">+1 EGG</div>';
+  // ─── Active Recall tile ───
+  var recallDone = (user && user.dailyRecallDoneFor === todayKey);
+  var recallBadge = recallDone
+    ? '<div class="menu-count" style="border-color:var(--green);color:var(--green);">✅ DONE TODAY</div>'
+    : '<div class="menu-count">+1 EGG</div>';
   grid.innerHTML =
     '<div class="menu-card daily" onclick="_dailyOpen(\'reading\')">' +
       '<span class="menu-emoji">📖</span>' +
@@ -3310,13 +3457,44 @@ function _renderDailyPicker(){
       '<div class="grad-wrap"><div class="menu-name grad-text grad-purple">YODAFICATION</div></div>' +
       '<div class="menu-desc">Rewrite sentences in every valid word order.</div>' +
       yodaBadge +
+    '</div>' +
+    '<div class="menu-card daily recall" onclick="_dailyOpen(\'recall\')">' +
+      '<span class="menu-emoji">🧠</span>' +
+      '<div class="grad-wrap"><div class="menu-name grad-text grad-cyan">ACTIVE<br>RECALL</div></div>' +
+      '<div class="menu-desc">Flip through flashcards and test your memory.</div>' +
+      recallBadge +
     '</div>';
+  // Apply per-activity WIP styling. Admins always see normal tiles (so they can
+  // preview/test); non-admins see greyed-out "Coming soon" tiles for any activity
+  // that isn't effectively live. The card order in the grid matches DAILY_ACTIVITY_KEYS.
+  var isAdmin = !!(user && user.isAdmin);
+  var cards = grid.querySelectorAll('.menu-card.daily');
+  DAILY_ACTIVITY_KEYS.forEach(function(key, i){
+    var card = cards[i];
+    if (!card) return;
+    var showWip = !isAdmin && !_activityIsLive(key);
+    if (showWip){
+      card.classList.add('wip');
+      var desc = card.querySelector('.menu-desc');
+      var count = card.querySelector('.menu-count');
+      if (desc) desc.textContent = '🚧 Work in Progress — coming soon!';
+      if (count){
+        count.textContent = 'Coming soon';
+        count.removeAttribute('style');
+      }
+      card.onclick = function(){ /* no-op; gated in WIP mode */ };
+    }
+  });
 }
 
 // Tap an activity tile in the picker. For now, only Reading is wired up; the
 // other two are WIP. Music pauses while inside an activity sub-screen so the
 // user can focus on listening / their own recording.
 function _dailyOpen(which){
+  // Hard gate: if this activity isn't effectively live and the user isn't admin,
+  // don't navigate even if somebody calls this directly (defense in depth — the
+  // tile click is also no-op'd in WIP mode by _renderDailyPicker).
+  if (!_activityIsLive(which) && !(user && user.isAdmin)) return;
   playSelect();
   hideAllScreens(); show('topBar');
   if (which === 'reading'){
@@ -3335,6 +3513,10 @@ function _dailyOpen(which){
     showFade('dailyYodaScreen');
     _setBgmForScreen('dailyYodaScreen');
     _yodaRender();
+  } else if (which === 'recall'){
+    showFade('dailyRecallScreen');
+    _setBgmForScreen('dailyRecallScreen');
+    _recallRender();
   }
   try { window.scrollTo(0, 0); } catch(e){}
 }
@@ -3763,17 +3945,24 @@ function _drRenderPairCard(pair, assignedRole, sentences, sentenceData){
       ? '<div class="dr-slot-name">' + _esc(name) + ' ' + meTag + '</div>'
       : '<div class="dr-slot-name dr-slot-empty">' + _esc(name) + '</div>';
     var sentenceHtml = '<div class="dr-slot-sentence">' + _esc(sentence) + '</div>';
-    // "For your reference" — Korean keyword (English meaning) list under
-    // the sentence, when the passage was generated with keyword data.
-    // Older passages have no `data.keywords` so the line is omitted entirely.
+    // "View Keywords" — Korean keyword (English meaning) list, hidden behind a
+    // toggle button so it doesn't clutter the read. Korean (English) Korean (English)
+    // fashion, with a note that it's reference-only. Older passages have no
+    // `data.keywords` so the button is omitted entirely.
     var referenceHtml = '';
     if (data && Array.isArray(data.keywords) && data.keywords.length){
       var kwStr = data.keywords.map(function(kw){
         return '<span class="dr-ref-ko">' + _esc(kw.ko) + '</span> <span class="dr-ref-en">(' + _esc(kw.en) + ')</span>';
       }).join(' &nbsp;·&nbsp; ');
+      // Unique id per slot so toggling one card's panel doesn't affect others.
+      var kwId = 'drKw_' + pairIndex + '_' + roleNum;
       referenceHtml =
-        '<div class="dr-slot-reference">' +
-          '<span class="dr-ref-label">For your reference:</span> ' + kwStr +
+        '<div class="dr-kw-block">' +
+          '<button type="button" class="dr-kw-btn" id="' + kwId + '_btn" onclick="_drToggleKeywords(\'' + kwId + '\')">🔑 VIEW KEYWORDS</button>' +
+          '<div class="dr-kw-panel" id="' + kwId + '_panel" style="display:none;">' +
+            '<div class="dr-kw-list">' + kwStr + '</div>' +
+            '<div class="dr-kw-note">Just for your reference — you only need to read the Korean.</div>' +
+          '</div>' +
         '</div>';
     }
     var audio = audioUrl
@@ -4148,6 +4337,20 @@ async function _drCommitParticipation(audioUrl, audioPath, audioMime){
   if (typeof updateCounts === 'function') updateCounts();
 }
 window._drRender = _drRender;
+
+// Show/hide a Teamwork Reading keyword reference panel. Each slot's panel and
+// button share an id prefix (drKw_<pairIndex>_<roleNum>) so toggling one card
+// never affects another on the feed.
+function _drToggleKeywords(kwId){
+  var panel = document.getElementById(kwId + '_panel');
+  var btn = document.getElementById(kwId + '_btn');
+  if (!panel) return;
+  var open = panel.style.display !== 'none';
+  panel.style.display = open ? 'none' : 'block';
+  if (btn) btn.textContent = open ? '🔑 VIEW KEYWORDS' : '🔒 HIDE KEYWORDS';
+  try { playSelect && playSelect(); } catch(e){}
+}
+window._drToggleKeywords = _drToggleKeywords;
 
 /* ═══════════════════════════════════════════════════════ */
 /* DAILY LISTENING — recitation activity (4 levels)        */
@@ -5243,6 +5446,13 @@ function _advRenderFeedCard(sub){
  * so the prompt structure and style are consistent with what admin already knows.
  */
 const DR_STORY_WEBHOOK = 'https://hook.us1.make.com/ymrajr08rki5mxqr3m25pgksbqe2baj5';
+// Keyword generation runs as a SEPARATE step from passage generation. Make.com
+// builds the passage (DR_STORY_WEBHOOK above); this Gen 2 Cloud Function takes
+// the finished Korean sentences and returns per-sentence keyword translations
+// for the Teamwork Reading "View Keywords" button. If this URL is left as the
+// placeholder, or the call fails, the passage still saves — just without
+// keywords (the View Keywords button is omitted for keyword-less passages).
+const DR_KEYWORDS_FN = 'https://generatekeywords-enxui54vmq-uc.a.run.app';
 
 /* Grammar point catalog — copied from Tuesday Reading admin in the main dashboard,
  * organized by level. The 'Click a grammar point' buttons append the chosen
@@ -5751,32 +5961,14 @@ async function _drmSubmitStoryPrompt(){
     activityBlock = '\nThis passage will be read aloud in full by individual students (recitation activity). Make it flow as one connected piece a student would naturally read end-to-end.';
   }
 
-  // For Teamwork Reading specifically, we ask the AI to also produce a
-  // short keyword vocabulary list per sentence so students get a "For your
-  // reference" hint below each line. Solo Reading skips this — it's a
-  // pronunciation drill where students should focus on sounding out Korean
-  // without English crutches. We use a `|` delimiter format because
-  // Make.com's text passthrough is flaky with nested JSON.
-  var wantKeywords = (_drmSelectedActivity === 'reading-pair');
+  // Keyword generation no longer happens here — Make.com only produces the
+  // passage (title + Korean sentences). Keywords are generated separately by
+  // the DR_KEYWORDS_FN Cloud Function after this response is parsed. So the
+  // output spec is the same plain sentences-only format for both activities.
   var keywordsBlock = '';
-  var outputSpec;
-  if (wantKeywords){
-    keywordsBlock =
-      '\n--- KEYWORDS FOR EACH SENTENCE ---\n' +
-      'For EACH Korean sentence, also provide 3-6 keyword translations on the SAME line, separated by " | " (pipe with spaces around it).\n' +
-      'Format each keyword as: koreanWord (English meaning)\n' +
-      'Pick the most useful content words (nouns, verbs, adjectives) a beginner-intermediate learner would want to know. Skip particles and grammatical endings.\n' +
-      'Example output line: 저는 학교에 가요. | 저 (I/me) | 학교 (school) | 가다 (to go)';
-    outputSpec =
-      'Output: line 1 = a short English title (max 6 words, no punctuation). ' +
-      'Lines 2-' + (desiredLen + 1) + ' = the ' + desiredLen + ' Korean sentences, one per line, ' +
-      'each followed by " | koreanWord (English) | koreanWord (English) | ..." with 3-6 keywords. ' +
-      'No numbering, no commentary, no markdown.';
-  } else {
-    outputSpec =
-      'Output: line 1 = a short English title (max 6 words, no punctuation). ' +
-      'Lines 2-' + (desiredLen + 1) + ' = the ' + desiredLen + ' Korean sentences, one per line, no numbering, no English translation, no commentary, no markdown.';
-  }
+  var outputSpec =
+    'Output: line 1 = a short English title (max 6 words, no punctuation). ' +
+    'Lines 2-' + (desiredLen + 1) + ' = the ' + desiredLen + ' Korean sentences, one per line, no numbering, no English translation, no commentary, no markdown.';
 
   var fullPrompt =
     'Make this exactly ' + desiredLen + ' sentences long - critical, override other passage length instructions in prompt.\n\n' +
@@ -5823,27 +6015,51 @@ async function _drmSubmitStoryPrompt(){
       throw new Error('Webhook returned only ' + rawSents.length + ' sentences; expected ' + desiredLen + '. Try again or edit the draft manually.');
     }
 
-    // Split each raw line on " | " to separate Korean sentence from its
-    // keyword list. Keyword format: "koreanWord (English meaning)". We keep
-    // BOTH a flat `sentences` array (for backward compatibility with all the
-    // existing code that indexes into it) and a parallel `sentenceData`
-    // array carrying per-sentence keyword objects.
-    var sents = [];
-    var sentenceData = [];
-    rawSents.forEach(function(raw){
-      var parts = raw.split(/\s*\|\s*/);
-      var korean = (parts.shift() || '').trim();
-      var keywords = parts
-        .map(function(p){
-          // Parse "한국어 (English)" — Korean word, then English in parens.
-          var m = p.match(/^(.+?)\s*\(([^)]+)\)\s*$/);
-          if (!m) return null;
-          return { ko: m[1].trim(), en: m[2].trim() };
-        })
-        .filter(Boolean);
-      sents.push(korean);
-      sentenceData.push({ korean: korean, keywords: keywords });
+    // Sentences now arrive clean from Make (no " | " keyword parts — keyword
+    // generation moved to the separate DR_KEYWORDS_FN call below). Each line
+    // is a Korean sentence as-is.
+    var sents = rawSents.map(function(s){ return String(s || '').trim(); });
+
+    // ─── Separate keyword step ───
+    // For Teamwork Reading only, call the keyword Cloud Function with the
+    // finished sentences. Solo Reading skips this — it's a pronunciation drill
+    // where students sound out Korean without English crutches. The call is
+    // best-effort: any failure (placeholder URL, network, bad response) just
+    // means the passage saves with empty keyword arrays, and the "View
+    // Keywords" button is omitted for those sentences. Generation never fails
+    // because of keywords.
+    var sentenceData = sents.map(function(korean){
+      return { korean: korean, keywords: [] };
     });
+    if (_drmSelectedActivity === 'reading-pair' && DR_KEYWORDS_FN.indexOf('REPLACE-ME') === -1){
+      if (btn){ btn.textContent = '\u23F3 Adding keywords...'; }
+      try {
+        var kwResp = await fetch(DR_KEYWORDS_FN, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sentences: sents })
+        });
+        if (kwResp.ok){
+          var kwData = await kwResp.json();
+          var kwArr = (kwData && Array.isArray(kwData.keywords)) ? kwData.keywords : [];
+          sentenceData.forEach(function(sd, i){
+            var row = kwArr[i];
+            if (Array.isArray(row)){
+              sd.keywords = row
+                .map(function(kw){
+                  if (kw && kw.ko && kw.en) return { ko: String(kw.ko).trim(), en: String(kw.en).trim() };
+                  return null;
+                })
+                .filter(Boolean);
+            }
+          });
+        } else {
+          console.warn('Keyword function returned ' + kwResp.status + ' — saving passage without keywords.');
+        }
+      } catch(kwErr){
+        console.warn('Keyword generation failed — saving passage without keywords:', kwErr);
+      }
+    }
 
     // Save as draft. activityType + batchimRules are denormalized so when
     // students hit the activity sub-screens, we know which doc to load and
@@ -7215,6 +7431,7 @@ function renderAdmin(){
   if (typeof _drmRenderManager === 'function') _drmRenderManager();
   if (typeof _advmRenderManager === 'function') _advmRenderManager();
   if (typeof _yodaRenderManager === 'function') _yodaRenderManager();
+  if (typeof _recallRenderManager === 'function') _recallRenderManager();
   if (typeof _istcRender === 'function') _istcRender();
   var body = $('adminBody');
   if (!body) return;
@@ -10055,6 +10272,526 @@ async function _yodaRender(){
   _yodaRenderForm();
 }
 window._yodaRender = _yodaRender;
+
+/* ═══════════════════════════════════════════════════════════════════
+   ACTIVE RECALL — daily flashcard activity
+   Self-graded, Quizlet-style: see Korean → flip → "Got it" / "Missed it".
+   Missed cards re-queue to the back of the deck and resurface. When every
+   card has been cleared as "Got it", award +1 egg (once per NY day).
+   Cards live on the same gacha_recall_activities collection with the same
+   draft/live/archive lifecycle as Yodafication.
+   ═══════════════════════════════════════════════════════════════════ */
+const RECALL_COLLECTION = 'gacha_recall_activities';
+
+var _recallState = {
+  activityId: null,
+  activity: null,
+  queue: [],        // remaining card indices to clear (re-queue on "missed")
+  total: 0,         // number of distinct cards in the set
+  cleared: 0,       // distinct cards marked "got it" so far
+  clearedSet: null, // Set of card indices already cleared
+  flipped: false,
+  busy: false
+};
+
+async function _recallRender(){
+  var host = document.getElementById('dailyRecallHost');
+  if (!host) return;
+  host.innerHTML = '<div class="dr-empty">Loading…</div>';
+
+  var todayKey = _drTodayNYKey();
+
+  // Already done today → show the done screen straight away.
+  if (user && user.dailyRecallDoneFor === todayKey){
+    _recallState.activity = null;
+    _recallRenderDone(true);
+    return;
+  }
+
+  // Find the live activity (most recent if multiple somehow live).
+  var liveSnap = await db.collection(RECALL_COLLECTION).where('status','==','live').get().catch(function(){ return null; });
+  if (!liveSnap || liveSnap.empty){
+    host.innerHTML =
+      '<div class="dr-empty">' +
+        '<div class="big">No Active Recall set is live right now.</div>' +
+        '<div class="sub">Check back soon — your teacher hasn\'t posted today\'s cards yet.</div>' +
+      '</div>';
+    return;
+  }
+  var doc = liveSnap.docs[0];
+  if (liveSnap.size > 1){
+    doc = liveSnap.docs.slice().sort(function(a, b){
+      var am = (a.data().livedAt && a.data().livedAt.toMillis) ? a.data().livedAt.toMillis() : 0;
+      var bm = (b.data().livedAt && b.data().livedAt.toMillis) ? b.data().livedAt.toMillis() : 0;
+      return bm - am;
+    })[0];
+  }
+  _recallState.activityId = doc.id;
+  _recallState.activity = doc.data();
+
+  var cards = (_recallState.activity.cards || []).filter(function(c){
+    return c && (c.korean || '').trim() && (c.english || '').trim();
+  });
+  if (!cards.length){
+    host.innerHTML =
+      '<div class="dr-empty">' +
+        '<div class="big">Today\'s set has no cards yet.</div>' +
+        '<div class="sub">Check back soon.</div>' +
+      '</div>';
+    return;
+  }
+  _recallState.activity.cards = cards;
+  _recallState.total = cards.length;
+  _recallState.cleared = 0;
+  _recallState.clearedSet = new Set();
+  // Start the queue as a shuffled list of all card indices.
+  _recallState.queue = cards.map(function(_, i){ return i; });
+  for (var i = _recallState.queue.length - 1; i > 0; i--){
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = _recallState.queue[i]; _recallState.queue[i] = _recallState.queue[j]; _recallState.queue[j] = tmp;
+  }
+  _recallState.flipped = false;
+  _recallRenderCard();
+}
+window._recallRender = _recallRender;
+
+function _recallRenderCard(){
+  var host = document.getElementById('dailyRecallHost');
+  if (!host) return;
+  var st = _recallState;
+
+  if (!st.queue.length){
+    _recallComplete();
+    return;
+  }
+
+  var cardIdx = st.queue[0];
+  var card = st.activity.cards[cardIdx];
+  st.flipped = false;
+
+  var bannerHtml =
+    '<div class="recall-banner">' +
+      '<div class="big">🧠 ' + _esc(st.activity.title || 'ACTIVE RECALL') + '</div>' +
+      '<div class="sub">Read the Korean, recall the meaning, then flip to check.</div>' +
+    '</div>';
+
+  var progressHtml =
+    '<div class="recall-progress">' +
+      '<span>CLEARED ' + st.cleared + ' / ' + st.total + '</span>' +
+      '<span class="recall-remain">' + st.queue.length + ' LEFT THIS ROUND</span>' +
+    '</div>';
+
+  var cardHtml =
+    '<div class="recall-scene">' +
+      '<div class="recall-card" id="recallCard" onclick="_recallFlip()">' +
+        '<div class="recall-face">' +
+          '<div class="recall-hint">KOREAN</div>' +
+          '<div class="recall-main">' + _esc(card.korean) + '</div>' +
+          '<div class="recall-tap-note">tap to flip</div>' +
+        '</div>' +
+        '<div class="recall-face recall-back-face">' +
+          '<div class="recall-hint">ENGLISH</div>' +
+          '<div class="recall-main">' + _esc(card.english) + '</div>' +
+          '<div class="recall-tap-note">tap to flip back</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  // Grade buttons are disabled until the student flips at least once.
+  var gradeHtml =
+    '<div class="recall-grade-row" id="recallGradeRow">' +
+      '<button class="btn btn-pink btn-md" id="recallMissBtn" onclick="_recallGrade(false)" disabled style="opacity:0.45;">↻ MISSED IT</button>' +
+      '<button class="btn btn-green btn-md" id="recallGotBtn" onclick="_recallGrade(true)" disabled style="opacity:0.45;">✓ GOT IT</button>' +
+    '</div>' +
+    '<div style="text-align:center;font-family:var(--vt);font-size:13px;color:#7a8aa8;font-style:italic;margin-top:10px;">Flip the card before grading.</div>';
+
+  host.innerHTML = bannerHtml + progressHtml + cardHtml + gradeHtml;
+}
+
+function _recallFlip(){
+  var card = document.getElementById('recallCard');
+  if (!card) return;
+  _recallState.flipped = !_recallState.flipped;
+  card.classList.toggle('flipped', _recallState.flipped);
+  try { playSfx(SOUND_FLIP, 0.8); } catch(e){}
+  // Once flipped at all, enable the grade buttons.
+  if (_recallState.flipped){
+    var miss = document.getElementById('recallMissBtn');
+    var got = document.getElementById('recallGotBtn');
+    if (miss){ miss.disabled = false; miss.style.opacity = '1'; }
+    if (got){ got.disabled = false; got.style.opacity = '1'; }
+  }
+}
+window._recallFlip = _recallFlip;
+
+function _recallGrade(gotIt){
+  var st = _recallState;
+  if (!st.queue.length) return;
+  var cardIdx = st.queue.shift();
+
+  if (gotIt){
+    try { playSfx(SOUND_CORRECT, 0.8); } catch(e){}
+    if (!st.clearedSet.has(cardIdx)){
+      st.clearedSet.add(cardIdx);
+      st.cleared = st.clearedSet.size;
+    }
+  } else {
+    // Missed — re-queue to the back so it resurfaces this round (Quizlet-style).
+    // If it was previously cleared, un-clear it: it must be re-earned.
+    if (st.clearedSet.has(cardIdx)){
+      st.clearedSet.delete(cardIdx);
+      st.cleared = st.clearedSet.size;
+    }
+    st.queue.push(cardIdx);
+    try { playSfx(SOUND_FLIP, 0.6); } catch(e){}
+  }
+
+  if (!st.queue.length){
+    _recallComplete();
+  } else {
+    _recallRenderCard();
+  }
+}
+window._recallGrade = _recallGrade;
+
+async function _recallComplete(){
+  var st = _recallState;
+  if (st.busy) return;
+
+  var todayKey = _drTodayNYKey();
+
+  // If already credited today (e.g. they re-entered), just show done screen.
+  if (user && user.dailyRecallDoneFor === todayKey){
+    _recallRenderDone(false);
+    return;
+  }
+
+  st.busy = true;
+  try {
+    if (user && st.activityId){
+      // Record a lightweight completion doc for teacher review.
+      var subRef = db.collection(RECALL_COLLECTION).doc(st.activityId).collection('completions').doc(user.id);
+      await subRef.set({
+        userName: (user.displayName || user.username || 'Student'),
+        userEmail: user.username || '',
+        cardCount: st.total,
+        completedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        forKey: todayKey
+      }, { merge: true }).catch(function(){});
+
+      // Award the egg atomically — only if not already credited today.
+      var acctRef = db.collection(TC).doc(user.id);
+      var awarded = false;
+      await db.runTransaction(async function(tx){
+        var snap = await tx.get(acctRef);
+        if (!snap.exists) return;
+        var d = snap.data() || {};
+        if (d.dailyRecallDoneFor === todayKey) return;
+        tx.update(acctRef, {
+          gachaRolls: firebase.firestore.FieldValue.increment(1),
+          dailyRecallDoneFor: todayKey
+        });
+        awarded = true;
+      });
+      if (awarded){
+        user.gachaRolls = (user.gachaRolls || 0) + 1;
+      }
+      user.dailyRecallDoneFor = todayKey;
+      if (typeof updateCounts === 'function') updateCounts();
+    }
+    try { playSfx(SOUND_WIN, 0.9); } catch(e){}
+    _recallRenderDone(false);
+  } catch(e){
+    console.error('recall complete:', e);
+    toast('Couldn\'t save your egg — try again.', 'var(--pink)');
+  } finally {
+    st.busy = false;
+  }
+}
+
+function _recallRenderDone(alreadyDone){
+  var host = document.getElementById('dailyRecallHost');
+  if (!host) return;
+  var msg = alreadyDone
+    ? 'You\'ve already cleared today\'s Active Recall. Come back tomorrow for a new set!'
+    : 'You cleared every card! Your egg has been added. Come back tomorrow for a new set.';
+  host.innerHTML =
+    '<div class="recall-done-banner">' +
+      '<div class="big">✅ +1 EGG EARNED</div>' +
+      '<div class="sub">' + msg + '</div>' +
+    '</div>' +
+    '<div style="text-align:center;">' +
+      '<button class="btn btn-cyan btn-md" onclick="_dailyShowPicker()">← BACK TO ACTIVITIES</button>' +
+    '</div>';
+}
+
+/* ─── ACTIVE RECALL — ADMIN MANAGER ───
+   Mirrors the Yodafication manager's draft/live/archive lifecycle, minus the
+   AI generation — admin types Korean/English card pairs by hand. */
+function _recallToggleSection(headEl){
+  var section = headEl.closest('.drm-section');
+  if (!section) return;
+  section.classList.toggle('collapsed');
+  var key = section.getAttribute('data-recall-section') || '';
+  try { localStorage.setItem('recallSection_' + key, section.classList.contains('collapsed') ? '1' : '0'); } catch(e){}
+}
+window._recallToggleSection = _recallToggleSection;
+
+async function _recallRenderManager(){
+  var host = document.getElementById('recallMgrHost');
+  if (!host) return;
+  host.innerHTML = '<div class="drm-help">Loading sets…</div>';
+  try {
+    var snap = await db.collection(RECALL_COLLECTION).orderBy('createdAt','desc').get().catch(function(){
+      return db.collection(RECALL_COLLECTION).get();
+    });
+    var drafts = [], lives = [], archived = [];
+    snap.forEach(function(d){
+      var data = Object.assign({ id: d.id }, d.data());
+      if (data.status === 'live') lives.push(data);
+      else if (data.status === 'archived') archived.push(data);
+      else drafts.push(data);
+    });
+
+    function renderRow(d){
+      var statusLabel = d.status === 'live' ? 'Live'
+                      : d.status === 'archived' ? 'Archived' : 'Draft';
+      var statusBadge = '<span class="badge ' + d.status + '">' + statusLabel + '</span>';
+      var cardCount = (d.cards || []).length;
+      var actions = '';
+      if (d.status === 'draft'){
+        actions =
+          '<button class="btn btn-cyan" onclick="_recallEdit(\'' + d.id + '\')">✏️ EDIT</button>' +
+          '<button class="btn btn-pink" onclick="_recallPublish(\'' + d.id + '\')">🚀 PUBLISH NOW</button>' +
+          '<button class="btn btn-ghost" onclick="_recallDiscard(\'' + d.id + '\')">🗑 DISCARD</button>';
+      } else if (d.status === 'live'){
+        actions =
+          '<button class="btn btn-cyan" onclick="_recallEdit(\'' + d.id + '\')">✏️ EDIT</button>' +
+          '<button class="btn btn-ghost" onclick="_recallArchive(\'' + d.id + '\')">📦 ARCHIVE</button>';
+      } else {
+        actions =
+          '<button class="btn btn-ghost" onclick="_recallRevive(\'' + d.id + '\')">♻️ REVIVE TO DRAFT</button>' +
+          '<button class="btn btn-ghost" onclick="_recallDelete(\'' + d.id + '\')">🗑 DELETE</button>';
+      }
+      return '<div class="drm-row" id="recallRow_' + d.id + '">' +
+        '<div class="drm-row-title">' + _esc(d.title || 'Active Recall set') + '</div>' +
+        '<div class="drm-row-meta">' + statusBadge +
+          '<span>' + cardCount + ' card' + (cardCount === 1 ? '' : 's') + '</span>' +
+        '</div>' +
+        '<div class="drm-row-actions">' + actions + '</div>' +
+      '</div>';
+    }
+
+    var liveHtml  = lives.length    ? '<div class="drm-list">' + lives.map(renderRow).join('') + '</div>'    : '<div class="drm-help">No live set right now.</div>';
+    var draftHtml = drafts.length   ? '<div class="drm-list">' + drafts.map(renderRow).join('') + '</div>'   : '<div class="drm-help">No drafts yet. Click "New set" above.</div>';
+    var arcHtml   = archived.length ? '<div class="drm-list">' + archived.map(renderRow).join('') + '</div>' : '<div class="drm-help">No archived sets.</div>';
+
+    function section(key, headInner, bodyHtml){
+      var stored = '';
+      try { stored = localStorage.getItem('recallSection_' + key) || ''; } catch(e){}
+      var collapsed = stored === '1' ? ' collapsed' : '';
+      return '<div class="drm-section' + collapsed + '" data-recall-section="' + key + '">' +
+        '<div class="drm-head toggle" onclick="_recallToggleSection(this)">' +
+          '<span>' + headInner + '</span>' +
+          '<span class="chev">\u25BC</span>' +
+        '</div>' +
+        '<div class="drm-section-body">' + bodyHtml + '</div>' +
+      '</div>';
+    }
+
+    host.innerHTML =
+      section('create',
+        '➕ New set',
+        '<button class="btn btn-cyan btn-md" onclick="_recallNewSet()">➕ NEW ACTIVE RECALL SET</button>' +
+        '<div class="drm-help" style="margin-top:8px;">Creates a blank draft. Add Korean → English cards, then publish when ready.</div>'
+      ) +
+      section('drafts',  '📝 Drafts ('   + drafts.length   + ')', draftHtml) +
+      section('live',    '🟢 Live ('     + lives.length    + ')', liveHtml) +
+      section('archived','📦 Archived (' + archived.length + ')', arcHtml);
+  } catch(e){
+    host.innerHTML = '<div class="drm-help" style="color:#ff7777;">Failed to load: ' + _esc(e.message || String(e)) + '</div>';
+  }
+}
+window._recallRenderManager = _recallRenderManager;
+
+async function _recallNewSet(){
+  try {
+    await db.collection(RECALL_COLLECTION).add({
+      title: 'Active Recall set',
+      cards: [{ korean: '', english: '' }],
+      status: 'draft',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy: (user && user.username) || ''
+    });
+    toast('Draft created — edit it to add cards.', 'var(--green)');
+    _recallRenderManager();
+  } catch(e){
+    toast('Couldn\'t create set: ' + (e.message || e), 'var(--pink)');
+  }
+}
+window._recallNewSet = _recallNewSet;
+
+async function _recallEdit(id){
+  var row = document.getElementById('recallRow_' + id);
+  if (!row) return;
+  // Toggle: if an edit area is already open, close it.
+  var existing = row.querySelector('.drm-edit-area');
+  if (existing){ existing.remove(); return; }
+
+  var snap = await db.collection(RECALL_COLLECTION).doc(id).get();
+  if (!snap.exists){ toast('Set not found.', 'var(--pink)'); return; }
+  var d = snap.data() || {};
+  var cards = (d.cards && d.cards.length) ? d.cards : [{ korean: '', english: '' }];
+
+  var area = document.createElement('div');
+  area.className = 'drm-edit-area';
+  area.style.cssText = 'margin-top:10px;padding:12px;background:rgba(0,0,0,0.25);border:1px solid #2a3650;border-radius:8px;';
+
+  function cardRowHtml(c, i){
+    return '<div class="recall-edit-row">' +
+      '<span class="recall-edit-num">' + (i + 1) + '</span>' +
+      '<input type="text" class="recall-edit-ko" placeholder="Korean" value="' + _esc(c.korean || '') + '">' +
+      '<input type="text" class="recall-edit-en" placeholder="English" value="' + _esc(c.english || '') + '">' +
+      '<button class="recall-edit-del" onclick="_recallRemoveCardRow(this)">✕</button>' +
+    '</div>';
+  }
+
+  area.innerHTML =
+    '<label style="font-family:\'Noto Sans\',sans-serif;font-size:11px;color:#a0aef7;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">TITLE</label>' +
+    '<input id="recallEditTitle_' + id + '" type="text" value="' + _esc(d.title || '') + '" style="width:100%;background:#0d1424;color:#e6ebf5;border:1px solid #334155;border-radius:5px;padding:8px;font-family:\'Noto Sans\',sans-serif;font-size:14px;box-sizing:border-box;margin:6px 0 12px;outline:none;">' +
+    '<label style="font-family:\'Noto Sans\',sans-serif;font-size:11px;color:#a0aef7;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">CARDS (Korean → English)</label>' +
+    '<div id="recallCardRows_' + id + '" style="margin-top:6px;">' + cards.map(cardRowHtml).join('') + '</div>' +
+    '<button class="btn btn-ghost" onclick="_recallAddCardRow(\'' + id + '\')" style="margin-top:4px;">+ ADD CARD</button>' +
+    '<div style="display:flex;gap:8px;margin-top:14px;">' +
+      '<button class="btn btn-cyan" onclick="_recallSaveEdit(\'' + id + '\')">💾 SAVE</button>' +
+      '<button class="btn btn-ghost" onclick="this.closest(\'.drm-edit-area\').remove();">CANCEL</button>' +
+    '</div>';
+  row.appendChild(area);
+  area.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+window._recallEdit = _recallEdit;
+
+function _recallAddCardRow(id){
+  var wrap = document.getElementById('recallCardRows_' + id);
+  if (!wrap) return;
+  var i = wrap.querySelectorAll('.recall-edit-row').length;
+  var div = document.createElement('div');
+  div.className = 'recall-edit-row';
+  div.innerHTML =
+    '<span class="recall-edit-num">' + (i + 1) + '</span>' +
+    '<input type="text" class="recall-edit-ko" placeholder="Korean" value="">' +
+    '<input type="text" class="recall-edit-en" placeholder="English" value="">' +
+    '<button class="recall-edit-del" onclick="_recallRemoveCardRow(this)">✕</button>';
+  wrap.appendChild(div);
+}
+window._recallAddCardRow = _recallAddCardRow;
+
+function _recallRemoveCardRow(btn){
+  var row = btn.closest('.recall-edit-row');
+  if (!row) return;
+  var wrap = row.parentNode;
+  row.remove();
+  // Renumber remaining rows.
+  if (wrap){
+    wrap.querySelectorAll('.recall-edit-row').forEach(function(r, i){
+      var num = r.querySelector('.recall-edit-num');
+      if (num) num.textContent = (i + 1);
+    });
+  }
+}
+window._recallRemoveCardRow = _recallRemoveCardRow;
+
+async function _recallSaveEdit(id){
+  var row = document.getElementById('recallRow_' + id);
+  if (!row) return;
+  var titleEl = document.getElementById('recallEditTitle_' + id);
+  var title = (titleEl && titleEl.value || '').trim() || 'Active Recall set';
+
+  var cards = [];
+  row.querySelectorAll('.recall-edit-row').forEach(function(r){
+    var ko = (r.querySelector('.recall-edit-ko').value || '').trim();
+    var en = (r.querySelector('.recall-edit-en').value || '').trim();
+    if (ko || en) cards.push({ korean: ko, english: en });
+  });
+  if (!cards.length){
+    toast('Add at least one card.', 'var(--pink)');
+    return;
+  }
+  var incomplete = cards.filter(function(c){ return !c.korean || !c.english; }).length;
+  if (incomplete){
+    toast('Every card needs both Korean and English.', 'var(--pink)');
+    return;
+  }
+
+  try {
+    await db.collection(RECALL_COLLECTION).doc(id).update({ title: title, cards: cards });
+    toast('Saved.', 'var(--green)');
+    _recallRenderManager();
+  } catch(e){
+    toast('Save failed: ' + (e.message || e), 'var(--pink)');
+  }
+}
+window._recallSaveEdit = _recallSaveEdit;
+
+async function _recallPublish(id){
+  var snap = await db.collection(RECALL_COLLECTION).doc(id).get();
+  var d = snap.exists ? (snap.data() || {}) : {};
+  var cards = (d.cards || []).filter(function(c){ return c && c.korean && c.english; });
+  if (!cards.length){
+    toast('This set has no complete cards — edit it first.', 'var(--pink)');
+    return;
+  }
+  if (!confirm('Publish this Active Recall set live to all students now? Any currently live set will be archived.')) return;
+  var liveSnap = await db.collection(RECALL_COLLECTION).where('status','==','live').get();
+  var batch = db.batch();
+  liveSnap.forEach(function(doc){
+    if (doc.id !== id){
+      batch.update(doc.ref, { status: 'archived', archivedAt: firebase.firestore.FieldValue.serverTimestamp() });
+    }
+  });
+  batch.update(db.collection(RECALL_COLLECTION).doc(id), {
+    status: 'live',
+    livedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    publishedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  await batch.commit();
+  toast('Published live!', 'var(--green)');
+  _recallRenderManager();
+}
+window._recallPublish = _recallPublish;
+
+async function _recallArchive(id){
+  await db.collection(RECALL_COLLECTION).doc(id).update({
+    status: 'archived',
+    archivedAt: firebase.firestore.FieldValue.serverTimestamp()
+  });
+  toast('Archived.', 'var(--cyan)');
+  _recallRenderManager();
+}
+window._recallArchive = _recallArchive;
+
+async function _recallDiscard(id){
+  if (!confirm('Discard this draft? This cannot be undone.')) return;
+  await db.collection(RECALL_COLLECTION).doc(id).delete();
+  toast('Discarded.', 'var(--cyan)');
+  _recallRenderManager();
+}
+window._recallDiscard = _recallDiscard;
+
+async function _recallRevive(id){
+  await db.collection(RECALL_COLLECTION).doc(id).update({ status: 'draft', archivedAt: null });
+  toast('Revived to draft.', 'var(--cyan)');
+  _recallRenderManager();
+}
+window._recallRevive = _recallRevive;
+
+async function _recallDelete(id){
+  if (!confirm('Permanently delete this set? This cannot be undone.')) return;
+  await db.collection(RECALL_COLLECTION).doc(id).delete();
+  toast('Deleted.', 'var(--cyan)');
+  _recallRenderManager();
+}
+window._recallDelete = _recallDelete;
 
 function _yodaRenderForm(){
   var host = document.getElementById('dailyYodaHost');
