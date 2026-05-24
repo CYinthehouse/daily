@@ -203,16 +203,18 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .menu-header{text-align:center;margin-bottom:44px;}
 .menu-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px;}
 
-/* When the daily picker has 5 tiles, force a fixed 3-column grid so the last
- * two tiles drop to row 2 and center together. Without this, auto-fit puts
- * them flush-left on row 2. */
+/* The daily picker has 5 tiles: Yodafication + Active Recall on row 1 (a
+ * centered pair), and the 3 remaining activities filling row 2. A 6-column
+ * grid lets each tile span 2; every tile is placed explicitly so the layout
+ * is deterministic regardless of auto-flow. */
 @media (min-width: 820px){
   #dailyPickerGrid.has-yoda { grid-template-columns: repeat(6, 1fr); }
   #dailyPickerGrid.has-yoda > .menu-card { grid-column: span 2; }
-  /* Row 2 has 2 tiles (Yodafication + Active Recall): nudge them inward so
-   * the pair centers under the 3 tiles above. */
-  #dailyPickerGrid.has-yoda > .menu-card.yoda { grid-column: 2 / span 2; }
-  #dailyPickerGrid.has-yoda > .menu-card.recall { grid-column: 4 / span 2; }
+  /* Row 1 — the centered pair (columns 2-3 and 4-5). */
+  #dailyPickerGrid.has-yoda > .menu-card.yoda   { grid-row: 1; grid-column: 2 / span 2; }
+  #dailyPickerGrid.has-yoda > .menu-card.recall { grid-row: 1; grid-column: 4 / span 2; }
+  /* Row 2 — the 3 remaining activities span the full 6 columns. */
+  #dailyPickerGrid.has-yoda > .menu-card:not(.yoda):not(.recall) { grid-row: 2; }
 }
 .menu-card{background:#0d0d1f;border:2px solid rgba(255,255,255,0.2);border-radius:2px;padding:40px 28px;text-align:center;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,border-color 0.15s;position:relative;overflow:hidden;box-shadow:4px 4px 0 rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:center;}
 .menu-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;}
@@ -524,18 +526,86 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .recall-banner{background:linear-gradient(135deg,rgba(65,192,255,0.18),rgba(168,85,247,0.12));border:2px solid var(--cyan);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:center;}
 .recall-banner .big{font-family:'Press Start 2P',monospace;font-size:13px;color:var(--cyan);text-shadow:var(--ps-outline-sm);line-height:1.5;}
 .recall-banner .sub{font-family:var(--vt);font-size:15px;color:#cdd8ec;margin-top:6px;line-height:1.5;}
-.recall-progress{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;font-family:'Press Start 2P',monospace;font-size:10px;color:#a8b8d0;text-shadow:var(--ps-outline-sm);}
-.recall-progress .recall-remain{color:var(--gold);}
+/* Progress line — framed like an arcade scoreboard, not page text. */
+.recall-progress{
+  width:fit-content;
+  margin:0 auto 18px;
+  padding:9px 16px;
+  text-align:center;
+  font-family:'Press Start 2P',monospace;
+  font-size:14px;
+  color:#d7dff4;
+  background:#050711;
+  border:3px solid #2d3752;
+  box-shadow:0 4px 0 #02030a;
+  letter-spacing:0.06em;
+  line-height:1.7;
+}
+.recall-progress > span{display:block;}
+.recall-progress .recall-remain{color:var(--gold);margin-top:6px;}
 .recall-scene{perspective:1000px;width:100%;max-width:420px;margin:0 auto 18px;}
 .recall-card{width:100%;height:230px;position:relative;transform-style:preserve-3d;transition:transform 0.5s;cursor:pointer;}
 .recall-card.flipped{transform:rotateY(180deg);}
-.recall-face{position:absolute;inset:0;backface-visibility:hidden;background:#10172a;border:2px solid var(--cyan);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;box-shadow:4px 4px 0 rgba(0,0,0,0.8);}
+.recall-face{position:absolute;inset:0;backface-visibility:hidden;background:#10172a;border:2px solid var(--cyan);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;box-shadow:4px 4px 0 rgba(0,0,0,0.8);overflow:hidden;}
 .recall-back-face{transform:rotateY(180deg);border-color:var(--gold);}
-.recall-hint{font-family:'Press Start 2P',monospace;font-size:9px;color:#7a8aa8;margin-bottom:14px;letter-spacing:1px;}
-.recall-main{font-family:'Noto Sans KR','Apple SD Gothic Neo','Noto Sans',sans-serif;font-size:clamp(24px,6vw,40px);color:#fff;text-align:center;line-height:1.35;font-weight:700;}
-.recall-tap-note{font-family:var(--vt);font-size:14px;color:#7a8aa8;font-style:italic;margin-top:14px;}
+/* KOREAN / ENGLISH label — a machine/HUD label pinned to the top-left of the
+   card screen, not a centered subtitle. */
+.recall-hint{
+  position:absolute;
+  top:18px;
+  left:18px;
+  margin:0;
+  padding:5px 9px;
+  font-family:'Press Start 2P',monospace;
+  font-size:11px;
+  color:#9fb3d7;
+  background:#071025;
+  border:2px solid #263550;
+  letter-spacing:0.12em;
+}
+/* The word — screen text with a hard offset shadow (no neon glow). */
+.recall-main{
+  font-family:'Noto Sans KR','Apple SD Gothic Neo','Noto Sans',sans-serif;
+  font-size:clamp(34px,7vw,58px);
+  color:#fff;
+  text-align:center;
+  line-height:1.05;
+  font-weight:700;
+  text-shadow:
+    3px 3px 0 #000,
+    -1px -1px 0 rgba(70,201,255,0.35);
+}
+/* "tap to flip" — a blinking arcade prompt pinned to the bottom of the card. */
+.recall-tap-note{
+  position:absolute;
+  bottom:24px;
+  left:0;right:0;
+  margin:0;
+  text-align:center;
+  font-family:var(--vt);
+  font-size:17px;
+  color:#a8b6d5;
+  font-style:normal;
+  letter-spacing:0.06em;
+  text-transform:uppercase;
+  animation:recallBlinkPrompt 1s steps(2) infinite;
+}
+@keyframes recallBlinkPrompt{
+  0%,45%{opacity:1;}
+  46%,100%{opacity:0.35;}
+}
+/* Screen-flicker on flip — applied to the face content, not the rotating
+   card, so it doesn't fight the 3D rotateY. */
+.recall-flicker{animation:recallScreenFlip 180ms steps(3);}
+@keyframes recallScreenFlip{
+  0%{filter:brightness(1);}
+  45%{filter:brightness(1.7);}
+  100%{filter:brightness(1);}
+}
 .recall-grade-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:4px;}
 .recall-grade-row .btn{min-width:150px;}
+/* Oversized ✓ / ↻ glyphs on the Missed/Got buttons so they're clearly legible. */
+.recall-grade-icon{font-size:1.7em;line-height:1;vertical-align:-0.18em;margin-right:6px;display:inline-block;}
 .recall-done-banner{background:linear-gradient(135deg,rgba(57,255,20,0.16),rgba(57,255,20,0.04));border:2px solid var(--green);border-radius:10px;padding:18px 16px;text-align:center;margin-bottom:18px;}
 .recall-done-banner .big{font-family:'Press Start 2P',monospace;font-size:16px;color:var(--green);text-shadow:var(--ps-outline-sm);line-height:1.5;}
 .recall-done-banner .sub{font-family:var(--vt);font-size:17px;color:#cdd8ec;margin-top:8px;line-height:1.5;}
@@ -2912,7 +2982,7 @@ var _dailyEnabled = true;
 // has its own flag. An activity is effectively LIVE only when BOTH the master is on AND
 // its own flag is on. Missing/undefined flags default to true (live). Keys match the
 // _dailyOpen() activity ids: reading, listening, advanced, yoda.
-var DAILY_ACTIVITY_KEYS = ['reading', 'listening', 'advanced', 'yoda', 'recall'];
+var DAILY_ACTIVITY_KEYS = ['yoda', 'recall', 'reading', 'listening', 'advanced'];
 var _dailyActivities = { reading: true, listening: true, advanced: true, yoda: true, recall: true };
 // Effective LIVE check for a single activity (master AND per-activity flag).
 function _activityIsLive(key){
@@ -4025,6 +4095,18 @@ function _renderDailyPicker(){
     ? '<div class="menu-count" style="border-color:var(--green);color:var(--green);">✅ DONE TODAY</div>'
     : '<div class="menu-count">+1 EGG</div>';
   grid.innerHTML =
+    '<div class="menu-card daily yoda" onclick="_dailyOpen(\'yoda\')">' +
+      '<span class="menu-emoji">🔀</span>' +
+      '<div class="grad-wrap"><div class="menu-name grad-text grad-purple">YODAFICATION</div></div>' +
+      '<div class="menu-desc">Rewrite sentences in every valid word order.</div>' +
+      yodaBadge +
+    '</div>' +
+    '<div class="menu-card daily recall" onclick="_dailyOpen(\'recall\')">' +
+      '<span class="menu-emoji">🧠</span>' +
+      '<div class="grad-wrap"><div class="menu-name grad-text grad-cyan">ACTIVE<br>RECALL</div></div>' +
+      '<div class="menu-desc">Flip through flashcards and test your memory.</div>' +
+      recallBadge +
+    '</div>' +
     '<div class="menu-card daily" onclick="_dailyOpen(\'reading\')">' +
       '<span class="menu-emoji">📖</span>' +
       '<div class="grad-wrap"><div class="menu-name grad-text grad-cyan">TEAMWORK<br>READING</div></div>' +
@@ -4042,18 +4124,6 @@ function _renderDailyPicker(){
       '<div class="grad-wrap"><div class="menu-name grad-text grad-gold">ADVANCED<br>TEAMWORK</div></div>' +
       '<div class="menu-desc">Conjugate verbs in four tenses. Bigger bonus when 10 students join.</div>' +
       advBadge +
-    '</div>' +
-    '<div class="menu-card daily yoda" onclick="_dailyOpen(\'yoda\')">' +
-      '<span class="menu-emoji">🔀</span>' +
-      '<div class="grad-wrap"><div class="menu-name grad-text grad-purple">YODAFICATION</div></div>' +
-      '<div class="menu-desc">Rewrite sentences in every valid word order.</div>' +
-      yodaBadge +
-    '</div>' +
-    '<div class="menu-card daily recall" onclick="_dailyOpen(\'recall\')">' +
-      '<span class="menu-emoji">🧠</span>' +
-      '<div class="grad-wrap"><div class="menu-name grad-text grad-cyan">ACTIVE<br>RECALL</div></div>' +
-      '<div class="menu-desc">Flip through flashcards and test your memory.</div>' +
-      recallBadge +
     '</div>';
   // Apply per-activity WIP styling. Admins always see normal tiles (so they can
   // preview/test); non-admins see greyed-out "Coming soon" tiles for any activity
@@ -11732,10 +11802,10 @@ function _recallRenderCard(){
   // Grade buttons are disabled until the student flips at least once.
   var gradeHtml =
     '<div class="recall-grade-row" id="recallGradeRow">' +
-      '<button class="btn btn-pink btn-md" id="recallMissBtn" onclick="_recallGrade(false)" disabled style="opacity:0.45;">↻ MISSED IT</button>' +
-      '<button class="btn btn-green btn-md" id="recallGotBtn" onclick="_recallGrade(true)" disabled style="opacity:0.45;">✓ GOT IT</button>' +
+      '<button class="btn btn-pink btn-md" id="recallMissBtn" onclick="_recallGrade(false)" disabled style="opacity:0.45;"><span class="recall-grade-icon">↻</span>MISSED IT</button>' +
+      '<button class="btn btn-green btn-md" id="recallGotBtn" onclick="_recallGrade(true)" disabled style="opacity:0.45;"><span class="recall-grade-icon">✓</span>GOT IT</button>' +
     '</div>' +
-    '<div style="text-align:center;font-family:var(--vt);font-size:13px;color:#7a8aa8;font-style:italic;margin-top:10px;">Flip the card before grading.</div>';
+    '<div style="text-align:center;font-family:var(--vt);font-size:17px;color:#7a8aa8;font-style:italic;margin-top:10px;">Flip the card before grading.</div>';
 
   host.innerHTML = bannerHtml + progressHtml + cardHtml + gradeHtml;
 }
@@ -11746,6 +11816,14 @@ function _recallFlip(){
   _recallState.flipped = !_recallState.flipped;
   card.classList.toggle('flipped', _recallState.flipped);
   try { playSfx(SOUND_FLIP, 0.8); } catch(e){}
+  // Arcade screen-flicker — a brief brightness pulse on the word, applied to
+  // the face content (not the rotating card) so it doesn't fight the rotateY.
+  card.querySelectorAll('.recall-main').forEach(function(el){
+    el.classList.remove('recall-flicker');
+    void el.offsetWidth;            // restart the animation
+    el.classList.add('recall-flicker');
+    setTimeout(function(){ el.classList.remove('recall-flicker'); }, 220);
+  });
   // Enable the grade buttons once the card has been flipped to the answer
   // (English) side at least once. seenAnswer latches true and is reset per
   // card in _recallRenderCard, so the buttons stay enabled even if the
