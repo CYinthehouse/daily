@@ -587,8 +587,8 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 /* Vertical gap between the ACTIVE RECALL header and the game content.
  * A real element (not a collapsing margin) so the space actually shows.
  * -sm is used by the match phase, which sits a little higher. */
-.rg-topgap{height:56px;}
-.rg-topgap-sm{height:24px;}
+.rg-topgap{height:72px;}
+.rg-topgap-sm{height:72px;}
 /* Study-phase arrow row — one image arrow per column, linking each Korean
  * word to its English meaning directly below. */
 .rg-arrows{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:2px 0;}
@@ -598,7 +598,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .rg-banner .big{font-family:'Press Start 2P',monospace;font-size:13px;color:var(--gold);text-shadow:var(--ps-outline-sm);line-height:1.5;}
 .rg-banner .sub{font-family:var(--vt);font-size:15px;color:#cdd8ec;margin-top:6px;line-height:1.5;}
 /* Countdown timer pill */
-.rg-timer{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;font-family:'Press Start 2P',monospace;font-size:12px;color:var(--cyan);text-shadow:var(--ps-outline-sm);}
+.rg-timer{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;font-family:'Press Start 2P',monospace;font-size:18px;color:var(--cyan);text-shadow:var(--ps-outline-sm);}
 .rg-timer.urgent{color:var(--pink);}
 /* Word grid: 5 Korean containers in a row, English directly below */
 .rg-grid{display:flex;flex-direction:column;gap:10px;max-width:640px;margin:0 auto 16px;}
@@ -615,24 +615,265 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .rg-en.selectable{cursor:pointer;}
 .rg-en.selectable:hover{filter:brightness(1.2);}
 .rg-en.paired{opacity:0.55;}
-.rg-en.correct{border-color:var(--green);box-shadow:0 0 14px rgba(57,255,20,0.55),3px 3px 0 rgba(0,0,0,0.7);}
-.rg-en.wrong{border-color:var(--pink);box-shadow:0 0 14px rgba(255,119,119,0.5),3px 3px 0 rgba(0,0,0,0.7);}
-/* Phase-2 shuffle: English cells wobble + lift as they scramble into place. */
-.rg-en.shuffling{animation:rgShuffle 0.55s ease-in-out;}
-@keyframes rgShuffle{
-  0%{transform:translateY(0) rotate(0);}
-  25%{transform:translateY(-10px) rotate(-4deg);}
-  50%{transform:translateY(4px) rotate(3deg);}
-  75%{transform:translateY(-5px) rotate(-2deg);}
-  100%{transform:translateY(0) rotate(0);}
+.rg-en.correct{border-color:var(--green);background:#16261a;box-shadow:0 0 14px rgba(57,255,20,0.55),3px 3px 0 rgba(0,0,0,0.7);}
+.rg-en.wrong{border-color:#ff3b3b;background:#2a1414;color:#ffb3b3;box-shadow:0 0 16px rgba(255,59,59,0.7),3px 3px 0 rgba(0,0,0,0.7);}
+/* Phase-2 shuffle: English cells physically SLIDE from their old (aligned)
+   slots into their new scrambled slots — a FLIP animation. JS sets the
+   per-card transform; this rule just defines the transition + lifted look
+   while travelling. .rg-shuffle-pre is the inverted (pre-play) state with no
+   transition, so the jump-back is instant. */
+.rg-en.rg-shuffle-pre{transition:none;}
+.rg-en.rg-sliding{
+  transition:transform 0.5s cubic-bezier(0.34,1.2,0.64,1);
+  z-index:5;
+  box-shadow:0 0 16px rgba(255,215,0,0.45),0 8px 14px rgba(0,0,0,0.55),inset 0 0 12px rgba(255,255,255,0.04);
 }
 /* Match-phase prompt */
 .rg-prompt{text-align:center;font-family:'Press Start 2P',monospace;font-size:11px;color:#cdd8ec;line-height:1.7;margin-bottom:14px;text-shadow:var(--ps-outline-sm);}
 .rg-prompt b{color:var(--gold);}
-.rg-progress{text-align:center;font-family:var(--vt);font-size:14px;color:#9aa8c0;margin-bottom:10px;}
+.rg-progress{text-align:center;font-family:'Press Start 2P',monospace;font-size:23px;color:var(--green);text-shadow:var(--ps-outline-sm);margin-bottom:14px;}
 @media (max-width:560px){
   .rg-cell{min-height:54px;font-size:12px;}
   .rg-row{gap:5px;}
+}
+
+/* ─── ACTIVE RECALL — MATCH-UP "PIXEL ROOM" ───
+   Scoped wrapper for the Match-Up game: study phase, match phase, and result
+   screen. Everything lives inside .post-recall-game-room so nothing above the
+   Active Recall box is touched. The student "walks" from the instruction sign
+   into a small pixel room: floor tiles, a platform under the cards. The egg
+   prize and the green prize-sign banner styling apply on the result screen
+   only (those elements simply aren't rendered during the live phases). */
+.post-recall-game-room{
+  position:relative;
+  max-width:980px;
+  margin:28px auto 0;
+  padding:24px 24px 36px;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(53,255,53,0.10), transparent 42%),
+    linear-gradient(180deg, rgba(13,18,30,0.72), rgba(7,9,20,0.92));
+  border:2px solid rgba(53,255,53,0.45);
+  border-radius:14px;
+  box-shadow:
+    0 0 0 4px rgba(0,0,0,0.24),
+    0 18px 42px rgba(0,0,0,0.36),
+    inset 0 0 34px rgba(0,0,0,0.42);
+  overflow:hidden;
+}
+/* Tiled floor — pseudo-element fading up from the bottom of the room. */
+.post-recall-game-room::after{
+  content:"";
+  position:absolute;
+  left:0;right:0;bottom:0;
+  height:130px;
+  pointer-events:none;
+  background:
+    linear-gradient(45deg, rgba(67,199,255,0.10) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(67,199,255,0.10) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(67,199,255,0.10) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(67,199,255,0.10) 75%);
+  background-size:32px 32px;
+  background-position:0 0,0 16px,16px -16px,-16px 0;
+  opacity:0.48;
+  -webkit-mask-image:linear-gradient(to top, black 0%, transparent 100%);
+  mask-image:linear-gradient(to top, black 0%, transparent 100%);
+}
+
+/* Reward banner — keeps the existing green success look but upgraded into a
+   chunky pixel "prize sign" with corner bolts and a 3D base shadow. */
+.post-recall-game-room .recall-done-banner{
+  position:relative;
+  z-index:1;
+  margin:0 auto 22px;
+  padding:18px 22px;
+  max-width:920px;
+  text-align:center;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(53,255,53,0.18), transparent 58%),
+    linear-gradient(180deg, rgba(24,75,32,0.55), rgba(8,20,16,0.94));
+  border:3px solid var(--green);
+  border-radius:10px;
+  box-shadow:
+    0 5px 0 #087412,
+    0 0 24px rgba(53,255,53,0.28),
+    inset 0 0 24px rgba(53,255,53,0.06);
+}
+.post-recall-game-room .recall-done-banner::before,
+.post-recall-game-room .recall-done-banner::after{
+  content:"";
+  position:absolute;
+  top:12px;
+  width:8px;height:8px;
+  background:var(--green);
+  box-shadow:0 0 10px rgba(53,255,53,0.85);
+}
+.post-recall-game-room .recall-done-banner::before{left:14px;}
+.post-recall-game-room .recall-done-banner::after{right:14px;}
+
+/* Center prize moment — a bobbing egg between the sign and the cards. */
+.egg-prize{
+  position:relative;
+  z-index:1;
+  width:72px;height:72px;
+  margin:-2px auto 18px;
+  display:grid;
+  place-items:center;
+  animation:prize-bob 1.4s steps(4) infinite;
+}
+.egg-prize-glow{
+  position:absolute;
+  inset:8px;
+  border-radius:999px;
+  background:rgba(53,255,53,0.16);
+  box-shadow:
+    0 0 26px rgba(53,255,53,0.38),
+    0 0 42px rgba(255,215,0,0.18);
+}
+.egg-prize-icon{
+  position:relative;
+  font-size:2rem;
+  filter:drop-shadow(0 5px 0 rgba(0,0,0,0.45));
+}
+@keyframes prize-bob{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-6px);}
+}
+
+/* Platform — a subtle inset stage so the matched cards don't float on the
+   page grid. The .rg-grid inside it keeps its own layout. */
+.reward-stage{
+  position:relative;
+  z-index:1;
+  max-width:900px;
+  margin:0 auto;
+  padding:18px 18px 24px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0)),
+    rgba(3,6,18,0.42);
+  border:2px solid rgba(255,255,255,0.06);
+  border-radius:14px;
+  box-shadow:inset 0 0 28px rgba(0,0,0,0.35);
+}
+.reward-stage .rg-grid{margin-bottom:0;}
+
+/* Matched word cards — pixel blocks. Scoped to the room. The chunky 0 5px 0
+   base shadow is added only on the result screen (.is-result); the live
+   study/match phases get the same blocks but flat (no base shadow), so the
+   shuffle wobble and hover/select lift don't fight a detached drop shadow. */
+.post-recall-game-room .rg-cell{
+  position:relative;
+  min-height:76px;
+  border-width:3px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.065), rgba(255,255,255,0)),
+    #10172b;
+}
+/* Korean (cyan) block — flat glow on live phases */
+.post-recall-game-room .rg-ko{
+  border-color:var(--cyan);
+  color:#f5f7ff;
+  box-shadow:
+    0 0 14px rgba(67,199,255,0.22),
+    inset 0 0 12px rgba(255,255,255,0.035);
+}
+/* English (gold) block — flat glow on live phases */
+.post-recall-game-room .rg-en{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.065), rgba(255,255,255,0)),
+    #211832;
+  border-color:var(--gold);
+  color:#ffeeb0;
+  box-shadow:
+    0 0 14px rgba(255,215,0,0.20),
+    inset 0 0 12px rgba(255,255,255,0.035);
+}
+/* Correct match — green chest, glowing (result screen) */
+.post-recall-game-room .rg-en.correct{
+  border-color:var(--green);
+  box-shadow:
+    0 0 22px rgba(53,255,53,0.42),
+    inset 0 0 12px rgba(53,255,53,0.055);
+}
+/* Wrong match — red error read (result screen) */
+.post-recall-game-room .rg-en.wrong{
+  box-shadow:
+    0 0 18px rgba(255,59,59,0.55),
+    inset 0 0 12px rgba(255,255,255,0.035);
+}
+/* ── RESULT SCREEN ONLY — add the chunky 0 5px 0 pixel base shadow. ── */
+.post-recall-game-room.is-result .rg-ko{
+  box-shadow:
+    0 5px 0 #07506e,
+    0 0 14px rgba(67,199,255,0.22),
+    inset 0 0 12px rgba(255,255,255,0.035);
+}
+.post-recall-game-room.is-result .rg-en{
+  box-shadow:
+    0 5px 0 #7a5c00,
+    0 0 14px rgba(255,215,0,0.20),
+    inset 0 0 12px rgba(255,255,255,0.035);
+}
+.post-recall-game-room.is-result .rg-en.correct{
+  box-shadow:
+    0 5px 0 #087412,
+    0 0 22px rgba(53,255,53,0.42),
+    inset 0 0 12px rgba(53,255,53,0.055);
+}
+.post-recall-game-room.is-result .rg-en.wrong{
+  box-shadow:
+    0 5px 0 #7a1414,
+    0 0 18px rgba(255,59,59,0.55),
+    inset 0 0 12px rgba(255,255,255,0.035);
+}
+/* ── Live-phase states (study + match) — flat, no base shadow. ── */
+/* Selected Korean word during the match phase — gold glow, flat. */
+.post-recall-game-room .rg-ko.active{
+  border-color:var(--gold);
+  box-shadow:
+    0 0 16px rgba(255,215,0,0.6),
+    inset 0 0 12px rgba(255,255,255,0.035);
+}
+/* Paired cells dim, same as before. */
+.post-recall-game-room .rg-ko.paired,
+.post-recall-game-room .rg-en.paired{opacity:0.55;}
+/* Shuffle slide — JS-driven FLIP via .rg-sliding; cards are flat here. */
+/* Arrows row in the study phase sits above the tiled floor. */
+.post-recall-game-room .rg-arrows{position:relative;z-index:1;}
+/* Banner / timer / progress / prompt all ride above the floor too. */
+.post-recall-game-room .rg-banner,
+.post-recall-game-room .rg-timer,
+.post-recall-game-room .rg-progress,
+.post-recall-game-room .rg-prompt{position:relative;z-index:1;}
+
+/* Continue button — chunky pixel press inside the reward room. */
+.post-recall-game-room .recall-continue-btn{
+  position:relative;
+  z-index:1;
+  border-width:3px;
+  box-shadow:
+    0 5px 0 #07506e,
+    0 0 16px rgba(67,199,255,0.30);
+  transition:transform 110ms ease, box-shadow 110ms ease;
+}
+.post-recall-game-room .recall-continue-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:
+    0 7px 0 #07506e,
+    0 0 22px rgba(67,199,255,0.42);
+}
+.post-recall-game-room .recall-continue-btn:active{
+  transform:translateY(5px);
+  box-shadow:0 0 16px rgba(67,199,255,0.30);
+}
+.post-recall-game-room .recall-actions{
+  position:relative;
+  z-index:1;
+  text-align:center;
+  margin-top:40px;
+}
+@media (max-width:560px){
+  .post-recall-game-room{padding:20px 14px 30px;}
+  .post-recall-game-room .rg-cell{min-height:62px;}
 }
 
 /* Active Recall manager: editable card rows, mirrors the yoda-edit-row look */
@@ -10725,15 +10966,19 @@ function _rgRenderStudy(){
 
   host.innerHTML =
     '<div class="rg-topgap"></div>' +
-    '<div class="rg-banner">' +
-      '<div class="big">🎮 STUDY THE PAIRS</div>' +
-      '<div class="sub">Memorize each Korean word and its meaning — they get mixed up soon!</div>' +
-    '</div>' +
-    '<div class="rg-timer" id="rgTimer">⏳ <span id="rgTimerNum">' + RECALL_GAME_STUDY_SECS + '</span>s</div>' +
-    '<div class="rg-grid">' +
-      '<div class="rg-row" id="rgKoRow">' + koCells + '</div>' +
-      '<div class="rg-arrows">' + arrowCells + '</div>' +
-      '<div class="rg-row" id="rgEnRow">' + enCells + '</div>' +
+    '<div class="post-recall-game-room">' +
+      '<div class="rg-banner">' +
+        '<div class="big">🎮 STUDY THE PAIRS</div>' +
+        '<div class="sub">Memorize each Korean word and its meaning — they get mixed up soon!</div>' +
+      '</div>' +
+      '<div class="rg-timer" id="rgTimer">⏳ <span id="rgTimerNum">' + RECALL_GAME_STUDY_SECS + '</span>s</div>' +
+      '<div class="reward-stage">' +
+        '<div class="rg-grid">' +
+          '<div class="rg-row" id="rgKoRow">' + koCells + '</div>' +
+          '<div class="rg-arrows">' + arrowCells + '</div>' +
+          '<div class="rg-row" id="rgEnRow">' + enCells + '</div>' +
+        '</div>' +
+      '</div>' +
     '</div>';
 
   var left = RECALL_GAME_STUDY_SECS;
@@ -10766,29 +11011,65 @@ function _rgStartMatch(){
   _rgState.matched = {};
   _rgState.locked = true; // no picks until the shuffle animation finishes
 
-  // Render the match screen, then run the shuffle animation on the English
-  // cells before starting the timer. The cells animate in place; the new
-  // (scrambled) order is already what's rendered, so the wobble reads as the
-  // boxes "mixing up."
+  // Render the match screen. The English cells are now in their NEW
+  // (scrambled) slots. To make the shuffle legible, we run a FLIP animation:
+  // each card jumps back to the slot it occupied in the old ALIGNED order,
+  // then slides — for real, across its true distance — into its new home.
+  // Cards that didn't move (newSlot === oldSlot) get a tiny hop so the whole
+  // row still reads as "mixing up." Per-card stagger keeps it lively.
   _rgRenderMatch();
+
   var enRow = document.getElementById('rgEnRow');
-  var SHUFFLE_MS = 600;
+  var STAGGER_MS = 70;          // delay between consecutive cards
+  var SLIDE_MS   = 500;         // matches the .rg-sliding transition duration
+  var lastDelay  = 0;
+
   if (enRow){
-    var cells = enRow.querySelectorAll('.rg-en');
-    cells.forEach(function(c, idx){
-      // Tiny stagger so they don't all wobble in perfect lockstep.
-      c.style.animationDelay = (idx * 60) + 'ms';
-      c.classList.add('shuffling');
+    var cells = Array.prototype.slice.call(enRow.querySelectorAll('.rg-en'));
+    // Step = horizontal distance between two slots (cell width + grid gap).
+    var step = 0;
+    if (cells.length >= 2){
+      step = cells[1].getBoundingClientRect().left
+           - cells[0].getBoundingClientRect().left;
+    }
+    cells.forEach(function(c, newSlot){
+      // Card in DOM slot `newSlot` shows pairIdx = enOrder[newSlot]; in the
+      // pre-shuffle aligned order that card lived at slot `pairIdx`.
+      var oldSlot = _rgState.enOrder[newSlot];
+      var dx = (oldSlot - newSlot) * step;       // offset back to old home
+      // INVERT — snap each card to its old position with no transition.
+      c.classList.add('rg-shuffle-pre');
+      if (dx !== 0){
+        c.style.transform = 'translateX(' + dx + 'px)';
+      } else {
+        // No move — give it a small lift so it visibly joins the shuffle.
+        c.style.transform = 'translateY(-14px)';
+      }
+    });
+    // Force a reflow so the inverted transforms are committed before we play.
+    void enRow.offsetWidth;
+    // PLAY — stagger each card sliding home.
+    cells.forEach(function(c, newSlot){
+      var delay = newSlot * STAGGER_MS;
+      lastDelay = Math.max(lastDelay, delay);
+      setTimeout(function(){
+        c.classList.remove('rg-shuffle-pre');
+        c.classList.add('rg-sliding');
+        c.style.transform = 'translate(0,0)';
+      }, delay);
     });
   }
+
+  var SHUFFLE_TOTAL = lastDelay + SLIDE_MS + 60;
 
   // Start the 30s timer only after the shuffle animation finishes.
   setTimeout(function(){
     var er = document.getElementById('rgEnRow');
     if (er){
       er.querySelectorAll('.rg-en').forEach(function(c){
-        c.classList.remove('shuffling');
-        c.style.animationDelay = '';
+        c.classList.remove('rg-sliding');
+        c.classList.remove('rg-shuffle-pre');
+        c.style.transform = '';
       });
     }
     var left = RECALL_GAME_MATCH_SECS;
@@ -10807,7 +11088,7 @@ function _rgStartMatch(){
         _rgFinish();
       }
     }, 1000);
-  }, SHUFFLE_MS + RECALL_GAME_PAIRS * 60);
+  }, SHUFFLE_TOTAL);
 }
 
 function _rgRenderMatch(){
@@ -10842,17 +11123,21 @@ function _rgRenderMatch(){
     : 'Tap a Korean word to start matching.';
 
   host.innerHTML =
-    '<div class="rg-topgap-sm"></div>' +
-    '<div class="rg-banner">' +
-      '<div class="big">🎯 MATCH THE PAIRS</div>' +
-      '<div class="sub">Tap a Korean word, then tap its English meaning.</div>' +
-    '</div>' +
-    '<div class="rg-timer" id="rgTimer">⏱ <span id="rgTimerNum">' + RECALL_GAME_MATCH_SECS + '</span>s</div>' +
-    '<div class="rg-progress">' + matchedCount + ' / ' + RECALL_GAME_PAIRS + ' matched</div>' +
-    '<div class="rg-prompt">' + promptKo + '</div>' +
-    '<div class="rg-grid">' +
-      '<div class="rg-row" id="rgKoRow">' + koCells + '</div>' +
-      '<div class="rg-row" id="rgEnRow">' + enCells + '</div>' +
+    '<div class="rg-topgap"></div>' +
+    '<div class="post-recall-game-room">' +
+      '<div class="rg-banner">' +
+        '<div class="big">🎯 MATCH THE PAIRS</div>' +
+        '<div class="sub">Tap a Korean word, then tap its English meaning.</div>' +
+      '</div>' +
+      '<div class="rg-timer" id="rgTimer">⏱ <span id="rgTimerNum">' + RECALL_GAME_MATCH_SECS + '</span>s</div>' +
+      '<div class="rg-progress">' + matchedCount + ' / ' + RECALL_GAME_PAIRS + ' matched</div>' +
+      '<div class="rg-prompt">' + promptKo + '</div>' +
+      '<div class="reward-stage">' +
+        '<div class="rg-grid">' +
+          '<div class="rg-row" id="rgKoRow">' + koCells + '</div>' +
+          '<div class="rg-row" id="rgEnRow">' + enCells + '</div>' +
+        '</div>' +
+      '</div>' +
     '</div>';
 }
 
@@ -10966,16 +11251,25 @@ function _rgRenderResult(correct, eggs){
           + (eggs > 0 ? 'Nice work!' : 'Give Step 2 a try to keep practicing!');
 
   host.innerHTML =
-    '<div class="recall-done-banner">' +
-      '<div class="big">' + eggMsg + '</div>' +
-      '<div class="sub">' + sub + '</div>' +
-    '</div>' +
-    '<div class="rg-grid">' +
-      '<div class="rg-row">' + koCells + '</div>' +
-      '<div class="rg-row">' + enCells + '</div>' +
-    '</div>' +
-    '<div style="text-align:center;margin-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">' +
-      '<button class="btn btn-cyan btn-md" onclick="_recallRender()">▶ CONTINUE TO STEP 2</button>' +
+    '<div class="rg-topgap"></div>' +
+    '<div class="post-recall-game-room is-result">' +
+      '<div class="recall-done-banner">' +
+        '<div class="big">' + eggMsg + '</div>' +
+        '<div class="sub">' + sub + '</div>' +
+      '</div>' +
+      '<div class="egg-prize">' +
+        '<div class="egg-prize-glow"></div>' +
+        '<div class="egg-prize-icon">🥚</div>' +
+      '</div>' +
+      '<div class="reward-stage">' +
+        '<div class="rg-grid">' +
+          '<div class="rg-row">' + koCells + '</div>' +
+          '<div class="rg-row">' + enCells + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="recall-actions">' +
+        '<button class="btn btn-cyan btn-md recall-continue-btn" onclick="_recallRender()">▶ CONTINUE TO STEP 2</button>' +
+      '</div>' +
     '</div>';
 }
 
