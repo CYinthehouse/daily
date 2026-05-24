@@ -585,13 +585,16 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 /* ─── ACTIVE RECALL — STEP 1: matching game (Toad House style) ─── */
 .rg-banner{background:linear-gradient(135deg,rgba(255,215,0,0.16),rgba(168,85,247,0.10));border:2px solid var(--gold);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:center;}
 /* Vertical gap between the ACTIVE RECALL header and the game content.
- * A real element (not a collapsing margin) so the space actually shows. */
+ * A real element (not a collapsing margin) so the space actually shows.
+ * -sm is used by the match phase, which sits a little higher. */
 .rg-topgap{height:56px;}
-/* Study-phase arrow row — one ↓ per column, linking each Korean word to its
- * English meaning directly below. Same 5-column grid so arrows align. */
+.rg-topgap-sm{height:24px;}
+/* Study-phase arrow row — one image arrow per column, linking each Korean
+ * word to its English meaning directly below. */
 .rg-arrows{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:2px 0;}
-.rg-arrow{display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--gold);line-height:1;filter:drop-shadow(1px 1px 0 rgba(0,0,0,0.7));}
-@media (max-width:560px){ .rg-arrows{gap:5px;} .rg-arrow{font-size:18px;} }
+.rg-arrow{display:flex;align-items:center;justify-content:center;}
+.rg-arrow img{width:34px;height:34px;object-fit:contain;display:block;filter:drop-shadow(1px 1px 0 rgba(0,0,0,0.6));}
+@media (max-width:560px){ .rg-arrows{gap:5px;} .rg-arrow img{width:26px;height:26px;} }
 .rg-banner .big{font-family:'Press Start 2P',monospace;font-size:13px;color:var(--gold);text-shadow:var(--ps-outline-sm);line-height:1.5;}
 .rg-banner .sub{font-family:var(--vt);font-size:15px;color:#cdd8ec;margin-top:6px;line-height:1.5;}
 /* Countdown timer pill */
@@ -10715,9 +10718,9 @@ function _rgRenderStudy(){
   var enCells = _rgState.pairs.map(function(p){
     return '<div class="rg-cell rg-en">' + _esc(p.en) + '</div>';
   }).join('');
-  // One downward arrow per column, linking each Korean word to its meaning.
+  // One arrow image per column, linking each Korean word to its meaning.
   var arrowCells = _rgState.pairs.map(function(){
-    return '<div class="rg-arrow">↓</div>';
+    return '<div class="rg-arrow"><img src="https://cdn.shopify.com/s/files/1/0674/6747/7282/files/Cream_and_Orange_Creative_Mily_Art_Gallery_Logo_7.png?v=1779648938" alt="↓"></div>';
   }).join('');
 
   host.innerHTML =
@@ -10839,7 +10842,7 @@ function _rgRenderMatch(){
     : 'Tap a Korean word to start matching.';
 
   host.innerHTML =
-    '<div class="rg-topgap"></div>' +
+    '<div class="rg-topgap-sm"></div>' +
     '<div class="rg-banner">' +
       '<div class="big">🎯 MATCH THE PAIRS</div>' +
       '<div class="sub">Tap a Korean word, then tap its English meaning.</div>' +
