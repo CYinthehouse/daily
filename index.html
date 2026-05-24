@@ -540,6 +540,61 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .recall-done-banner .big{font-family:'Press Start 2P',monospace;font-size:13px;color:var(--green);text-shadow:var(--ps-outline-sm);line-height:1.5;}
 .recall-done-banner .sub{font-family:var(--vt);font-size:15px;color:#cdd8ec;margin-top:8px;line-height:1.5;}
 
+/* ─── ACTIVE RECALL — two-step landing screen ───
+ * STEP 1 (Game) then STEP 2 (Flashcards). Step 2 is locked until Step 1 is
+ * complete. Boxes mirror the pixel-card aesthetic used elsewhere. */
+.recall-steps{display:flex;flex-direction:column;gap:16px;max-width:520px;margin:4px auto 0;}
+.recall-step{position:relative;background:#10172a;border:2px solid #2a3650;border-radius:10px;padding:18px 18px 16px;box-shadow:4px 4px 0 rgba(0,0,0,0.8);transition:border-color .12s,transform .08s;}
+.recall-step.open{cursor:pointer;}
+.recall-step.open:hover{border-color:var(--cyan);transform:translate(-1px,-1px);}
+.recall-step.locked{opacity:0.6;filter:grayscale(0.5);cursor:not-allowed;}
+.recall-step.done{border-color:var(--green);}
+.recall-step-tag{display:inline-block;font-family:'Press Start 2P',monospace;font-size:8px;letter-spacing:1px;padding:4px 9px;border-radius:3px;margin-bottom:10px;background:rgba(65,192,255,0.14);color:var(--cyan);border:1px solid var(--cyan);}
+.recall-step.done .recall-step-tag{background:rgba(57,255,20,0.14);color:var(--green);border-color:var(--green);}
+.recall-step-title{font-family:'Press Start 2P',monospace;font-size:13px;color:#fff;line-height:1.5;margin-bottom:8px;}
+.recall-step-desc{font-family:var(--vt);font-size:15px;color:#b8c5dc;line-height:1.5;}
+.recall-step-foot{margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.recall-step-reward{font-family:'Press Start 2P',monospace;font-size:9px;padding:5px 10px;border-radius:3px;background:rgba(255,215,0,0.12);color:var(--gold);border:1px solid var(--gold);}
+.recall-step-status{font-family:'Press Start 2P',monospace;font-size:9px;letter-spacing:1px;}
+.recall-step-status.locked{color:#7a8aa8;}
+.recall-step-status.done{color:var(--green);}
+.recall-step-status.ready{color:var(--cyan);}
+
+/* ─── ACTIVE RECALL — STEP 1: matching game (Toad House style) ─── */
+.rg-banner{background:linear-gradient(135deg,rgba(255,215,0,0.16),rgba(168,85,247,0.10));border:2px solid var(--gold);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:center;}
+.rg-banner .big{font-family:'Press Start 2P',monospace;font-size:13px;color:var(--gold);text-shadow:var(--ps-outline-sm);line-height:1.5;}
+.rg-banner .sub{font-family:var(--vt);font-size:15px;color:#cdd8ec;margin-top:6px;line-height:1.5;}
+/* Countdown timer pill */
+.rg-timer{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;font-family:'Press Start 2P',monospace;font-size:12px;color:var(--cyan);text-shadow:var(--ps-outline-sm);}
+.rg-timer.urgent{color:var(--pink);}
+/* Word grid: 5 Korean containers in a row, English directly below */
+.rg-grid{display:flex;flex-direction:column;gap:10px;max-width:640px;margin:0 auto 16px;}
+.rg-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+.rg-cell{min-height:64px;border-radius:8px;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px 6px;font-family:'Noto Sans KR','Apple SD Gothic Neo','Noto Sans',sans-serif;font-weight:700;font-size:clamp(13px,2.4vw,17px);line-height:1.3;box-shadow:3px 3px 0 rgba(0,0,0,0.7);border:2px solid;word-break:break-word;}
+/* Korean row — cyan; selectable during match phase */
+.rg-ko{background:#10172a;border-color:var(--cyan);color:#fff;}
+.rg-ko.selectable{cursor:pointer;}
+.rg-ko.selectable:hover{filter:brightness(1.2);}
+.rg-ko.active{border-color:var(--gold);box-shadow:0 0 14px rgba(255,215,0,0.6),3px 3px 0 rgba(0,0,0,0.7);}
+.rg-ko.paired{opacity:0.55;}
+/* English row — gold; closed (hidden) vs open */
+.rg-en{background:#1a1530;border-color:var(--gold);color:#ffe9a8;}
+.rg-en.closed{background:#0c0c18;border-color:#3a3a52;color:transparent;}
+.rg-en.closed::after{content:'\1F512';color:#5a5a72;font-size:20px;}
+.rg-en.selectable{cursor:pointer;}
+.rg-en.selectable:hover{filter:brightness(1.2);}
+.rg-en.paired{opacity:0.55;}
+.rg-en.correct{border-color:var(--green);box-shadow:0 0 14px rgba(57,255,20,0.55),3px 3px 0 rgba(0,0,0,0.7);}
+.rg-en.wrong{border-color:var(--pink);box-shadow:0 0 14px rgba(255,119,119,0.5),3px 3px 0 rgba(0,0,0,0.7);}
+/* Match-phase prompt */
+.rg-prompt{text-align:center;font-family:'Press Start 2P',monospace;font-size:11px;color:#cdd8ec;line-height:1.7;margin-bottom:14px;text-shadow:var(--ps-outline-sm);}
+.rg-prompt b{color:var(--gold);}
+.rg-progress{text-align:center;font-family:var(--vt);font-size:14px;color:#9aa8c0;margin-bottom:10px;}
+@media (max-width:560px){
+  .rg-cell{min-height:54px;font-size:12px;}
+  .rg-row{gap:5px;}
+}
+
 /* Active Recall manager: editable card rows, mirrors the yoda-edit-row look */
 .recall-edit-row{display:grid;grid-template-columns:auto 1fr 1fr auto;gap:8px;align-items:center;background:rgba(255,255,255,0.02);border:1px solid #2a3650;border-radius:6px;padding:8px 10px;margin-bottom:8px;}
 .recall-edit-row .recall-edit-num{font-family:'Press Start 2P',monospace;font-size:9px;color:#7a8aa8;}
@@ -2100,7 +2155,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   </div>
   <div class="section-head daily">
     <div class="sh-title">🧠 ACTIVE RECALL</div>
-    <div class="sh-sub">Flip each card, then mark whether you knew it. Missed cards come back around. Clear them all to earn 1 egg.</div>
+    <div class="sh-sub">Two steps: play the game, then review the flashcards.</div>
   </div>
   <div id="dailyRecallHost"></div>
 </div>
@@ -2869,7 +2924,7 @@ async function _loadUserProfile(authUser){
     dailyYodaDoneFor: d.dailyYodaDoneFor || null,
     // NY-day key of the last Active Recall completion. Drives the daily-reset
     // gate + the picker tile's "DONE TODAY" badge, same pattern as the others.
-    dailyRecallDoneFor: d.dailyRecallDoneFor || null,
+    dailyRecallStep2DoneFor: d.dailyRecallStep2DoneFor || null,
     // NY-WEEK key of the last Diary submission. Diary is a weekly activity —
     // this resets every Monday 3 AM NY, gating the 9-egg award.
     weeklyDiaryDoneFor: d.weeklyDiaryDoneFor || null,
@@ -3504,7 +3559,7 @@ function _renderDailyPicker(){
     ? '<div class="menu-count" style="border-color:var(--green);color:var(--green);">✅ DONE TODAY</div>'
     : '<div class="menu-count">+1 EGG</div>';
   // ─── Active Recall tile ───
-  var recallDone = (user && user.dailyRecallDoneFor === todayKey);
+  var recallDone = (user && user.dailyRecallStep2DoneFor === todayKey);
   var recallBadge = recallDone
     ? '<div class="menu-count" style="border-color:var(--green);color:var(--green);">✅ DONE TODAY</div>'
     : '<div class="menu-count">+1 EGG</div>';
@@ -3589,11 +3644,9 @@ function _dailyOpen(which){
     _setBgmForScreen('dailyYodaScreen');
     _yodaRender();
   } else if (which === 'recall'){
-    // Active Recall now lives on its own page (recall.html) to keep index.html
-    // from growing too large. The student stays logged in there via shared
-    // Firebase Auth session (same domain, LOCAL persistence).
-    window.location.href = 'recall.html';
-    return;
+    showFade('dailyRecallScreen');
+    _setBgmForScreen('dailyRecallScreen');
+    _recallRender();
   }
   try { window.scrollTo(0, 0); } catch(e){}
 }
@@ -10465,9 +10518,637 @@ window._yodaRender = _yodaRender;
 const RECALL_COLLECTION = 'gacha_recall_activities';
 
 
-// ─── Active Recall STUDENT-SIDE code moved to standalone recall.html ───
-// The picker tile (_dailyOpen) now navigates to recall.html. Only the
-// admin manager below remains here. RECALL_COLLECTION (above) is shared.
+var _recallState = {
+  activityId: null,
+  activity: null,
+  queue: [],        // remaining card indices to clear (re-queue on "missed")
+  total: 0,         // number of distinct cards in the set
+  cleared: 0,       // distinct cards marked "got it" so far
+  clearedSet: null, // Set of card indices already cleared
+  flipped: false,
+  seenAnswer: false, // true once the current card has been flipped to the English side at least once
+  busy: false
+};
+
+/* ─── STEP 1 COMPLETION CHECK ───
+ * Step 1 is the matching game. It's "done" for the day once the student has
+ * played it (any score). dailyRecallStep1DoneFor stores that NY-day key.
+ * Completing Step 1 — at any score — unlocks STEP 2 (flashcards). */
+function _recallStep1Done(){
+  return !!(user && user.dailyRecallStep1DoneFor === _drTodayNYKey());
+}
+
+/* ─── ACTIVE RECALL — LANDING SCREEN (two steps) ───
+ * STEP 1: Game (placeholder for now). STEP 2: Flashcards Quick Review — the
+ * existing flashcard activity, locked until Step 1 is complete. Entry point
+ * for the whole activity; _dailyOpen('recall') calls this. */
+async function _recallRender(){
+  var host = document.getElementById('dailyRecallHost');
+  if (!host) return;
+
+  var todayKey = _drTodayNYKey();
+  var step1Done = _recallStep1Done();
+  var step2Done = (user && user.dailyRecallStep2DoneFor === todayKey);
+  var step2Unlocked = step1Done;
+
+  // STEP 1 — Matching game. Always available; "done" once played today.
+  var step1Cls = 'recall-step ' + (step1Done ? 'done' : 'open');
+  var step1Click = step1Done ? '' : ' onclick="_recallStartGame()"';
+  var step1Status = step1Done
+    ? '<span class="recall-step-status done">✅ DONE TODAY</span>'
+    : '<span class="recall-step-status ready">▶ TAP TO START</span>';
+  var step1Html =
+    '<div class="' + step1Cls + '"' + step1Click + '>' +
+      '<div class="recall-step-tag">STEP 1</div>' +
+      '<div class="recall-step-title">🎮 Match-Up Game</div>' +
+      '<div class="recall-step-desc">Study 5 word pairs for 10 seconds, then match them from memory. Earn an egg for every correct match.</div>' +
+      '<div class="recall-step-foot">' +
+        '<span class="recall-step-reward">🪺 +1–5 EGGS</span>' +
+        step1Status +
+      '</div>' +
+    '</div>';
+
+  // STEP 2 — Flashcards. Locked until Step 1 done; "done" once today's egg is earned.
+  var step2Cls = 'recall-step ' + (step2Done ? 'done' : (step2Unlocked ? 'open' : 'locked'));
+  var step2Click = (step2Unlocked && !step2Done) ? ' onclick="_recallStartFlashcards()"' : '';
+  var step2Status = step2Done
+    ? '<span class="recall-step-status done">✅ DONE TODAY</span>'
+    : (step2Unlocked
+        ? '<span class="recall-step-status ready">▶ TAP TO START</span>'
+        : '<span class="recall-step-status locked">🔒 FINISH STEP 1 FIRST</span>');
+  var step2Html =
+    '<div class="' + step2Cls + '"' + step2Click + '>' +
+      '<div class="recall-step-tag">STEP 2</div>' +
+      '<div class="recall-step-title">🧠 Flashcards Quick Review</div>' +
+      '<div class="recall-step-desc">Flip each card, then mark whether you knew it. Missed cards come back around. Clear them all to earn your egg.</div>' +
+      '<div class="recall-step-foot">' +
+        '<span class="recall-step-reward">🪺 +1 EGG</span>' +
+        step2Status +
+      '</div>' +
+    '</div>';
+
+  host.innerHTML = '<div class="recall-steps">' + step1Html + step2Html + '</div>';
+}
+window._recallRender = _recallRender;
+
+/* ═══════════════════════════════════════════════════════════════════
+ * STEP 1 — MATCH-UP GAME (Toad House style)
+ * ───────────────────────────────────────────────────────────────────
+ * Flow: pull 5 random cards from the live recall set → STUDY phase (10s,
+ * Korean + English shown paired) → English boxes "close", shuffle, reopen →
+ * MATCH phase (30s, tap a Korean word then tap an English box to pair) →
+ * score → award 1 egg per correct match (max 5) → done.
+ * Completing the game at ANY score sets dailyRecallStep1DoneFor and unlocks
+ * Step 2. One play per NY day.
+ * ═══════════════════════════════════════════════════════════════════ */
+var RECALL_GAME_STUDY_SECS = 10;
+var RECALL_GAME_MATCH_SECS = 30;
+var RECALL_GAME_PAIRS = 5;
+
+var _rgState = {
+  pairs: [],        // [{ ko, en }] — the 5 chosen cards, original order
+  enOrder: [],      // shuffled indices into pairs[] for the English row
+  selectedKo: null, // index (into pairs[]) of the currently-picked Korean word
+  matched: {},      // koIndex -> enSlot the student locked it to
+  done: false,      // match phase finished
+  busy: false,
+  timer: null
+};
+
+async function _recallStartGame(){
+  var host = document.getElementById('dailyRecallHost');
+  if (!host) return;
+  // Guard: one play per day.
+  if (_recallStep1Done()){ _recallRender(); return; }
+  host.innerHTML = '<div class="dr-empty">Loading…</div>';
+
+  // Pull the live recall set (same source as Step 2's flashcards).
+  var liveSnap = await db.collection(RECALL_COLLECTION).where('status','==','live').get().catch(function(){ return null; });
+  if (!liveSnap || liveSnap.empty){
+    host.innerHTML =
+      '<div class="dr-empty">' +
+        '<div class="big">No card set is live right now.</div>' +
+        '<div class="sub">Check back soon — your teacher hasn\'t posted today\'s cards yet.</div>' +
+        '<div style="margin-top:16px;"><button class="btn btn-ghost btn-md" onclick="_recallRender()">← BACK TO STEPS</button></div>' +
+      '</div>';
+    return;
+  }
+  var doc = liveSnap.docs[0];
+  if (liveSnap.size > 1){
+    doc = liveSnap.docs.slice().sort(function(a, b){
+      var am = (a.data().livedAt && a.data().livedAt.toMillis) ? a.data().livedAt.toMillis() : 0;
+      var bm = (b.data().livedAt && b.data().livedAt.toMillis) ? b.data().livedAt.toMillis() : 0;
+      return bm - am;
+    })[0];
+  }
+  var cards = (doc.data().cards || []).filter(function(c){
+    return c && (c.korean || '').trim() && (c.english || '').trim();
+  });
+  if (cards.length < RECALL_GAME_PAIRS){
+    host.innerHTML =
+      '<div class="dr-empty">' +
+        '<div class="big">Not enough cards for the game.</div>' +
+        '<div class="sub">The Match-Up game needs at least ' + RECALL_GAME_PAIRS + ' cards. Try Step 2 instead, or check back later.</div>' +
+        '<div style="margin-top:16px;"><button class="btn btn-ghost btn-md" onclick="_recallRender()">← BACK TO STEPS</button></div>' +
+      '</div>';
+    return;
+  }
+  // Pick 5 random distinct cards (Fisher-Yates partial shuffle).
+  var idx = cards.map(function(_, i){ return i; });
+  for (var i = idx.length - 1; i > 0; i--){
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = idx[i]; idx[i] = idx[j]; idx[j] = t;
+  }
+  _rgState.pairs = idx.slice(0, RECALL_GAME_PAIRS).map(function(ci){
+    return { ko: cards[ci].korean, en: cards[ci].english };
+  });
+  _rgState.selectedKo = null;
+  _rgState.matched = {};
+  _rgState.done = false;
+  _rgState.busy = false;
+  if (_rgState.timer){ clearInterval(_rgState.timer); _rgState.timer = null; }
+
+  _rgRenderStudy();
+}
+window._recallStartGame = _recallStartGame;
+
+/* ─── STUDY PHASE — 10s, Korean + English shown paired ─── */
+function _rgRenderStudy(){
+  var host = document.getElementById('dailyRecallHost');
+  if (!host) return;
+  var koCells = _rgState.pairs.map(function(p){
+    return '<div class="rg-cell rg-ko">' + _esc(p.ko) + '</div>';
+  }).join('');
+  var enCells = _rgState.pairs.map(function(p){
+    return '<div class="rg-cell rg-en">' + _esc(p.en) + '</div>';
+  }).join('');
+
+  host.innerHTML =
+    '<div class="rg-banner">' +
+      '<div class="big">🎮 STUDY THE PAIRS</div>' +
+      '<div class="sub">Memorize each Korean word and its meaning — the answers hide soon!</div>' +
+    '</div>' +
+    '<div class="rg-timer" id="rgTimer">⏳ <span id="rgTimerNum">' + RECALL_GAME_STUDY_SECS + '</span>s</div>' +
+    '<div class="rg-grid">' +
+      '<div class="rg-row" id="rgKoRow">' + koCells + '</div>' +
+      '<div class="rg-row" id="rgEnRow">' + enCells + '</div>' +
+    '</div>';
+
+  var left = RECALL_GAME_STUDY_SECS;
+  _rgState.timer = setInterval(function(){
+    left--;
+    var n = document.getElementById('rgTimerNum');
+    if (n) n.textContent = Math.max(0, left);
+    var tb = document.getElementById('rgTimer');
+    if (tb && left <= 3) tb.classList.add('urgent');
+    if (left <= 0){
+      clearInterval(_rgState.timer); _rgState.timer = null;
+      _rgStartMatch();
+    }
+  }, 1000);
+}
+
+/* ─── MATCH PHASE — 30s, tap Korean then tap English to pair ─── */
+function _rgStartMatch(){
+  // Shuffle the English row into a new order.
+  var order = _rgState.pairs.map(function(_, i){ return i; });
+  for (var i = order.length - 1; i > 0; i--){
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = order[i]; order[i] = order[j]; order[j] = t;
+  }
+  _rgState.enOrder = order;
+  _rgState.selectedKo = null;
+  _rgState.matched = {};
+  _rgRenderMatch();
+
+  var left = RECALL_GAME_MATCH_SECS;
+  if (_rgState.timer){ clearInterval(_rgState.timer); }
+  _rgState.timer = setInterval(function(){
+    left--;
+    var n = document.getElementById('rgTimerNum');
+    if (n) n.textContent = Math.max(0, left);
+    var tb = document.getElementById('rgTimer');
+    if (tb && left <= 5) tb.classList.add('urgent');
+    if (left <= 0){
+      clearInterval(_rgState.timer); _rgState.timer = null;
+      _rgFinish();
+    }
+  }, 1000);
+}
+
+function _rgRenderMatch(){
+  var host = document.getElementById('dailyRecallHost');
+  if (!host) return;
+  var st = _rgState;
+  var matchedCount = Object.keys(st.matched).length;
+
+  // Korean row — each cell tappable unless already paired.
+  var koCells = st.pairs.map(function(p, ki){
+    var cls = 'rg-cell rg-ko';
+    if (st.matched.hasOwnProperty(ki)) cls += ' paired';
+    else { cls += ' selectable'; if (st.selectedKo === ki) cls += ' active'; }
+    var click = st.matched.hasOwnProperty(ki) ? '' : ' onclick="_rgPickKo(' + ki + ')"';
+    return '<div class="' + cls + '"' + click + '>' + _esc(p.ko) + '</div>';
+  }).join('');
+
+  // English row — shuffled, "closed" (hidden text), tappable when a Korean
+  // word is selected and this slot isn't already used.
+  var usedSlots = {};
+  Object.keys(st.matched).forEach(function(k){ usedSlots[st.matched[k]] = true; });
+  var enCells = st.enOrder.map(function(pairIdx, slot){
+    var cls = 'rg-cell rg-en closed';
+    var click = '';
+    if (usedSlots[slot]){ cls += ' paired'; }
+    else if (st.selectedKo !== null){ cls += ' selectable'; click = ' onclick="_rgPickEn(' + slot + ')"'; }
+    // Text stays hidden by the .closed style; content is the English word.
+    return '<div class="' + cls + '"' + click + '>' + _esc(st.pairs[pairIdx].en) + '</div>';
+  }).join('');
+
+  var promptKo = st.selectedKo !== null
+    ? 'What does <b>' + _esc(st.pairs[st.selectedKo].ko) + '</b> mean? Tap a box.'
+    : 'Tap a Korean word to start matching.';
+
+  host.innerHTML =
+    '<div class="rg-banner">' +
+      '<div class="big">🎯 MATCH THE PAIRS</div>' +
+      '<div class="sub">Tap a Korean word, then tap the box with its meaning.</div>' +
+    '</div>' +
+    '<div class="rg-timer" id="rgTimer">⏱ <span id="rgTimerNum">' + RECALL_GAME_MATCH_SECS + '</span>s</div>' +
+    '<div class="rg-progress">' + matchedCount + ' / ' + RECALL_GAME_PAIRS + ' matched</div>' +
+    '<div class="rg-prompt">' + promptKo + '</div>' +
+    '<div class="rg-grid">' +
+      '<div class="rg-row" id="rgKoRow">' + koCells + '</div>' +
+      '<div class="rg-row" id="rgEnRow">' + enCells + '</div>' +
+    '</div>';
+}
+
+function _rgPickKo(ki){
+  if (_rgState.done) return;
+  if (_rgState.matched.hasOwnProperty(ki)) return;
+  _rgState.selectedKo = ki;
+  try { playSfx(SOUND_FLIP, 0.7); } catch(e){}
+  _rgRenderMatch();
+}
+window._rgPickKo = _rgPickKo;
+
+function _rgPickEn(slot){
+  var st = _rgState;
+  if (st.done) return;
+  if (st.selectedKo === null) return;
+  // Slot already used?
+  var used = false;
+  Object.keys(st.matched).forEach(function(k){ if (st.matched[k] === slot) used = true; });
+  if (used) return;
+  // Lock this pairing.
+  st.matched[st.selectedKo] = slot;
+  try { playSfx(SOUND_FLIP, 0.8); } catch(e){}
+  st.selectedKo = null;
+  // All 5 paired? End early.
+  if (Object.keys(st.matched).length >= RECALL_GAME_PAIRS){
+    if (st.timer){ clearInterval(st.timer); st.timer = null; }
+    _rgFinish();
+  } else {
+    _rgRenderMatch();
+  }
+}
+window._rgPickEn = _rgPickEn;
+
+/* ─── SCORE + AWARD ─── */
+async function _rgFinish(){
+  var st = _rgState;
+  if (st.done || st.busy) return;
+  st.done = true;
+  st.busy = true;
+  if (st.timer){ clearInterval(st.timer); st.timer = null; }
+
+  // Score: a pairing is correct when the English slot's pairIdx === koIndex.
+  var correct = 0;
+  Object.keys(st.matched).forEach(function(kiStr){
+    var ki = parseInt(kiStr, 10);
+    var slot = st.matched[ki];
+    if (st.enOrder[slot] === ki) correct++;
+  });
+  var eggs = correct; // 1 egg per correct match, max 5
+
+  var host = document.getElementById('dailyRecallHost');
+  if (host) host.innerHTML = '<div class="dr-empty">Saving…</div>';
+
+  var todayKey = _drTodayNYKey();
+  try {
+    if (user && user.id){
+      var acctRef = db.collection(TC).doc(user.id);
+      var awarded = false;
+      await db.runTransaction(async function(tx){
+        var snap = await tx.get(acctRef);
+        if (!snap.exists) return;
+        var d = snap.data() || {};
+        // Already played today? Don't double-award.
+        if (d.dailyRecallStep1DoneFor === todayKey) return;
+        var patch = { dailyRecallStep1DoneFor: todayKey };
+        if (eggs > 0) patch.gachaRolls = firebase.firestore.FieldValue.increment(eggs);
+        tx.update(acctRef, patch);
+        awarded = true;
+      });
+      if (awarded && eggs > 0){
+        user.gachaRolls = (user.gachaRolls || 0) + eggs;
+      }
+      user.dailyRecallStep1DoneFor = todayKey;
+      if (typeof updateCounts === 'function') updateCounts();
+    }
+    try { playSfx(eggs > 0 ? SOUND_WIN : SOUND_CORRECT, 0.9); } catch(e){}
+  } catch(e){
+    console.error('recall game save:', e);
+    toast('Couldn\'t save your eggs — try again.', 'var(--pink)');
+  } finally {
+    st.busy = false;
+  }
+  _rgRenderResult(correct, eggs);
+}
+
+function _rgRenderResult(correct, eggs){
+  var host = document.getElementById('dailyRecallHost');
+  if (!host) return;
+  var st = _rgState;
+
+  // Reveal the board: English boxes open, correct/wrong highlighted.
+  var koCells = st.pairs.map(function(p){
+    return '<div class="rg-cell rg-ko paired">' + _esc(p.ko) + '</div>';
+  }).join('');
+  var enCells = st.enOrder.map(function(pairIdx, slot){
+    var cls = 'rg-cell rg-en';
+    // Which Korean word did the student assign to this slot, if any?
+    var assignedKi = null;
+    Object.keys(st.matched).forEach(function(k){ if (st.matched[k] === slot) assignedKi = parseInt(k,10); });
+    if (assignedKi !== null){
+      cls += (st.enOrder[slot] === assignedKi) ? ' correct' : ' wrong';
+    }
+    return '<div class="' + cls + '">' + _esc(st.pairs[pairIdx].en) + '</div>';
+  }).join('');
+
+  var eggMsg = eggs > 0
+    ? '✅ +' + eggs + ' EGG' + (eggs === 1 ? '' : 'S') + ' EARNED'
+    : 'NO EGGS THIS TIME';
+  var sub = 'You matched ' + correct + ' of ' + RECALL_GAME_PAIRS + ' correctly. '
+          + (eggs > 0 ? 'Nice work!' : 'Give Step 2 a try to keep practicing!');
+
+  host.innerHTML =
+    '<div class="recall-done-banner">' +
+      '<div class="big">' + eggMsg + '</div>' +
+      '<div class="sub">' + sub + '</div>' +
+    '</div>' +
+    '<div class="rg-grid">' +
+      '<div class="rg-row">' + koCells + '</div>' +
+      '<div class="rg-row">' + enCells + '</div>' +
+    '</div>' +
+    '<div style="text-align:center;margin-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">' +
+      '<button class="btn btn-cyan btn-md" onclick="_recallRender()">▶ CONTINUE TO STEP 2</button>' +
+    '</div>';
+}
+
+/* ─── STEP 2: FLASHCARDS QUICK REVIEW ───
+ * The existing flashcard activity, unchanged. Reached only from the (unlocked)
+ * STEP 2 box on the landing screen. */
+async function _recallStartFlashcards(){
+  var host = document.getElementById('dailyRecallHost');
+  if (!host) return;
+  // Guard: never run if Step 1 isn't done (defense in depth — the box is also
+  // non-clickable when locked).
+  if (!_recallStep1Done()) return;
+  host.innerHTML = '<div class="dr-empty">Loading…</div>';
+
+  var todayKey = _drTodayNYKey();
+
+  // Already done today → show the done screen straight away.
+  if (user && user.dailyRecallStep2DoneFor === todayKey){
+    _recallState.activity = null;
+    _recallRenderDone(true);
+    return;
+  }
+
+  // Find the live activity (most recent if multiple somehow live).
+  var liveSnap = await db.collection(RECALL_COLLECTION).where('status','==','live').get().catch(function(){ return null; });
+  if (!liveSnap || liveSnap.empty){
+    host.innerHTML =
+      '<div class="dr-empty">' +
+        '<div class="big">No Active Recall set is live right now.</div>' +
+        '<div class="sub">Check back soon — your teacher hasn\'t posted today\'s cards yet.</div>' +
+      '</div>';
+    return;
+  }
+  var doc = liveSnap.docs[0];
+  if (liveSnap.size > 1){
+    doc = liveSnap.docs.slice().sort(function(a, b){
+      var am = (a.data().livedAt && a.data().livedAt.toMillis) ? a.data().livedAt.toMillis() : 0;
+      var bm = (b.data().livedAt && b.data().livedAt.toMillis) ? b.data().livedAt.toMillis() : 0;
+      return bm - am;
+    })[0];
+  }
+  _recallState.activityId = doc.id;
+  _recallState.activity = doc.data();
+
+  var cards = (_recallState.activity.cards || []).filter(function(c){
+    return c && (c.korean || '').trim() && (c.english || '').trim();
+  });
+  if (!cards.length){
+    host.innerHTML =
+      '<div class="dr-empty">' +
+        '<div class="big">Today\'s set has no cards yet.</div>' +
+        '<div class="sub">Check back soon.</div>' +
+      '</div>';
+    return;
+  }
+  _recallState.activity.cards = cards;
+  _recallState.total = cards.length;
+  _recallState.cleared = 0;
+  _recallState.clearedSet = new Set();
+  // Start the queue as a shuffled list of all card indices.
+  _recallState.queue = cards.map(function(_, i){ return i; });
+  for (var i = _recallState.queue.length - 1; i > 0; i--){
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = _recallState.queue[i]; _recallState.queue[i] = _recallState.queue[j]; _recallState.queue[j] = tmp;
+  }
+  _recallState.flipped = false;
+  _recallRenderCard();
+}
+window._recallStartFlashcards = _recallStartFlashcards;
+
+function _recallRenderCard(){
+  var host = document.getElementById('dailyRecallHost');
+  if (!host) return;
+  var st = _recallState;
+
+  if (!st.queue.length){
+    _recallComplete();
+    return;
+  }
+
+  var cardIdx = st.queue[0];
+  var card = st.activity.cards[cardIdx];
+  st.flipped = false;
+  st.seenAnswer = false;
+
+  var bannerHtml =
+    '<div class="recall-banner">' +
+      '<div class="big">🧠 ' + _esc(st.activity.title || 'ACTIVE RECALL') + '</div>' +
+      '<div class="sub">Read the Korean, recall the meaning, then flip to check.</div>' +
+    '</div>';
+
+  var progressHtml =
+    '<div class="recall-progress">' +
+      '<span>CLEARED ' + st.cleared + ' / ' + st.total + '</span>' +
+      '<span class="recall-remain">' + st.queue.length + ' LEFT THIS ROUND</span>' +
+    '</div>';
+
+  var cardHtml =
+    '<div class="recall-scene">' +
+      '<div class="recall-card" id="recallCard" onclick="_recallFlip()">' +
+        '<div class="recall-face">' +
+          '<div class="recall-hint">KOREAN</div>' +
+          '<div class="recall-main">' + _esc(card.korean) + '</div>' +
+          '<div class="recall-tap-note">tap to flip</div>' +
+        '</div>' +
+        '<div class="recall-face recall-back-face">' +
+          '<div class="recall-hint">ENGLISH</div>' +
+          '<div class="recall-main">' + _esc(card.english) + '</div>' +
+          '<div class="recall-tap-note">tap to flip back</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  // Grade buttons are disabled until the student flips at least once.
+  var gradeHtml =
+    '<div class="recall-grade-row" id="recallGradeRow">' +
+      '<button class="btn btn-pink btn-md" id="recallMissBtn" onclick="_recallGrade(false)" disabled style="opacity:0.45;">↻ MISSED IT</button>' +
+      '<button class="btn btn-green btn-md" id="recallGotBtn" onclick="_recallGrade(true)" disabled style="opacity:0.45;">✓ GOT IT</button>' +
+    '</div>' +
+    '<div style="text-align:center;font-family:var(--vt);font-size:13px;color:#7a8aa8;font-style:italic;margin-top:10px;">Flip the card before grading.</div>';
+
+  host.innerHTML = bannerHtml + progressHtml + cardHtml + gradeHtml;
+}
+
+function _recallFlip(){
+  var card = document.getElementById('recallCard');
+  if (!card) return;
+  _recallState.flipped = !_recallState.flipped;
+  card.classList.toggle('flipped', _recallState.flipped);
+  try { playSfx(SOUND_FLIP, 0.8); } catch(e){}
+  // Enable the grade buttons once the card has been flipped to the answer
+  // (English) side at least once. seenAnswer latches true and is reset per
+  // card in _recallRenderCard, so the buttons stay enabled even if the
+  // student flips back to the Korean side afterwards.
+  if (_recallState.flipped){
+    _recallState.seenAnswer = true;
+  }
+  if (_recallState.seenAnswer){
+    var miss = document.getElementById('recallMissBtn');
+    var got = document.getElementById('recallGotBtn');
+    if (miss){ miss.disabled = false; miss.style.opacity = '1'; }
+    if (got){ got.disabled = false; got.style.opacity = '1'; }
+  }
+}
+window._recallFlip = _recallFlip;
+
+function _recallGrade(gotIt){
+  var st = _recallState;
+  if (!st.queue.length) return;
+  var cardIdx = st.queue.shift();
+
+  if (gotIt){
+    try { playSfx(SOUND_CORRECT, 0.8); } catch(e){}
+    if (!st.clearedSet.has(cardIdx)){
+      st.clearedSet.add(cardIdx);
+      st.cleared = st.clearedSet.size;
+    }
+  } else {
+    // Missed — re-queue to the back so it resurfaces this round (Quizlet-style).
+    // If it was previously cleared, un-clear it: it must be re-earned.
+    if (st.clearedSet.has(cardIdx)){
+      st.clearedSet.delete(cardIdx);
+      st.cleared = st.clearedSet.size;
+    }
+    st.queue.push(cardIdx);
+    try { playSfx(SOUND_FLIP, 0.6); } catch(e){}
+  }
+
+  if (!st.queue.length){
+    _recallComplete();
+  } else {
+    _recallRenderCard();
+  }
+}
+window._recallGrade = _recallGrade;
+
+async function _recallComplete(){
+  var st = _recallState;
+  if (st.busy) return;
+
+  var todayKey = _drTodayNYKey();
+
+  // If already credited today (e.g. they re-entered), just show done screen.
+  if (user && user.dailyRecallStep2DoneFor === todayKey){
+    _recallRenderDone(false);
+    return;
+  }
+
+  st.busy = true;
+  try {
+    if (user && st.activityId){
+      // Record a lightweight completion doc for teacher review.
+      var subRef = db.collection(RECALL_COLLECTION).doc(st.activityId).collection('completions').doc(user.id);
+      await subRef.set({
+        userName: (user.displayName || user.username || 'Student'),
+        userEmail: user.username || '',
+        cardCount: st.total,
+        completedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        forKey: todayKey
+      }, { merge: true }).catch(function(){});
+
+      // Award the egg atomically — only if not already credited today.
+      var acctRef = db.collection(TC).doc(user.id);
+      var awarded = false;
+      await db.runTransaction(async function(tx){
+        var snap = await tx.get(acctRef);
+        if (!snap.exists) return;
+        var d = snap.data() || {};
+        if (d.dailyRecallStep2DoneFor === todayKey) return;
+        tx.update(acctRef, {
+          gachaRolls: firebase.firestore.FieldValue.increment(1),
+          dailyRecallStep2DoneFor: todayKey
+        });
+        awarded = true;
+      });
+      if (awarded){
+        user.gachaRolls = (user.gachaRolls || 0) + 1;
+      }
+      user.dailyRecallStep2DoneFor = todayKey;
+      if (typeof updateCounts === 'function') updateCounts();
+    }
+    try { playSfx(SOUND_WIN, 0.9); } catch(e){}
+    _recallRenderDone(false);
+  } catch(e){
+    console.error('recall complete:', e);
+    toast('Couldn\'t save your egg — try again.', 'var(--pink)');
+  } finally {
+    st.busy = false;
+  }
+}
+
+function _recallRenderDone(alreadyDone){
+  var host = document.getElementById('dailyRecallHost');
+  if (!host) return;
+  var msg = alreadyDone
+    ? 'You\'ve already cleared today\'s flashcards. Come back tomorrow for a new set!'
+    : 'You cleared every card! Your egg has been added. Come back tomorrow for a new set.';
+  host.innerHTML =
+    '<div class="recall-done-banner">' +
+      '<div class="big">✅ +1 EGG EARNED</div>' +
+      '<div class="sub">' + msg + '</div>' +
+    '</div>' +
+    '<div style="text-align:center;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">' +
+      '<button class="btn btn-ghost btn-md" onclick="_recallRender()">← BACK TO STEPS</button>' +
+      '<button class="btn btn-cyan btn-md" onclick="_dailyShowPicker()">← BACK TO ACTIVITIES</button>' +
+    '</div>';
+}
 
 /* ─── ACTIVE RECALL — ADMIN MANAGER ───
    Mirrors the Yodafication manager's draft/live/archive lifecycle, minus the
