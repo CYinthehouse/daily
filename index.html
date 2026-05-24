@@ -584,6 +584,14 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 
 /* ─── ACTIVE RECALL — STEP 1: matching game (Toad House style) ─── */
 .rg-banner{background:linear-gradient(135deg,rgba(255,215,0,0.16),rgba(168,85,247,0.10));border:2px solid var(--gold);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:center;}
+/* Vertical gap between the ACTIVE RECALL header and the game content.
+ * A real element (not a collapsing margin) so the space actually shows. */
+.rg-topgap{height:56px;}
+/* Study-phase arrow row — one ↓ per column, linking each Korean word to its
+ * English meaning directly below. Same 5-column grid so arrows align. */
+.rg-arrows{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:2px 0;}
+.rg-arrow{display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--gold);line-height:1;filter:drop-shadow(1px 1px 0 rgba(0,0,0,0.7));}
+@media (max-width:560px){ .rg-arrows{gap:5px;} .rg-arrow{font-size:18px;} }
 .rg-banner .big{font-family:'Press Start 2P',monospace;font-size:13px;color:var(--gold);text-shadow:var(--ps-outline-sm);line-height:1.5;}
 .rg-banner .sub{font-family:var(--vt);font-size:15px;color:#cdd8ec;margin-top:6px;line-height:1.5;}
 /* Countdown timer pill */
@@ -599,15 +607,22 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .rg-ko.selectable:hover{filter:brightness(1.2);}
 .rg-ko.active{border-color:var(--gold);box-shadow:0 0 14px rgba(255,215,0,0.6),3px 3px 0 rgba(0,0,0,0.7);}
 .rg-ko.paired{opacity:0.55;}
-/* English row — gold; closed (hidden) vs open */
+/* English row — gold; words stay visible (Duolingo-style match exercise) */
 .rg-en{background:#1a1530;border-color:var(--gold);color:#ffe9a8;}
-.rg-en.closed{background:#0c0c18;border-color:#3a3a52;color:transparent;}
-.rg-en.closed::after{content:'\1F512';color:#5a5a72;font-size:20px;}
 .rg-en.selectable{cursor:pointer;}
 .rg-en.selectable:hover{filter:brightness(1.2);}
 .rg-en.paired{opacity:0.55;}
 .rg-en.correct{border-color:var(--green);box-shadow:0 0 14px rgba(57,255,20,0.55),3px 3px 0 rgba(0,0,0,0.7);}
 .rg-en.wrong{border-color:var(--pink);box-shadow:0 0 14px rgba(255,119,119,0.5),3px 3px 0 rgba(0,0,0,0.7);}
+/* Phase-2 shuffle: English cells wobble + lift as they scramble into place. */
+.rg-en.shuffling{animation:rgShuffle 0.55s ease-in-out;}
+@keyframes rgShuffle{
+  0%{transform:translateY(0) rotate(0);}
+  25%{transform:translateY(-10px) rotate(-4deg);}
+  50%{transform:translateY(4px) rotate(3deg);}
+  75%{transform:translateY(-5px) rotate(-2deg);}
+  100%{transform:translateY(0) rotate(0);}
+}
 /* Match-phase prompt */
 .rg-prompt{text-align:center;font-family:'Press Start 2P',monospace;font-size:11px;color:#cdd8ec;line-height:1.7;margin-bottom:14px;text-shadow:var(--ps-outline-sm);}
 .rg-prompt b{color:var(--gold);}
@@ -10620,6 +10635,7 @@ var _rgState = {
   selectedKo: null, // index (into pairs[]) of the currently-picked Korean word
   matched: {},      // koIndex -> enSlot the student locked it to
   done: false,      // match phase finished
+  locked: false,    // true during the shuffle animation — blocks picks
   busy: false,
   timer: null
 };
@@ -10633,7 +10649,15 @@ async function _recallStartGame(){
 
   // Pull the live recall set (same source as Step 2's flashcards).
   var liveSnap = await db.collection(RECALL_COLLECTION).where('status','==','live').get().catch(function(){ return null; });
-  if (!liveSnap || liveSnap.empty){
+  // Filter out sets that went live on a previous NY-day — they expire at the
+  // 3am NY rollover, same as every other daily activity. (_drIsExpired gate.)
+  var freshDocs = [];
+  if (liveSnap && !liveSnap.empty){
+    liveSnap.forEach(function(d){
+      if (!_drIsExpired(d.data())) freshDocs.push(d);
+    });
+  }
+  if (!freshDocs.length){
     host.innerHTML =
       '<div class="dr-empty">' +
         '<div class="big">No card set is live right now.</div>' +
@@ -10642,9 +10666,9 @@ async function _recallStartGame(){
       '</div>';
     return;
   }
-  var doc = liveSnap.docs[0];
-  if (liveSnap.size > 1){
-    doc = liveSnap.docs.slice().sort(function(a, b){
+  var doc = freshDocs[0];
+  if (freshDocs.length > 1){
+    doc = freshDocs.slice().sort(function(a, b){
       var am = (a.data().livedAt && a.data().livedAt.toMillis) ? a.data().livedAt.toMillis() : 0;
       var bm = (b.data().livedAt && b.data().livedAt.toMillis) ? b.data().livedAt.toMillis() : 0;
       return bm - am;
@@ -10691,15 +10715,21 @@ function _rgRenderStudy(){
   var enCells = _rgState.pairs.map(function(p){
     return '<div class="rg-cell rg-en">' + _esc(p.en) + '</div>';
   }).join('');
+  // One downward arrow per column, linking each Korean word to its meaning.
+  var arrowCells = _rgState.pairs.map(function(){
+    return '<div class="rg-arrow">↓</div>';
+  }).join('');
 
   host.innerHTML =
+    '<div class="rg-topgap"></div>' +
     '<div class="rg-banner">' +
       '<div class="big">🎮 STUDY THE PAIRS</div>' +
-      '<div class="sub">Memorize each Korean word and its meaning — the answers hide soon!</div>' +
+      '<div class="sub">Memorize each Korean word and its meaning — they get mixed up soon!</div>' +
     '</div>' +
     '<div class="rg-timer" id="rgTimer">⏳ <span id="rgTimerNum">' + RECALL_GAME_STUDY_SECS + '</span>s</div>' +
     '<div class="rg-grid">' +
       '<div class="rg-row" id="rgKoRow">' + koCells + '</div>' +
+      '<div class="rg-arrows">' + arrowCells + '</div>' +
       '<div class="rg-row" id="rgEnRow">' + enCells + '</div>' +
     '</div>';
 
@@ -10717,7 +10747,10 @@ function _rgRenderStudy(){
   }, 1000);
 }
 
-/* ─── MATCH PHASE — 30s, tap Korean then tap English to pair ─── */
+/* ─── MATCH PHASE — 30s, tap Korean then tap English to pair ───
+ * Duolingo-style: both rows stay visible. The English row is scrambled out of
+ * alignment with the Korean row. A short shuffle animation plays first so the
+ * student sees the boxes rearrange, then the 30s timer begins. */
 function _rgStartMatch(){
   // Shuffle the English row into a new order.
   var order = _rgState.pairs.map(function(_, i){ return i; });
@@ -10728,21 +10761,50 @@ function _rgStartMatch(){
   _rgState.enOrder = order;
   _rgState.selectedKo = null;
   _rgState.matched = {};
-  _rgRenderMatch();
+  _rgState.locked = true; // no picks until the shuffle animation finishes
 
-  var left = RECALL_GAME_MATCH_SECS;
-  if (_rgState.timer){ clearInterval(_rgState.timer); }
-  _rgState.timer = setInterval(function(){
-    left--;
-    var n = document.getElementById('rgTimerNum');
-    if (n) n.textContent = Math.max(0, left);
-    var tb = document.getElementById('rgTimer');
-    if (tb && left <= 5) tb.classList.add('urgent');
-    if (left <= 0){
-      clearInterval(_rgState.timer); _rgState.timer = null;
-      _rgFinish();
+  // Render the match screen, then run the shuffle animation on the English
+  // cells before starting the timer. The cells animate in place; the new
+  // (scrambled) order is already what's rendered, so the wobble reads as the
+  // boxes "mixing up."
+  _rgRenderMatch();
+  var enRow = document.getElementById('rgEnRow');
+  var SHUFFLE_MS = 600;
+  if (enRow){
+    var cells = enRow.querySelectorAll('.rg-en');
+    cells.forEach(function(c, idx){
+      // Tiny stagger so they don't all wobble in perfect lockstep.
+      c.style.animationDelay = (idx * 60) + 'ms';
+      c.classList.add('shuffling');
+    });
+  }
+
+  // Start the 30s timer only after the shuffle animation finishes.
+  setTimeout(function(){
+    var er = document.getElementById('rgEnRow');
+    if (er){
+      er.querySelectorAll('.rg-en').forEach(function(c){
+        c.classList.remove('shuffling');
+        c.style.animationDelay = '';
+      });
     }
-  }, 1000);
+    var left = RECALL_GAME_MATCH_SECS;
+    var nEl = document.getElementById('rgTimerNum');
+    if (nEl) nEl.textContent = left;
+    _rgState.locked = false; // shuffle done — picks now allowed
+    if (_rgState.timer){ clearInterval(_rgState.timer); }
+    _rgState.timer = setInterval(function(){
+      left--;
+      var n = document.getElementById('rgTimerNum');
+      if (n) n.textContent = Math.max(0, left);
+      var tb = document.getElementById('rgTimer');
+      if (tb && left <= 5) tb.classList.add('urgent');
+      if (left <= 0){
+        clearInterval(_rgState.timer); _rgState.timer = null;
+        _rgFinish();
+      }
+    }, 1000);
+  }, SHUFFLE_MS + RECALL_GAME_PAIRS * 60);
 }
 
 function _rgRenderMatch(){
@@ -10760,27 +10822,27 @@ function _rgRenderMatch(){
     return '<div class="' + cls + '"' + click + '>' + _esc(p.ko) + '</div>';
   }).join('');
 
-  // English row — shuffled, "closed" (hidden text), tappable when a Korean
-  // word is selected and this slot isn't already used.
+  // English row — scrambled but fully VISIBLE (Duolingo-style). Tappable when
+  // a Korean word is selected and this slot isn't already used.
   var usedSlots = {};
   Object.keys(st.matched).forEach(function(k){ usedSlots[st.matched[k]] = true; });
   var enCells = st.enOrder.map(function(pairIdx, slot){
-    var cls = 'rg-cell rg-en closed';
+    var cls = 'rg-cell rg-en';
     var click = '';
     if (usedSlots[slot]){ cls += ' paired'; }
     else if (st.selectedKo !== null){ cls += ' selectable'; click = ' onclick="_rgPickEn(' + slot + ')"'; }
-    // Text stays hidden by the .closed style; content is the English word.
     return '<div class="' + cls + '"' + click + '>' + _esc(st.pairs[pairIdx].en) + '</div>';
   }).join('');
 
   var promptKo = st.selectedKo !== null
-    ? 'What does <b>' + _esc(st.pairs[st.selectedKo].ko) + '</b> mean? Tap a box.'
+    ? 'What does <b>' + _esc(st.pairs[st.selectedKo].ko) + '</b> mean? Tap its meaning.'
     : 'Tap a Korean word to start matching.';
 
   host.innerHTML =
+    '<div class="rg-topgap"></div>' +
     '<div class="rg-banner">' +
       '<div class="big">🎯 MATCH THE PAIRS</div>' +
-      '<div class="sub">Tap a Korean word, then tap the box with its meaning.</div>' +
+      '<div class="sub">Tap a Korean word, then tap its English meaning.</div>' +
     '</div>' +
     '<div class="rg-timer" id="rgTimer">⏱ <span id="rgTimerNum">' + RECALL_GAME_MATCH_SECS + '</span>s</div>' +
     '<div class="rg-progress">' + matchedCount + ' / ' + RECALL_GAME_PAIRS + ' matched</div>' +
@@ -10792,7 +10854,7 @@ function _rgRenderMatch(){
 }
 
 function _rgPickKo(ki){
-  if (_rgState.done) return;
+  if (_rgState.done || _rgState.locked) return;
   if (_rgState.matched.hasOwnProperty(ki)) return;
   _rgState.selectedKo = ki;
   try { playSfx(SOUND_FLIP, 0.7); } catch(e){}
@@ -10802,7 +10864,7 @@ window._rgPickKo = _rgPickKo;
 
 function _rgPickEn(slot){
   var st = _rgState;
-  if (st.done) return;
+  if (st.done || st.locked) return;
   if (st.selectedKo === null) return;
   // Slot already used?
   var used = false;
@@ -10936,7 +10998,15 @@ async function _recallStartFlashcards(){
 
   // Find the live activity (most recent if multiple somehow live).
   var liveSnap = await db.collection(RECALL_COLLECTION).where('status','==','live').get().catch(function(){ return null; });
-  if (!liveSnap || liveSnap.empty){
+  // Filter out sets that went live on a previous NY-day — they expire at the
+  // 3am NY rollover, same as every other daily activity. (_drIsExpired gate.)
+  var freshDocs = [];
+  if (liveSnap && !liveSnap.empty){
+    liveSnap.forEach(function(d){
+      if (!_drIsExpired(d.data())) freshDocs.push(d);
+    });
+  }
+  if (!freshDocs.length){
     host.innerHTML =
       '<div class="dr-empty">' +
         '<div class="big">No Active Recall set is live right now.</div>' +
@@ -10944,9 +11014,9 @@ async function _recallStartFlashcards(){
       '</div>';
     return;
   }
-  var doc = liveSnap.docs[0];
-  if (liveSnap.size > 1){
-    doc = liveSnap.docs.slice().sort(function(a, b){
+  var doc = freshDocs[0];
+  if (freshDocs.length > 1){
+    doc = freshDocs.slice().sort(function(a, b){
       var am = (a.data().livedAt && a.data().livedAt.toMillis) ? a.data().livedAt.toMillis() : 0;
       var bm = (b.data().livedAt && b.data().livedAt.toMillis) ? b.data().livedAt.toMillis() : 0;
       return bm - am;
