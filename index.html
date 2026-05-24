@@ -11484,8 +11484,12 @@ function _rgPickEn(slot){
   Object.keys(st.matched).forEach(function(k){ if (st.matched[k] === slot) used = true; });
   if (used) return;
   // Lock this pairing.
-  st.matched[st.selectedKo] = slot;
-  try { playSfx(SOUND_FLIP, 0.8); } catch(e){}
+  var pickedKo = st.selectedKo;
+  st.matched[pickedKo] = slot;
+  // Correct match (the slot's true pair is the picked Korean word) → coin
+  // sound; otherwise the usual paper-flip click.
+  var isCorrect = (st.enOrder[slot] === pickedKo);
+  try { playSfx(isCorrect ? SOUND_CORRECT : SOUND_FLIP, isCorrect ? 0.85 : 0.8); } catch(e){}
   st.selectedKo = null;
   // All 5 paired? End early.
   if (Object.keys(st.matched).length >= RECALL_GAME_PAIRS){
@@ -11543,7 +11547,9 @@ async function _rgFinish(){
       user.dailyRecallStep1DoneFor = todayKey;
       if (typeof updateCounts === 'function') updateCounts();
     }
-    try { playSfx(eggs > 0 ? SOUND_WIN : SOUND_CORRECT, 0.9); } catch(e){}
+    // Results screen — same congrats sound as the gacha reveal moment when
+    // the student earned eggs; the lesser cue on a no-egg result.
+    try { playSfx(eggs > 0 ? SOUND_WIN : SOUND_CORRECT, 0.95); } catch(e){}
   } catch(e){
     console.error('recall game save:', e);
     toast('Couldn\'t save your eggs — try again.', 'var(--pink)');
