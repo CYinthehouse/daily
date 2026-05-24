@@ -364,7 +364,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .dr-slot-audio-empty{font-family:var(--vt);font-size:12px;color:#5e6e8e;font-style:italic;padding:6px 4px;}
 .dr-rec-host{margin:10px 0;padding:14px;background:linear-gradient(135deg,rgba(65,192,255,0.12),rgba(65,192,255,0.04));border:2px solid var(--cyan);border-radius:8px;}
 .dr-rec-label{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--cyan);text-shadow:var(--ps-outline-sm);text-align:center;margin-bottom:10px;}
-.dr-feed-hidden-note{padding:14px;text-align:center;font-family:var(--vt);font-size:13px;color:#7a8aa8;font-style:italic;background:rgba(0,0,0,0.18);border:1px dashed #2a3650;border-radius:8px;margin-top:8px;}
+.dr-feed-hidden-note{padding:14px;text-align:center;font-family:var(--vt);font-size:17px;color:#7a8aa8;font-style:italic;background:rgba(0,0,0,0.18);border:1px dashed #2a3650;border-radius:8px;margin-top:8px;}
 
 /* ═══ DAILY LISTENING — RECITATION ═══ */
 .dl-screen{display:flex;flex-direction:column;gap:16px;}
@@ -1152,16 +1152,16 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 /* ─── DIARY — weekly activity ─── */
 .diary-composer{background:#10172a;border:2px solid #2a3650;border-radius:10px;padding:18px;margin-bottom:18px;}
 .diary-composer.locked{border-color:#39ff14;}
-.diary-field-label{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--cyan);text-shadow:var(--ps-outline-sm);margin-bottom:8px;letter-spacing:0.5px;}
+.diary-field-label{font-family:'Press Start 2P',monospace;font-size:14px;color:var(--cyan);text-shadow:var(--ps-outline-sm);margin-bottom:8px;letter-spacing:0.5px;}
 .diary-textarea{width:100%;min-height:170px;background:#0a0a15;border:2px solid rgba(255,255,255,0.2);border-radius:6px;color:#fff;padding:12px;font-family:'Noto Sans KR','Apple SD Gothic Neo','Noto Sans',sans-serif;font-size:16px;line-height:1.65;resize:vertical;box-sizing:border-box;outline:none;transition:border-color 0.12s;}
 .diary-textarea:focus{border-color:var(--cyan);}
 .diary-rec-host{margin:14px 0 4px;padding:14px;background:linear-gradient(135deg,rgba(255,119,119,0.12),rgba(255,119,119,0.04));border:2px solid #ff7777;border-radius:8px;}
-.diary-rec-label{font-family:'Press Start 2P',monospace;font-size:9px;color:#ff9b9b;text-shadow:var(--ps-outline-sm);text-align:center;margin-bottom:10px;line-height:1.5;}
+.diary-rec-label{font-family:'Press Start 2P',monospace;font-size:13px;color:#ff9b9b;text-shadow:var(--ps-outline-sm);text-align:center;margin-bottom:10px;line-height:1.5;}
 .diary-rec-controls{display:flex;flex-direction:column;align-items:center;gap:8px;}
 .diary-rec-btn{width:62px;height:62px;border-radius:50%;border:3px solid #ff7777;background:rgba(255,119,119,0.12);color:#ff7777;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s;}
 .diary-rec-btn:hover{background:rgba(255,119,119,0.22);}
 .diary-rec-btn.recording{background:rgba(255,0,0,0.25);border-color:#ff0000;animation:_drJoinPulse 0.9s ease-in-out infinite;}
-.diary-rec-status{font-family:var(--vt);font-size:13px;color:#cdd8ec;text-align:center;}
+.diary-rec-status{font-family:var(--vt);font-size:17px;color:#cdd8ec;text-align:center;}
 .diary-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px;}
 
 /* Diary feed entry — Discord/social style, mirrors the Teamwork Reading cards */
@@ -3453,8 +3453,11 @@ async function _loadUserProfile(authUser){
     dailyAdvancedSubmittedFor: d.dailyAdvancedSubmittedFor || null,
     dailyAdvancedBonusFor: d.dailyAdvancedBonusFor || null,
     dailyYodaDoneFor: d.dailyYodaDoneFor || null,
-    // NY-day key of the last Active Recall completion. Drives the daily-reset
-    // gate + the picker tile's "DONE TODAY" badge, same pattern as the others.
+    // NY-day keys of the last Active Recall completions. Both drive the
+    // daily-reset gate (3 AM NY rollover). Step 1 = the Match-Up game,
+    // Step 2 = the flashcards. Both must be loaded or the gate won't survive
+    // a page reload and the activity becomes replayable.
+    dailyRecallStep1DoneFor: d.dailyRecallStep1DoneFor || null,
     dailyRecallStep2DoneFor: d.dailyRecallStep2DoneFor || null,
     // NY-WEEK key of the last Diary submission. Diary is a weekly activity —
     // this resets every Monday 3 AM NY, gating the 9-egg award.
