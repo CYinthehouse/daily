@@ -543,8 +543,41 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 /* ─── ACTIVE RECALL — two-step landing screen ───
  * STEP 1 (Match-Up Game) then STEP 2 (Flashcards). Two big yellow sparkle
  * buttons; Step 2 is disabled until Step 1 is done. */
-.recall-steps{display:flex;flex-direction:column;gap:16px;max-width:520px;margin:8px auto 0;}
-.recall-step-btn{width:100%;text-align:center;line-height:1.6;white-space:normal;}
+.recall-steps{display:flex;flex-direction:column;gap:34px;max-width:560px;margin:42px auto 0;}
+.recall-step-btn{
+  width:100%;text-align:center;line-height:1.7;white-space:normal;
+  padding:26px 28px;font-size:13px;letter-spacing:1px;
+  border-radius:6px;
+  box-shadow:4px 4px 0 rgba(0,0,0,0.7), 0 0 22px rgba(255,215,0,0.45);
+  animation:recallStepGlow 2.6s ease-in-out infinite;
+}
+/* Soft pulsing halo so the live buttons feel alive before any hover. */
+@keyframes recallStepGlow{
+  0%,100%{box-shadow:4px 4px 0 rgba(0,0,0,0.7), 0 0 18px rgba(255,215,0,0.35);}
+  50%{box-shadow:4px 4px 0 rgba(0,0,0,0.7), 0 0 32px rgba(255,215,0,0.70);}
+}
+/* Slow idle shimmer sweep across the face (independent of the hover glare). */
+.recall-step-btn::before{
+  content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:1;
+  background:linear-gradient(110deg,transparent 0% 42%,rgba(255,255,255,0.55) 47% 52%,transparent 58% 100%);
+  background-size:240% 100%;background-position:240% 0;
+  animation:recallStepShimmer 3.8s ease-in-out infinite;
+}
+@keyframes recallStepShimmer{
+  0%{background-position:240% 0;}
+  55%,100%{background-position:-240% 0;}
+}
+.recall-step-btn:hover{
+  transform:translate(-2px,-3px);
+  box-shadow:6px 7px 0 rgba(0,0,0,0.7), 0 0 38px rgba(255,215,0,0.85);
+}
+/* Locked / done buttons: calm — no glow pulse, no shimmer. */
+.recall-step-btn:disabled{
+  animation:none;
+  box-shadow:4px 4px 0 rgba(0,0,0,0.6);
+}
+.recall-step-btn:disabled::before{display:none;}
+.recall-step-btn:disabled:hover{transform:none;}
 
 /* ─── ACTIVE RECALL — STEP 1: matching game (Toad House style) ─── */
 .rg-banner{background:linear-gradient(135deg,rgba(255,215,0,0.16),rgba(168,85,247,0.10));border:2px solid var(--gold);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:center;}
