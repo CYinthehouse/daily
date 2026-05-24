@@ -583,22 +583,50 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .recall-step-btn:disabled:hover{transform:none;}
 
 /* ─── ACTIVE RECALL — STEP 1: matching game (Toad House style) ─── */
-.rg-banner{background:linear-gradient(135deg,rgba(255,215,0,0.16),rgba(168,85,247,0.10));border:2px solid var(--gold);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:center;}
+.rg-banner{
+  max-width:860px;
+  margin:0 auto 16px;
+  padding:14px 18px;
+  text-align:center;
+  background:
+    repeating-linear-gradient(135deg,
+      rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 2px,
+      transparent 2px, transparent 7px),
+    linear-gradient(90deg, rgba(80,64,20,0.55), rgba(22,18,34,0.96));
+  border:4px solid var(--gold);
+  border-radius:3px;
+  box-shadow:
+    0 6px 0 #6d5600,
+    4px 4px 0 rgba(0,0,0,0.65);
+}
 /* Vertical gap between the ACTIVE RECALL header and the game content.
  * A real element (not a collapsing margin) so the space actually shows.
  * -sm is used by the match phase, which sits a little higher. */
 .rg-topgap{height:72px;}
 .rg-topgap-sm{height:72px;}
-/* Study-phase arrow row — one image arrow per column, linking each Korean
- * word to its English meaning directly below. */
+/* Study-phase arrow row — pixel block-arrows (CSS-only sprites) linking each
+ * Korean word to its English meaning directly below. */
 .rg-arrows{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:2px 0;}
 .rg-arrow{display:flex;align-items:center;justify-content:center;}
-.rg-arrow img{width:34px;height:34px;object-fit:contain;display:block;filter:drop-shadow(1px 1px 0 rgba(0,0,0,0.6));}
-@media (max-width:560px){ .rg-arrows{gap:5px;} .rg-arrow img{width:26px;height:26px;} }
-.rg-banner .big{font-family:'Press Start 2P',monospace;font-size:13px;color:var(--gold);text-shadow:var(--ps-outline-sm);line-height:1.5;}
-.rg-banner .sub{font-family:var(--vt);font-size:15px;color:#cdd8ec;margin-top:6px;line-height:1.5;}
+.rg-arrow .match-arrow{
+  width:22px;
+  height:34px;
+  background:
+    linear-gradient(#f4f1df, #f4f1df) center top / 10px 22px no-repeat,
+    linear-gradient(45deg, transparent 50%, #f4f1df 50%) left bottom / 11px 12px no-repeat,
+    linear-gradient(-45deg, transparent 50%, #f4f1df 50%) right bottom / 11px 12px no-repeat;
+  filter:
+    drop-shadow(2px 2px 0 #1b170d)
+    drop-shadow(0 0 2px rgba(255,255,255,0.45));
+}
+@media (max-width:560px){
+  .rg-arrows{gap:5px;}
+  .rg-arrow .match-arrow{width:16px;height:26px;background-size:8px 16px,9px 10px,9px 10px;}
+}
+.rg-banner .big{font-family:'Press Start 2P',monospace;font-size:14px;color:var(--gold);text-shadow:var(--ps-outline-sm);line-height:1.5;}
+.rg-banner .sub{font-family:var(--vt);font-size:14px;color:#cdd8ec;margin-top:6px;line-height:1.5;}
 /* Countdown timer pill */
-.rg-timer{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;font-family:'Press Start 2P',monospace;font-size:18px;color:var(--cyan);text-shadow:var(--ps-outline-sm);}
+.rg-timer{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;font-family:'Press Start 2P',monospace;font-size:16px;color:var(--cyan);text-shadow:var(--ps-outline-sm);}
 .rg-timer.urgent{color:var(--pink);}
 /* Word grid: 5 Korean containers in a row, English directly below */
 .rg-grid{display:flex;flex-direction:column;gap:10px;max-width:640px;margin:0 auto 16px;}
@@ -626,12 +654,15 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .rg-en.rg-sliding{
   transition:transform 0.5s cubic-bezier(0.34,1.2,0.64,1);
   z-index:5;
-  box-shadow:0 0 16px rgba(255,215,0,0.45),0 8px 14px rgba(0,0,0,0.55),inset 0 0 12px rgba(255,255,255,0.04);
+  box-shadow:
+    0 10px 0 #7b6200,
+    8px 8px 0 rgba(0,0,0,0.7);
 }
-/* Match-phase prompt */
-.rg-prompt{text-align:center;font-family:'Press Start 2P',monospace;font-size:11px;color:#cdd8ec;line-height:1.7;margin-bottom:14px;text-shadow:var(--ps-outline-sm);}
+/* Match-phase prompt — the active instruction; the reading focal point. */
+.rg-prompt{text-align:center;font-family:'Press Start 2P',monospace;font-size:13px;color:#eaf1ff;line-height:1.7;margin-bottom:10px;text-shadow:var(--ps-outline-sm);}
 .rg-prompt b{color:var(--gold);}
-.rg-progress{text-align:center;font-family:'Press Start 2P',monospace;font-size:23px;color:var(--green);text-shadow:var(--ps-outline-sm);margin-bottom:14px;}
+/* Progress counter — a small status line, not a headline. */
+.rg-progress{text-align:center;font-family:'Press Start 2P',monospace;font-size:11px;color:var(--green);text-shadow:var(--ps-outline-sm);margin-bottom:12px;letter-spacing:1px;}
 @media (max-width:560px){
   .rg-cell{min-height:54px;font-size:12px;}
   .rg-row{gap:5px;}
@@ -640,75 +671,98 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 /* ─── ACTIVE RECALL — MATCH-UP "PIXEL ROOM" ───
    Scoped wrapper for the Match-Up game: study phase, match phase, and result
    screen. Everything lives inside .post-recall-game-room so nothing above the
-   Active Recall box is touched. The student "walks" from the instruction sign
-   into a small pixel room: floor tiles, a platform under the cards. The egg
-   prize and the green prize-sign banner styling apply on the result screen
-   only (those elements simply aren't rendered during the live phases). */
+   Active Recall box is touched. Built like a retro game room — hard edges,
+   tile-layered frame, dithered texture, a visible checker floor — not a
+   modern SaaS card. The frame is purple while playing; green (.is-result)
+   only on the reward screen, since green should read as "success." */
 .post-recall-game-room{
   position:relative;
   max-width:980px;
-  margin:28px auto 0;
-  padding:24px 24px 36px;
+  margin:14px auto 0;
+  padding:24px 24px 40px;
+  /* Dithered diagonal hatch over a flat near-black — texture, not a smooth
+     gradient (smooth gradients are an AI/Tailwind giveaway). */
   background:
-    radial-gradient(circle at 50% 0%, rgba(53,255,53,0.10), transparent 42%),
-    linear-gradient(180deg, rgba(13,18,30,0.72), rgba(7,9,20,0.92));
-  border:2px solid rgba(53,255,53,0.45);
-  border-radius:14px;
+    radial-gradient(circle at 50% 0%, rgba(111,53,255,0.08), transparent 36%),
+    repeating-linear-gradient(135deg,
+      rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 2px,
+      transparent 2px, transparent 8px),
+    #080b17;
+  border:0;
+  border-radius:8px;
+  /* Layered pixel frame: dark gap → purple tile ring → hard offset shadow. */
+  outline:3px solid #6f35ff;
   box-shadow:
-    0 0 0 4px rgba(0,0,0,0.24),
-    0 18px 42px rgba(0,0,0,0.36),
-    inset 0 0 34px rgba(0,0,0,0.42);
+    0 0 0 6px #090815,
+    0 0 0 9px rgba(111,53,255,0.55),
+    6px 6px 0 rgba(0,0,0,0.65);
   overflow:hidden;
 }
-/* Tiled floor — pseudo-element fading up from the bottom of the room. */
+/* Result/reward screen — swap the purple frame for a green "success" frame. */
+.post-recall-game-room.is-result{
+  background:
+    radial-gradient(circle at 50% 0%, rgba(53,255,53,0.08), transparent 36%),
+    repeating-linear-gradient(135deg,
+      rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 2px,
+      transparent 2px, transparent 8px),
+    #080b17;
+  outline-color:#168d2d;
+  box-shadow:
+    0 0 0 6px #06100a,
+    0 0 0 9px #21d13e,
+    6px 6px 0 rgba(0,0,0,0.65);
+}
+/* Checker floor — a real, visible floor that anchors the room, not mist.
+   Starts higher and holds opacity longer before fading. */
 .post-recall-game-room::after{
   content:"";
   position:absolute;
   left:0;right:0;bottom:0;
-  height:130px;
+  height:190px;
   pointer-events:none;
   background:
-    linear-gradient(45deg, rgba(67,199,255,0.10) 25%, transparent 25%),
-    linear-gradient(-45deg, rgba(67,199,255,0.10) 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, rgba(67,199,255,0.10) 75%),
-    linear-gradient(-45deg, transparent 75%, rgba(67,199,255,0.10) 75%);
-  background-size:32px 32px;
-  background-position:0 0,0 16px,16px -16px,-16px 0;
-  opacity:0.48;
-  -webkit-mask-image:linear-gradient(to top, black 0%, transparent 100%);
-  mask-image:linear-gradient(to top, black 0%, transparent 100%);
+    linear-gradient(45deg, rgba(67,199,255,0.16) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(67,199,255,0.16) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(67,199,255,0.16) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(67,199,255,0.16) 75%);
+  background-size:40px 40px;
+  background-position:0 0,0 20px,20px -20px,-20px 0;
+  opacity:0.38;
+  -webkit-mask-image:linear-gradient(to top, black 0%, black 45%, transparent 100%);
+  mask-image:linear-gradient(to top, black 0%, black 45%, transparent 100%);
 }
 
-/* Reward banner — keeps the existing green success look but upgraded into a
-   chunky pixel "prize sign" with corner bolts and a 3D base shadow. */
+/* Reward banner — a chunky pixel prize sign: hard edges, hard offset shadow,
+   corner bolts. (Result screen only.) */
 .post-recall-game-room .recall-done-banner{
   position:relative;
   z-index:1;
   margin:0 auto 22px;
   padding:18px 22px;
-  max-width:920px;
+  max-width:860px;
   text-align:center;
   background:
-    radial-gradient(circle at 50% 0%, rgba(53,255,53,0.18), transparent 58%),
-    linear-gradient(180deg, rgba(24,75,32,0.55), rgba(8,20,16,0.94));
-  border:3px solid var(--green);
-  border-radius:10px;
+    repeating-linear-gradient(135deg,
+      rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 2px,
+      transparent 2px, transparent 7px),
+    linear-gradient(180deg, rgba(24,75,32,0.6), rgba(8,20,16,0.96));
+  border:4px solid var(--green);
+  border-radius:3px;
   box-shadow:
-    0 5px 0 #087412,
-    0 0 24px rgba(53,255,53,0.28),
-    inset 0 0 24px rgba(53,255,53,0.06);
+    0 6px 0 #087412,
+    4px 4px 0 rgba(0,0,0,0.65);
 }
 .post-recall-game-room .recall-done-banner::before,
 .post-recall-game-room .recall-done-banner::after{
   content:"";
   position:absolute;
-  top:12px;
+  top:10px;
   width:8px;height:8px;
   background:var(--green);
-  box-shadow:0 0 10px rgba(53,255,53,0.85);
+  box-shadow:2px 2px 0 rgba(0,0,0,0.6);
 }
-.post-recall-game-room .recall-done-banner::before{left:14px;}
-.post-recall-game-room .recall-done-banner::after{right:14px;}
+.post-recall-game-room .recall-done-banner::before{left:12px;}
+.post-recall-game-room .recall-done-banner::after{right:12px;}
 
 /* Center prize moment — a bobbing egg between the sign and the cards. */
 .egg-prize{
@@ -739,22 +793,65 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   50%{transform:translateY(-6px);}
 }
 
-/* Platform — a subtle inset stage so the matched cards don't float on the
-   page grid. The .rg-grid inside it keeps its own layout. */
+/* Platform/stage under the cards — a placed pixel platform, not a dashboard
+   card. Hard border, hard base shadow, and inset corner-bracket tiles. */
 .reward-stage{
   position:relative;
   z-index:1;
   max-width:900px;
   margin:0 auto;
-  padding:18px 18px 24px;
+  padding:20px 18px 24px;
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0)),
-    rgba(3,6,18,0.42);
-  border:2px solid rgba(255,255,255,0.06);
-  border-radius:14px;
-  box-shadow:inset 0 0 28px rgba(0,0,0,0.35);
+    linear-gradient(180deg, rgba(8,12,28,0.96), rgba(4,6,15,0.98));
+  border:3px solid #20283a;
+  border-radius:3px;
+  box-shadow:
+    0 6px 0 #050710,
+    inset 0 0 0 3px rgba(255,255,255,0.035);
 }
+/* Corner-bracket tiles — top-left + bottom-right — so it reads as designed. */
+.reward-stage::before,
+.reward-stage::after{
+  content:"";
+  position:absolute;
+  width:18px;height:18px;
+  border:3px solid #2c3854;
+  pointer-events:none;
+}
+.reward-stage::before{top:10px;left:10px;border-right:0;border-bottom:0;}
+.reward-stage::after{bottom:10px;right:10px;border-left:0;border-top:0;}
 .reward-stage .rg-grid{margin-bottom:0;}
+
+/* Room-object props — small placed pixel crates. They sit in a row below the
+   cards: pushed to the far bottom corners on wide screens, collapsed to a
+   centered cluster on narrow screens (see media query). Two props max —
+   "room," not clutter. */
+.room-props{
+  position:relative;
+  z-index:1;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  margin:20px auto 0;
+  max-width:900px;
+  pointer-events:none;
+}
+.room-prop{
+  width:44px;height:44px;
+  display:grid;
+  place-items:center;
+  font-size:1.4rem;
+  background:
+    repeating-linear-gradient(135deg,
+      rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 2px,
+      transparent 2px, transparent 7px),
+    #10182e;
+  border:3px solid #2c3854;
+  border-radius:3px;
+  box-shadow:
+    0 5px 0 #070b16,
+    3px 3px 0 rgba(0,0,0,0.65);
+}
 
 /* Matched word cards — pixel blocks. Scoped to the room. The chunky 0 5px 0
    base shadow is added only on the result screen (.is-result); the live
@@ -764,74 +861,73 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   position:relative;
   min-height:76px;
   border-width:3px;
+  border-radius:3px;
+  /* Dithered texture instead of a glossy gradient. */
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.065), rgba(255,255,255,0)),
-    #10172b;
+    repeating-linear-gradient(135deg,
+      rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 2px,
+      transparent 2px, transparent 7px),
+    #111a31;
 }
-/* Korean (cyan) block — flat glow on live phases */
+/* Korean (cyan) block — hard offset shadow, tiny secondary glow. */
 .post-recall-game-room .rg-ko{
   border-color:var(--cyan);
   color:#f5f7ff;
   box-shadow:
-    0 0 14px rgba(67,199,255,0.22),
-    inset 0 0 12px rgba(255,255,255,0.035);
+    0 6px 0 #062f47,
+    4px 4px 0 rgba(0,0,0,0.65),
+    0 0 8px rgba(67,199,255,0.18);
 }
-/* English (gold) block — flat glow on live phases */
+/* English (gold) block — hard offset shadow, tiny secondary glow. */
 .post-recall-game-room .rg-en{
   background:
-    linear-gradient(180deg, rgba(255,255,255,0.065), rgba(255,255,255,0)),
+    repeating-linear-gradient(135deg,
+      rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 2px,
+      transparent 2px, transparent 7px),
     #211832;
   border-color:var(--gold);
   color:#ffeeb0;
   box-shadow:
-    0 0 14px rgba(255,215,0,0.20),
-    inset 0 0 12px rgba(255,255,255,0.035);
+    0 6px 0 #7b6200,
+    4px 4px 0 rgba(0,0,0,0.65),
+    0 0 8px rgba(255,215,0,0.16);
 }
-/* Correct match — green chest, glowing (result screen) */
+/* Correct match — green block (result screen) */
 .post-recall-game-room .rg-en.correct{
   border-color:var(--green);
+  background:
+    repeating-linear-gradient(135deg,
+      rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 2px,
+      transparent 2px, transparent 7px),
+    #16261a;
+  color:#d6ffce;
   box-shadow:
-    0 0 22px rgba(53,255,53,0.42),
-    inset 0 0 12px rgba(53,255,53,0.055);
+    0 6px 0 #0a5c1a,
+    4px 4px 0 rgba(0,0,0,0.65),
+    0 0 8px rgba(53,255,53,0.22);
 }
-/* Wrong match — red error read (result screen) */
+/* Wrong / unmatched — red block (result screen) */
 .post-recall-game-room .rg-en.wrong{
+  border-color:#ff3b3b;
+  background:
+    repeating-linear-gradient(135deg,
+      rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 2px,
+      transparent 2px, transparent 7px),
+    #2a1414;
+  color:#ffb3b3;
   box-shadow:
-    0 0 18px rgba(255,59,59,0.55),
-    inset 0 0 12px rgba(255,255,255,0.035);
+    0 6px 0 #7a1414,
+    4px 4px 0 rgba(0,0,0,0.65),
+    0 0 8px rgba(255,59,59,0.22);
 }
-/* ── RESULT SCREEN ONLY — add the chunky 0 5px 0 pixel base shadow. ── */
-.post-recall-game-room.is-result .rg-ko{
-  box-shadow:
-    0 5px 0 #07506e,
-    0 0 14px rgba(67,199,255,0.22),
-    inset 0 0 12px rgba(255,255,255,0.035);
-}
-.post-recall-game-room.is-result .rg-en{
-  box-shadow:
-    0 5px 0 #7a5c00,
-    0 0 14px rgba(255,215,0,0.20),
-    inset 0 0 12px rgba(255,255,255,0.035);
-}
-.post-recall-game-room.is-result .rg-en.correct{
-  box-shadow:
-    0 5px 0 #087412,
-    0 0 22px rgba(53,255,53,0.42),
-    inset 0 0 12px rgba(53,255,53,0.055);
-}
-.post-recall-game-room.is-result .rg-en.wrong{
-  box-shadow:
-    0 5px 0 #7a1414,
-    0 0 18px rgba(255,59,59,0.55),
-    inset 0 0 12px rgba(255,255,255,0.035);
-}
-/* ── Live-phase states (study + match) — flat, no base shadow. ── */
-/* Selected Korean word during the match phase — gold glow, flat. */
+/* ── Live-phase states (study + match). ── */
+/* Selected Korean word during the match phase — gold ring over the block. */
 .post-recall-game-room .rg-ko.active{
   border-color:var(--gold);
   box-shadow:
-    0 0 16px rgba(255,215,0,0.6),
-    inset 0 0 12px rgba(255,255,255,0.035);
+    0 6px 0 #7b6200,
+    4px 4px 0 rgba(0,0,0,0.65),
+    0 0 10px rgba(255,215,0,0.5);
 }
 /* Paired cells dim, same as before. */
 .post-recall-game-room .rg-ko.paired,
@@ -845,25 +941,28 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .post-recall-game-room .rg-progress,
 .post-recall-game-room .rg-prompt{position:relative;z-index:1;}
 
-/* Continue button — chunky pixel press inside the reward room. */
+/* Continue button — hard pixel press inside the reward room. */
 .post-recall-game-room .recall-continue-btn{
   position:relative;
   z-index:1;
   border-width:3px;
+  border-radius:3px;
   box-shadow:
-    0 5px 0 #07506e,
-    0 0 16px rgba(67,199,255,0.30);
-  transition:transform 110ms ease, box-shadow 110ms ease;
+    0 6px 0 #062f47,
+    4px 4px 0 rgba(0,0,0,0.65);
+  transition:transform 90ms steps(2), box-shadow 90ms steps(2);
 }
 .post-recall-game-room .recall-continue-btn:hover{
   transform:translateY(-2px);
   box-shadow:
-    0 7px 0 #07506e,
-    0 0 22px rgba(67,199,255,0.42);
+    0 8px 0 #062f47,
+    4px 4px 0 rgba(0,0,0,0.65);
 }
 .post-recall-game-room .recall-continue-btn:active{
-  transform:translateY(5px);
-  box-shadow:0 0 16px rgba(67,199,255,0.30);
+  transform:translateY(6px);
+  box-shadow:
+    0 0 0 #062f47,
+    4px 4px 0 rgba(0,0,0,0.65);
 }
 .post-recall-game-room .recall-actions{
   position:relative;
@@ -874,6 +973,8 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 @media (max-width:560px){
   .post-recall-game-room{padding:20px 14px 30px;}
   .post-recall-game-room .rg-cell{min-height:62px;}
+  /* Props collapse from the far corners to a centered cluster. */
+  .room-props{justify-content:center;gap:20px;}
 }
 
 /* Active Recall manager: editable card rows, mirrors the yoda-edit-row look */
@@ -1748,6 +1849,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 #dailyListeningScreen .sh-sub,
 #dailyAdvancedScreen .sh-sub,
 #dailyYodaScreen .sh-sub,
+#dailyRecallScreen .sh-sub,
 #inboxScreen .sh-sub,
 #shopScreen .sh-sub,
 #showcaseScreen .sh-sub { font-size: 17px !important; }
@@ -1834,7 +1936,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .section-head.daily .sh-title{color:var(--green);text-shadow:var(--ps-outline-sm);}
 .section-head.shop .sh-title{color:var(--gold);text-shadow:var(--ps-outline-sm);}
 .section-head.showcase .sh-title{color:var(--purple);text-shadow:var(--ps-outline-sm);}
-.section-head .sh-sub{font-size:14px;color:#a8d6f0;}
+.section-head .sh-sub{font-size:17px;color:#a8d6f0;}
 
 /* ── PLACEHOLDER GRIDS ── */
 .ph-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;}
@@ -10961,11 +11063,10 @@ function _rgRenderStudy(){
   }).join('');
   // One arrow image per column, linking each Korean word to its meaning.
   var arrowCells = _rgState.pairs.map(function(){
-    return '<div class="rg-arrow"><img src="https://cdn.shopify.com/s/files/1/0674/6747/7282/files/Cream_and_Orange_Creative_Mily_Art_Gallery_Logo_7.png?v=1779648938" alt="↓"></div>';
+    return '<div class="rg-arrow"><div class="match-arrow"></div></div>';
   }).join('');
 
   host.innerHTML =
-    '<div class="rg-topgap"></div>' +
     '<div class="post-recall-game-room">' +
       '<div class="rg-banner">' +
         '<div class="big">🎮 STUDY THE PAIRS</div>' +
@@ -10978,6 +11079,10 @@ function _rgRenderStudy(){
           '<div class="rg-arrows">' + arrowCells + '</div>' +
           '<div class="rg-row" id="rgEnRow">' + enCells + '</div>' +
         '</div>' +
+      '</div>' +
+      '<div class="room-props">' +
+        '<div class="room-prop room-prop-left">🥚</div>' +
+        '<div class="room-prop room-prop-right">🎁</div>' +
       '</div>' +
     '</div>';
 
@@ -11123,7 +11228,6 @@ function _rgRenderMatch(){
     : 'Tap a Korean word to start matching.';
 
   host.innerHTML =
-    '<div class="rg-topgap"></div>' +
     '<div class="post-recall-game-room">' +
       '<div class="rg-banner">' +
         '<div class="big">🎯 MATCH THE PAIRS</div>' +
@@ -11137,6 +11241,10 @@ function _rgRenderMatch(){
           '<div class="rg-row" id="rgKoRow">' + koCells + '</div>' +
           '<div class="rg-row" id="rgEnRow">' + enCells + '</div>' +
         '</div>' +
+      '</div>' +
+      '<div class="room-props">' +
+        '<div class="room-prop room-prop-left">🥚</div>' +
+        '<div class="room-prop room-prop-right">🎁</div>' +
       '</div>' +
     '</div>';
 }
@@ -11229,18 +11337,19 @@ function _rgRenderResult(correct, eggs){
   if (!host) return;
   var st = _rgState;
 
-  // Reveal the board: English boxes open, correct/wrong highlighted.
+  // Reveal the board. Every English card shows its outcome: green if the
+  // student matched it to the right Korean word, red otherwise — whether they
+  // mismatched it or never got to it. No card stays neutral gold here.
   var koCells = st.pairs.map(function(p){
     return '<div class="rg-cell rg-ko paired">' + _esc(p.ko) + '</div>';
   }).join('');
   var enCells = st.enOrder.map(function(pairIdx, slot){
-    var cls = 'rg-cell rg-en';
     // Which Korean word did the student assign to this slot, if any?
     var assignedKi = null;
     Object.keys(st.matched).forEach(function(k){ if (st.matched[k] === slot) assignedKi = parseInt(k,10); });
-    if (assignedKi !== null){
-      cls += (st.enOrder[slot] === assignedKi) ? ' correct' : ' wrong';
-    }
+    // Correct only when the assigned Korean word is this slot's true pair.
+    var isCorrect = (assignedKi !== null) && (st.enOrder[slot] === assignedKi);
+    var cls = 'rg-cell rg-en ' + (isCorrect ? 'correct' : 'wrong');
     return '<div class="' + cls + '">' + _esc(st.pairs[pairIdx].en) + '</div>';
   }).join('');
 
@@ -11251,7 +11360,6 @@ function _rgRenderResult(correct, eggs){
           + (eggs > 0 ? 'Nice work!' : 'Give Step 2 a try to keep practicing!');
 
   host.innerHTML =
-    '<div class="rg-topgap"></div>' +
     '<div class="post-recall-game-room is-result">' +
       '<div class="recall-done-banner">' +
         '<div class="big">' + eggMsg + '</div>' +
@@ -11269,6 +11377,10 @@ function _rgRenderResult(correct, eggs){
       '</div>' +
       '<div class="recall-actions">' +
         '<button class="btn btn-cyan btn-md recall-continue-btn" onclick="_recallRender()">▶ CONTINUE TO STEP 2</button>' +
+      '</div>' +
+      '<div class="room-props">' +
+        '<div class="room-prop room-prop-left">🥚</div>' +
+        '<div class="room-prop room-prop-right">🎁</div>' +
       '</div>' +
     '</div>';
 }
