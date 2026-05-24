@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<title>Active Recall | KoreanLearnin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://fonts.cdnfonts.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Noto+Sans:wght@400;600;700&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.cdnfonts.com/css/vcr-osd-mono" rel="stylesheet">
+<style>
+/* ──────────────────────────────────────────────────────────────────────────
+ * Active Recall — standalone page.
+ * Copied verbatim from index.html so it LOOKS and FUNCTIONS identically.
+ * Self-contained: its own :root vars, base styles, button styles, recall CSS,
+ * toast, Firebase init, helpers, and the recall functions. The student stays
+ * logged in because Firebase Auth uses LOCAL persistence on the same domain.
+ * ────────────────────────────────────────────────────────────────────────── */
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --cyan:#41c0ff;--pink:#ff7777;--gold:#FFD700;--green:#39ff14;
+  --purple:#a855f7;--bg:#0a0a15;--card:rgba(255,255,255,0.06);--card2:rgba(0,0,0,0.4);
+  --border:rgba(255,255,255,0.15);--ps:'Press Start 2P',monospace;
+  --ns:'Noto Sans',sans-serif;--vt:'VCR OSD Mono',monospace;
+  --shadow:2px 2px 0 rgba(0,0,0,0.6);
+  --ps-outline:-2px -2px 0 #000024,2px -2px 0 #000024,-2px 2px 0 #000024,2px 2px 0 #000024,0 -2px 0 #000024,0 2px 0 #000024,-2px 0 0 #000024,2px 0 0 #000024;
+  --ps-outline-sm:-1px -1px 0 #000024,1px -1px 0 #000024,-1px 1px 0 #000024,1px 1px 0 #000024;
+}
+html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt);overflow-x:hidden;font-size:18px;line-height:1.6;}
+.bg-stars{position:fixed;top:0;left:0;width:100%;height:100%;background-color:var(--bg);background-image:linear-gradient(rgba(65,192,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(65,192,255,0.03) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;z-index:0;}
+#app{position:relative;z-index:1;min-height:calc(100vh / 1.2);max-width:760px;margin:0 auto;padding:18px 16px 60px;}
+.ps-shadow{text-shadow:var(--ps-outline);}
+.ps-shadow-sm{text-shadow:var(--ps-outline-sm);}
+
+/* ── BUTTONS (copied from index.html) ── */
+.btn{font-family:var(--ps);border:none;border-radius:2px;cursor:pointer;transition:all 0.1s;position:relative;overflow:hidden;box-shadow:3px 3px 0 rgba(0,0,0,0.7);}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(0,0,0,0.7);filter:brightness(1.1);}
+.btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,0.7);}
+.btn-cyan{background:#41c0ff;color:#000;text-shadow:none;border:2px solid #2da8e8;}
+.btn-pink{background:#ff7777;color:#fff;text-shadow:var(--ps-outline-sm);border:2px solid #cc4444;}
+.btn-green{background:#39ff14;color:#000;text-shadow:none;border:2px solid #22aa00;}
+.btn-ghost{background:#0a0a15;border:2px solid rgba(255,255,255,0.3);color:#eee;}
+.btn-ghost:hover{border-color:var(--cyan);color:var(--cyan);}
+.btn-lg{padding:16px 36px;font-size:12px;}.btn-md{padding:14px 26px;font-size:11px;}
+.btn-sm{padding:10px 18px;font-size:11px;}
+
+/* ── TOAST (copied from index.html) ── */
+#toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#08081a;border:2px solid var(--cyan);border-radius:2px;padding:14px 28px;font-family:var(--ps);font-size:11px;color:var(--cyan);box-shadow:4px 4px 0 rgba(0,0,0,0.9);z-index:99999;opacity:0;transition:opacity 0.3s;text-shadow:var(--ps-outline-sm);pointer-events:none;white-space:nowrap;}
+@media (max-width:560px){
+  #toast{white-space:normal;text-align:center;max-width:calc(100vw - 32px);padding:12px 16px;}
+}
+
+/* ── PAGE HEADER / BACK ── */
+.back-row{margin-bottom:16px;}
+.section-head{margin-bottom:18px;}
+.section-head .sh-title{font-family:'Press Start 2P',monospace;font-size:15px;color:var(--green);text-shadow:var(--ps-outline-sm);line-height:1.5;}
+.section-head .sh-sub{font-family:var(--vt);font-size:16px;color:#b8c5dc;margin-top:8px;line-height:1.5;}
+
+/* ─── ACTIVE RECALL — student-side flashcards (copied verbatim from index.html) ───
+ * Flip-card visuals adapted from the Lesson Portal: 3D rotateY flip, fixed
+ * container height, tap to flip. Korean on front, English on back. */
+.recall-banner{background:linear-gradient(135deg,rgba(65,192,255,0.18),rgba(168,85,247,0.12));border:2px solid var(--cyan);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:center;}
+.recall-banner .big{font-family:'Press Start 2P',monospace;font-size:13px;color:var(--cyan);text-shadow:var(--ps-outline-sm);line-height:1.5;}
+.recall-banner .sub{font-family:var(--vt);font-size:15px;color:#cdd8ec;margin-top:6px;line-height:1.5;}
+.recall-progress{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;font-family:'Press Start 2P',monospace;font-size:10px;color:#a8b8d0;text-shadow:var(--ps-outline-sm);}
+.recall-progress .recall-remain{color:var(--gold);}
+.recall-scene{perspective:1000px;width:100%;max-width:420px;margin:0 auto 18px;}
+.recall-card{width:100%;height:230px;position:relative;transform-style:preserve-3d;transition:transform 0.5s;cursor:pointer;}
+.recall-card.flipped{transform:rotateY(180deg);}
+.recall-face{position:absolute;inset:0;backface-visibility:hidden;background:#10172a;border:2px solid var(--cyan);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;box-shadow:4px 4px 0 rgba(0,0,0,0.8);}
+.recall-back-face{transform:rotateY(180deg);border-color:var(--gold);}
+.recall-hint{font-family:'Press Start 2P',monospace;font-size:9px;color:#7a8aa8;margin-bottom:14px;letter-spacing:1px;}
+.recall-main{font-family:'Noto Sans KR','Apple SD Gothic Neo','Noto Sans',sans-serif;font-size:clamp(24px,6vw,40px);color:#fff;text-align:center;line-height:1.35;font-weight:700;}
+.recall-tap-note{font-family:var(--vt);font-size:14px;color:#7a8aa8;font-style:italic;margin-top:14px;}
+.recall-grade-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:4px;}
+.recall-grade-row .btn{min-width:150px;}
+.recall-done-banner{background:linear-gradient(135deg,rgba(57,255,20,0.16),rgba(57,255,20,0.04));border:2px solid var(--green);border-radius:10px;padding:18px 16px;text-align:center;margin-bottom:18px;}
+.recall-done-banner .big{font-family:'Press Start 2P',monospace;font-size:13px;color:var(--green);text-shadow:var(--ps-outline-sm);line-height:1.5;}
+.recall-done-banner .sub{font-family:var(--vt);font-size:15px;color:#cdd8ec;margin-top:8px;line-height:1.5;}
+
+/* Loading / empty states */
+.dr-empty{padding:40px 20px;text-align:center;}
+.dr-empty .big{font-family:'Press Start 2P',monospace;font-size:12px;color:#fff;line-height:1.6;margin-bottom:10px;}
+.dr-empty .sub{font-family:var(--vt);font-size:15px;color:#9aa8c0;line-height:1.5;}
+.dr-loading{padding:40px;text-align:center;color:#888;font-family:var(--vt);}
+</style>
+</head>
+<body>
+<div class="bg-stars"></div>
+<div id="app">
+  <div class="back-row">
+    <button class="btn btn-ghost btn-sm" onclick="_goBackToApp()">← BACK TO MENU</button>
+  </div>
+  <div class="section-head">
+    <div class="sh-title">🧠 ACTIVE RECALL</div>
+    <div class="sh-sub">Flip through flashcards and test your memory.</div>
+  </div>
+  <div id="dailyRecallHost"><div class="dr-loading">Loading…</div></div>
+</div>
+<div id="toast">&nbsp;</div>
+
+<!-- Firebase SDK — compat build, same versions index.html uses -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+'use strict';
+
+/* ═══ small DOM helper ═══ */
+function $(id){ return document.getElementById(id); }
+
+/* ═══ FIREBASE (config copied verbatim from index.html) ═══ */
+const FC = {
+  apiKey:"AIzaSyAtbLQdg00pCjgRBj3LpWE6s6AYx8xyFoE",
+  authDomain:"koreanlearnin-gacha.firebaseapp.com",
+  projectId:"koreanlearnin-gacha",
+  storageBucket:"koreanlearnin-gacha.firebasestorage.app",
+  messagingSenderId:"277466001511",
+  appId:"1:277466001511:web:392a516cddd4f37850a4c2"
+};
+let db, auth;
+try {
+  const existing = firebase.apps.find(a=>a.name==='gacha');
+  const app = existing || firebase.initializeApp(FC,'gacha');
+  db = firebase.firestore(app);
+  auth = firebase.auth(app);
+  // LOCAL persistence — this is what lets the student's index.html login
+  // carry over to this page automatically (same domain → shared session).
+  auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(function(e){
+    console.warn('Auth persistence:', e);
+  });
+} catch(e){ console.error('Firebase init:', e); }
+
+/* ═══ CONSTANTS (copied from index.html) ═══ */
+const TC = 'tevello_accounts';
+const RECALL_COLLECTION = 'gacha_recall_activities';
+const ADMIN_EMAILS = ['calvin@koreanlearnin.com'];
+function _isAdminEmail(email){
+  if (!email) return false;
+  return ADMIN_EMAILS.indexOf(String(email).trim().toLowerCase()) !== -1;
+}
+
+/* ═══ SOUNDS (copied from index.html) ═══ */
+const SOUND_CORRECT = 'https://cdn.shopify.com/s/files/1/0674/6747/7282/files/mario_coin_sound_1.mp3?v=1773019671';
+const SOUND_WIN     = 'https://cdn.shopify.com/s/files/1/0674/6747/7282/files/win-soundd.mp3?v=1773019671';
+const SOUND_FLIP    = 'https://cdn.shopify.com/s/files/1/0674/6747/7282/files/freesound_community-page-flip-47177.mp3?v=1773020591';
+let sfxVolume = 0.7;
+try { sfxVolume = parseFloat(localStorage.getItem('astSfxVol') ?? '0.7') || 0.7; } catch(e){}
+
+/* ═══ HELPERS (copied verbatim from index.html) ═══ */
+function playSfx(url, scale){
+  try {
+    var a = new Audio(url);
+    a.volume = sfxVolume * (scale || 1);
+    a.play();
+  } catch(e){}
+}
+
+function _drTodayNYKey(){
+  // Shift current time back by 3h so 3am rollover lines up with day boundary.
+  var shifted = new Date(Date.now() - 3 * 3600 * 1000);
+  try {
+    var fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year:'numeric', month:'2-digit', day:'2-digit' });
+    return fmt.format(shifted);
+  } catch(e){
+    return shifted.toISOString().slice(0,10);
+  }
+}
+
+function _esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+var _toastTimer = null, _toastBlankTimer = null;
+function toast(msg, col){
+  var t = $('toast');
+  if (!t) return;
+  if (_toastTimer){ clearTimeout(_toastTimer); _toastTimer = null; }
+  if (_toastBlankTimer){ clearTimeout(_toastBlankTimer); _toastBlankTimer = null; }
+  t.style.transition = 'none';
+  t.style.opacity = '0';
+  t.style.borderColor = col || 'var(--cyan)';
+  t.style.color = col || 'var(--cyan)';
+  t.textContent = msg;
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      t.style.transition = 'opacity 0.3s';
+      t.style.opacity = '1';
+      _toastTimer = setTimeout(function(){
+        t.style.transition = 'opacity 0.3s';
+        t.style.opacity = '0';
+        _toastBlankTimer = setTimeout(function(){
+          t.textContent = '\u00a0';
+          _toastBlankTimer = null;
+        }, 300);
+        _toastTimer = null;
+      }, 2600);
+    });
+  });
+}
+
+// updateCounts is a no-op on this standalone page (there's no top bar / menu
+// tiles here). Kept so the copied _recallComplete code runs unchanged.
+function updateCounts(){}
+
+/* ═══ BACK TO MAIN APP ═══
+ * Returns the student to index.html. Adjust this path if the file lives
+ * somewhere other than alongside recall.html. */
+function _goBackToApp(){
+  window.location.href = 'index.html';
+}
+window._goBackToApp = _goBackToApp;
+
+/* ═══ USER PROFILE LOADER ═══
+ * Trimmed copy of index.html's _loadUserProfile — keeps only the fields
+ * Active Recall actually reads/writes. The student is already authenticated
+ * (LOCAL persistence shares the session from index.html on the same domain).
+ */
+var user = null;
+async function _loadUserProfile(authUser){
+  if (!authUser) return null;
+  var ref = db.collection(TC).doc(authUser.uid);
+  var snap = await ref.get();
+  if (!snap.exists) return null; // no profile — student must sign up via index.html first
+  var d = snap.data();
+  user = {
+    id: snap.id,
+    username: d.username || (authUser.email || '').toLowerCase(),
+    displayName: d.displayName || d.username || authUser.email,
+    gachaRolls: Math.max(0, typeof d.gachaRolls === 'number' ? d.gachaRolls : 0),
+    dailyRecallDoneFor: d.dailyRecallDoneFor || null,
+    isAdmin: !!(d.isAdmin || d.role === 'admin' || _isAdminEmail(d.username || authUser.email))
+  };
+  return user;
+}
+
+/* ═══ ACTIVE RECALL (copied verbatim from index.html, incl. seenAnswer fix) ═══ */
+var _recallState = {
+  activityId: null,
+  activity: null,
+  queue: [],        // remaining card indices to clear (re-queue on "missed")
+  total: 0,         // number of distinct cards in the set
+  cleared: 0,       // distinct cards marked "got it" so far
+  clearedSet: null, // Set of card indices already cleared
+  flipped: false,
+  seenAnswer: false, // true once the current card has been flipped to the English side at least once
+  busy: false
+};
+
+async function _recallRender(){
+  var host = document.getElementById('dailyRecallHost');
+  if (!host) return;
+  host.innerHTML = '<div class="dr-empty">Loading…</div>';
+
+  var todayKey = _drTodayNYKey();
+
+  // Already done today → show the done screen straight away.
+  if (user && user.dailyRecallDoneFor === todayKey){
+    _recallState.activity = null;
+    _recallRenderDone(true);
+    return;
+  }
+
+  // Find the live activity (most recent if multiple somehow live).
+  var liveSnap = await db.collection(RECALL_COLLECTION).where('status','==','live').get().catch(function(){ return null; });
+  if (!liveSnap || liveSnap.empty){
+    host.innerHTML =
+      '<div class="dr-empty">' +
+        '<div class="big">No Active Recall set is live right now.</div>' +
+        '<div class="sub">Check back soon — your teacher hasn\'t posted today\'s cards yet.</div>' +
+      '</div>';
+    return;
+  }
+  var doc = liveSnap.docs[0];
+  if (liveSnap.size > 1){
+    doc = liveSnap.docs.slice().sort(function(a, b){
+      var am = (a.data().livedAt && a.data().livedAt.toMillis) ? a.data().livedAt.toMillis() : 0;
+      var bm = (b.data().livedAt && b.data().livedAt.toMillis) ? b.data().livedAt.toMillis() : 0;
+      return bm - am;
+    })[0];
+  }
+  _recallState.activityId = doc.id;
+  _recallState.activity = doc.data();
+
+  var cards = (_recallState.activity.cards || []).filter(function(c){
+    return c && (c.korean || '').trim() && (c.english || '').trim();
+  });
+  if (!cards.length){
+    host.innerHTML =
+      '<div class="dr-empty">' +
+        '<div class="big">Today\'s set has no cards yet.</div>' +
+        '<div class="sub">Check back soon.</div>' +
+      '</div>';
+    return;
+  }
+  _recallState.activity.cards = cards;
+  _recallState.total = cards.length;
+  _recallState.cleared = 0;
+  _recallState.clearedSet = new Set();
+  // Start the queue as a shuffled list of all card indices.
+  _recallState.queue = cards.map(function(_, i){ return i; });
+  for (var i = _recallState.queue.length - 1; i > 0; i--){
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = _recallState.queue[i]; _recallState.queue[i] = _recallState.queue[j]; _recallState.queue[j] = tmp;
+  }
+  _recallState.flipped = false;
+  _recallRenderCard();
+}
+window._recallRender = _recallRender;
+
+function _recallRenderCard(){
+  var host = document.getElementById('dailyRecallHost');
+  if (!host) return;
+  var st = _recallState;
+
+  if (!st.queue.length){
+    _recallComplete();
+    return;
+  }
+
+  var cardIdx = st.queue[0];
+  var card = st.activity.cards[cardIdx];
+  st.flipped = false;
+  st.seenAnswer = false;
+
+  var bannerHtml =
+    '<div class="recall-banner">' +
+      '<div class="big">🧠 ' + _esc(st.activity.title || 'ACTIVE RECALL') + '</div>' +
+      '<div class="sub">Read the Korean, recall the meaning, then flip to check.</div>' +
+    '</div>';
+
+  var progressHtml =
+    '<div class="recall-progress">' +
+      '<span>CLEARED ' + st.cleared + ' / ' + st.total + '</span>' +
+      '<span class="recall-remain">' + st.queue.length + ' LEFT THIS ROUND</span>' +
+    '</div>';
+
+  var cardHtml =
+    '<div class="recall-scene">' +
+      '<div class="recall-card" id="recallCard" onclick="_recallFlip()">' +
+        '<div class="recall-face">' +
+          '<div class="recall-hint">KOREAN</div>' +
+          '<div class="recall-main">' + _esc(card.korean) + '</div>' +
+          '<div class="recall-tap-note">tap to flip</div>' +
+        '</div>' +
+        '<div class="recall-face recall-back-face">' +
+          '<div class="recall-hint">ENGLISH</div>' +
+          '<div class="recall-main">' + _esc(card.english) + '</div>' +
+          '<div class="recall-tap-note">tap to flip back</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  // Grade buttons are disabled until the student flips at least once.
+  var gradeHtml =
+    '<div class="recall-grade-row" id="recallGradeRow">' +
+      '<button class="btn btn-pink btn-md" id="recallMissBtn" onclick="_recallGrade(false)" disabled style="opacity:0.45;">↻ MISSED IT</button>' +
+      '<button class="btn btn-green btn-md" id="recallGotBtn" onclick="_recallGrade(true)" disabled style="opacity:0.45;">✓ GOT IT</button>' +
+    '</div>' +
+    '<div style="text-align:center;font-family:var(--vt);font-size:13px;color:#7a8aa8;font-style:italic;margin-top:10px;">Flip the card before grading.</div>';
+
+  host.innerHTML = bannerHtml + progressHtml + cardHtml + gradeHtml;
+}
+
+function _recallFlip(){
+  var card = document.getElementById('recallCard');
+  if (!card) return;
+  _recallState.flipped = !_recallState.flipped;
+  card.classList.toggle('flipped', _recallState.flipped);
+  try { playSfx(SOUND_FLIP, 0.8); } catch(e){}
+  // Enable the grade buttons once the card has been flipped to the answer
+  // (English) side at least once. seenAnswer latches true and is reset per
+  // card in _recallRenderCard, so the buttons stay enabled even if the
+  // student flips back to the Korean side afterwards.
+  if (_recallState.flipped){
+    _recallState.seenAnswer = true;
+  }
+  if (_recallState.seenAnswer){
+    var miss = document.getElementById('recallMissBtn');
+    var got = document.getElementById('recallGotBtn');
+    if (miss){ miss.disabled = false; miss.style.opacity = '1'; }
+    if (got){ got.disabled = false; got.style.opacity = '1'; }
+  }
+}
+window._recallFlip = _recallFlip;
+
+function _recallGrade(gotIt){
+  var st = _recallState;
+  if (!st.queue.length) return;
+  var cardIdx = st.queue.shift();
+
+  if (gotIt){
+    try { playSfx(SOUND_CORRECT, 0.8); } catch(e){}
+    if (!st.clearedSet.has(cardIdx)){
+      st.clearedSet.add(cardIdx);
+      st.cleared = st.clearedSet.size;
+    }
+  } else {
+    // Missed — re-queue to the back so it resurfaces this round (Quizlet-style).
+    // If it was previously cleared, un-clear it: it must be re-earned.
+    if (st.clearedSet.has(cardIdx)){
+      st.clearedSet.delete(cardIdx);
+      st.cleared = st.clearedSet.size;
+    }
+    st.queue.push(cardIdx);
+    try { playSfx(SOUND_FLIP, 0.6); } catch(e){}
+  }
+
+  if (!st.queue.length){
+    _recallComplete();
+  } else {
+    _recallRenderCard();
+  }
+}
+window._recallGrade = _recallGrade;
+
+async function _recallComplete(){
+  var st = _recallState;
+  if (st.busy) return;
+
+  var todayKey = _drTodayNYKey();
+
+  // If already credited today (e.g. they re-entered), just show done screen.
+  if (user && user.dailyRecallDoneFor === todayKey){
+    _recallRenderDone(false);
+    return;
+  }
+
+  st.busy = true;
+  try {
+    if (user && st.activityId){
+      // Record a lightweight completion doc for teacher review.
+      var subRef = db.collection(RECALL_COLLECTION).doc(st.activityId).collection('completions').doc(user.id);
+      await subRef.set({
+        userName: (user.displayName || user.username || 'Student'),
+        userEmail: user.username || '',
+        cardCount: st.total,
+        completedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        forKey: todayKey
+      }, { merge: true }).catch(function(){});
+
+      // Award the egg atomically — only if not already credited today.
+      var acctRef = db.collection(TC).doc(user.id);
+      var awarded = false;
+      await db.runTransaction(async function(tx){
+        var snap = await tx.get(acctRef);
+        if (!snap.exists) return;
+        var d = snap.data() || {};
+        if (d.dailyRecallDoneFor === todayKey) return;
+        tx.update(acctRef, {
+          gachaRolls: firebase.firestore.FieldValue.increment(1),
+          dailyRecallDoneFor: todayKey
+        });
+        awarded = true;
+      });
+      if (awarded){
+        user.gachaRolls = (user.gachaRolls || 0) + 1;
+      }
+      user.dailyRecallDoneFor = todayKey;
+      if (typeof updateCounts === 'function') updateCounts();
+    }
+    try { playSfx(SOUND_WIN, 0.9); } catch(e){}
+    _recallRenderDone(false);
+  } catch(e){
+    console.error('recall complete:', e);
+    toast('Couldn\'t save your egg — try again.', 'var(--pink)');
+  } finally {
+    st.busy = false;
+  }
+}
+
+function _recallRenderDone(alreadyDone){
+  var host = document.getElementById('dailyRecallHost');
+  if (!host) return;
+  var msg = alreadyDone
+    ? 'You\'ve already cleared today\'s Active Recall. Come back tomorrow for a new set!'
+    : 'You cleared every card! Your egg has been added. Come back tomorrow for a new set.';
+  host.innerHTML =
+    '<div class="recall-done-banner">' +
+      '<div class="big">✅ +1 EGG EARNED</div>' +
+      '<div class="sub">' + msg + '</div>' +
+    '</div>' +
+    '<div style="text-align:center;">' +
+      '<button class="btn btn-cyan btn-md" onclick="_goBackToApp()">← BACK TO MENU</button>' +
+    '</div>';
+}
+
+/* ═══ BOOT ═══
+ * Wait for Firebase Auth to report the (already-persisted) session, load the
+ * profile, then render. If there's no session, the student opened this page
+ * without logging in — send them to index.html to sign in. */
+(function boot(){
+  var host = document.getElementById('dailyRecallHost');
+  if (!auth){
+    if (host) host.innerHTML = '<div class="dr-empty"><div class="big">Connection error.</div><div class="sub">Please reload the page.</div></div>';
+    return;
+  }
+  var done = false;
+  auth.onAuthStateChanged(function(authUser){
+    if (done) return;
+    done = true;
+    if (!authUser){
+      if (host){
+        host.innerHTML =
+          '<div class="dr-empty">' +
+            '<div class="big">Please log in first.</div>' +
+            '<div class="sub">Head back to the main page to sign in, then return here.</div>' +
+            '<div style="margin-top:16px;"><button class="btn btn-cyan btn-md" onclick="_goBackToApp()">← GO TO LOGIN</button></div>' +
+          '</div>';
+      }
+      return;
+    }
+    _loadUserProfile(authUser).then(function(){
+      if (user){
+        _recallRender();
+      } else if (host){
+        host.innerHTML =
+          '<div class="dr-empty">' +
+            '<div class="big">No student profile found.</div>' +
+            '<div class="sub">Please sign up on the main page first.</div>' +
+            '<div style="margin-top:16px;"><button class="btn btn-cyan btn-md" onclick="_goBackToApp()">← GO TO MAIN PAGE</button></div>' +
+          '</div>';
+      }
+    }).catch(function(e){
+      console.warn('profile load:', e);
+      if (host) host.innerHTML = '<div class="dr-empty"><div class="big">Couldn\'t load your profile.</div><div class="sub">Please reload the page.</div></div>';
+    });
+  });
+})();
+</script>
+</body>
+</html>
