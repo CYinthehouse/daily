@@ -543,11 +543,14 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 /* ─── ACTIVE RECALL — two-step landing screen ───
  * STEP 1 (Match-Up Game) then STEP 2 (Flashcards). Two big yellow sparkle
  * buttons; Step 2 is disabled until Step 1 is done. */
-.recall-steps{display:flex;flex-direction:column;gap:34px;max-width:560px;margin:42px auto 0;}
+.recall-steps{display:flex;flex-direction:column;gap:34px;max-width:560px;margin:64px auto 0;}
 .recall-step-btn{
   width:100%;text-align:center;line-height:1.7;white-space:normal;
   padding:26px 28px;font-size:13px;letter-spacing:1px;
   border-radius:6px;
+  /* White 8-direction outline on the button label, matching the app's
+   * pixel-text treatment but in white instead of the navy --ps-outline. */
+  text-shadow:-2px -2px 0 #fff,2px -2px 0 #fff,-2px 2px 0 #fff,2px 2px 0 #fff,0 -2px 0 #fff,0 2px 0 #fff,-2px 0 0 #fff,2px 0 0 #fff;
   box-shadow:4px 4px 0 rgba(0,0,0,0.7), 0 0 22px rgba(255,215,0,0.45);
   animation:recallStepGlow 2.6s ease-in-out infinite;
 }
