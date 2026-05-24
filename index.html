@@ -11089,6 +11089,29 @@ async function _recallRender(){
   var step2Done = (user && user.dailyRecallStep2DoneFor === todayKey);
   var step2Unlocked = step1Done;
 
+  // Check for a fresh (non-expired) live card set before offering the steps.
+  // Without this, a student could tap into Step 1 only to dead-end on a
+  // "no set is live" screen. If both steps are already done we skip the
+  // lookup — there's nothing left to play anyway.
+  if (!step1Done || !step2Done){
+    host.innerHTML = '<div class="dr-empty">Loading…</div>';
+    var liveSnap = await db.collection(RECALL_COLLECTION).where('status','==','live').get().catch(function(){ return null; });
+    var hasFresh = false;
+    if (liveSnap && !liveSnap.empty){
+      liveSnap.forEach(function(d){
+        if (!_drIsExpired(d.data())) hasFresh = true;
+      });
+    }
+    if (!hasFresh){
+      host.innerHTML =
+        '<div class="dr-empty">' +
+          '<div class="big">No card set is live right now.</div>' +
+          '<div class="sub">Check back soon — your teacher hasn\'t posted today\'s cards yet.</div>' +
+        '</div>';
+      return;
+    }
+  }
+
   // STEP 1 — Match-Up Game. Always available; greys out once played today.
   var step1;
   if (step1Done){
@@ -11592,6 +11615,10 @@ async function _rgFinish(){
   if (host) host.innerHTML = '<div class="dr-empty">Saving…</div>';
 
   var todayKey = _drTodayNYKey();
+  // Commit the "Step 1 done" flag to Firestore as the FIRST thing on finish —
+  // before rendering the result — so the play is locked in immediately and a
+  // refresh on the result screen can't let the student replay Step 1. The
+  // transaction is idempotent (it no-ops if the day is already credited).
   try {
     if (user && user.id){
       var acctRef = db.collection(TC).doc(user.id);
@@ -11780,7 +11807,7 @@ function _recallRenderCard(){
   var progressHtml =
     '<div class="recall-progress">' +
       '<span>CLEARED ' + st.cleared + ' / ' + st.total + '</span>' +
-      '<span class="recall-remain">' + st.queue.length + ' LEFT THIS ROUND</span>' +
+      '<span class="recall-remain">' + (st.total - st.cleared) + ' LEFT THIS ROUND</span>' +
     '</div>';
 
   var cardHtml =
