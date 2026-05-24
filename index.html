@@ -537,8 +537,8 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .recall-grade-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:4px;}
 .recall-grade-row .btn{min-width:150px;}
 .recall-done-banner{background:linear-gradient(135deg,rgba(57,255,20,0.16),rgba(57,255,20,0.04));border:2px solid var(--green);border-radius:10px;padding:18px 16px;text-align:center;margin-bottom:18px;}
-.recall-done-banner .big{font-family:'Press Start 2P',monospace;font-size:13px;color:var(--green);text-shadow:var(--ps-outline-sm);line-height:1.5;}
-.recall-done-banner .sub{font-family:var(--vt);font-size:15px;color:#cdd8ec;margin-top:8px;line-height:1.5;}
+.recall-done-banner .big{font-family:'Press Start 2P',monospace;font-size:16px;color:var(--green);text-shadow:var(--ps-outline-sm);line-height:1.5;}
+.recall-done-banner .sub{font-family:var(--vt);font-size:17px;color:#cdd8ec;margin-top:8px;line-height:1.5;}
 
 /* ─── ACTIVE RECALL — two-step landing screen ───
  * STEP 1 (Match-Up Game) then STEP 2 (Flashcards). Two big yellow sparkle
@@ -594,7 +594,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
       transparent 2px, transparent 7px),
     linear-gradient(90deg, rgba(80,64,20,0.55), rgba(22,18,34,0.96));
   border:4px solid var(--gold);
-  border-radius:3px;
+  border-radius:12px;
   box-shadow:
     0 6px 0 #6d5600,
     4px 4px 0 rgba(0,0,0,0.65);
@@ -624,7 +624,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   .rg-arrow .match-arrow{width:16px;height:26px;background-size:8px 16px,9px 10px,9px 10px;}
 }
 .rg-banner .big{font-family:'Press Start 2P',monospace;font-size:14px;color:var(--gold);text-shadow:var(--ps-outline-sm);line-height:1.5;}
-.rg-banner .sub{font-family:var(--vt);font-size:14px;color:#cdd8ec;margin-top:6px;line-height:1.5;}
+.rg-banner .sub{font-family:var(--vt);font-size:17px;color:#cdd8ec;margin-top:6px;line-height:1.5;}
 /* Countdown timer pill */
 .rg-timer{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;font-family:'Press Start 2P',monospace;font-size:16px;color:var(--cyan);text-shadow:var(--ps-outline-sm);}
 .rg-timer.urgent{color:var(--pink);}
@@ -662,7 +662,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .rg-prompt{text-align:center;font-family:'Press Start 2P',monospace;font-size:13px;color:#eaf1ff;line-height:1.7;margin-bottom:10px;text-shadow:var(--ps-outline-sm);}
 .rg-prompt b{color:var(--gold);}
 /* Progress counter — a small status line, not a headline. */
-.rg-progress{text-align:center;font-family:'Press Start 2P',monospace;font-size:11px;color:var(--green);text-shadow:var(--ps-outline-sm);margin-bottom:12px;letter-spacing:1px;}
+.rg-progress{text-align:center;font-family:'Press Start 2P',monospace;font-size:13px;color:var(--green);text-shadow:var(--ps-outline-sm);margin-bottom:12px;letter-spacing:1px;}
 @media (max-width:560px){
   .rg-cell{min-height:54px;font-size:12px;}
   .rg-row{gap:5px;}
@@ -690,11 +690,9 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
     #080b17;
   border:0;
   border-radius:8px;
-  /* Layered pixel frame: dark gap → purple tile ring → hard offset shadow. */
+  /* Single pixel frame line + a hard offset shadow. */
   outline:3px solid #6f35ff;
   box-shadow:
-    0 0 0 6px #090815,
-    0 0 0 9px rgba(111,53,255,0.55),
     6px 6px 0 rgba(0,0,0,0.65);
   overflow:hidden;
 }
@@ -708,8 +706,6 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
     #080b17;
   outline-color:#168d2d;
   box-shadow:
-    0 0 0 6px #06100a,
-    0 0 0 9px #21d13e,
     6px 6px 0 rgba(0,0,0,0.65);
 }
 /* Checker floor — a real, visible floor that anchors the room, not mist.
