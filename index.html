@@ -541,24 +541,10 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .recall-done-banner .sub{font-family:var(--vt);font-size:15px;color:#cdd8ec;margin-top:8px;line-height:1.5;}
 
 /* ─── ACTIVE RECALL — two-step landing screen ───
- * STEP 1 (Game) then STEP 2 (Flashcards). Step 2 is locked until Step 1 is
- * complete. Boxes mirror the pixel-card aesthetic used elsewhere. */
-.recall-steps{display:flex;flex-direction:column;gap:16px;max-width:520px;margin:4px auto 0;}
-.recall-step{position:relative;background:#10172a;border:2px solid #2a3650;border-radius:10px;padding:18px 18px 16px;box-shadow:4px 4px 0 rgba(0,0,0,0.8);transition:border-color .12s,transform .08s;}
-.recall-step.open{cursor:pointer;}
-.recall-step.open:hover{border-color:var(--cyan);transform:translate(-1px,-1px);}
-.recall-step.locked{opacity:0.6;filter:grayscale(0.5);cursor:not-allowed;}
-.recall-step.done{border-color:var(--green);}
-.recall-step-tag{display:inline-block;font-family:'Press Start 2P',monospace;font-size:8px;letter-spacing:1px;padding:4px 9px;border-radius:3px;margin-bottom:10px;background:rgba(65,192,255,0.14);color:var(--cyan);border:1px solid var(--cyan);}
-.recall-step.done .recall-step-tag{background:rgba(57,255,20,0.14);color:var(--green);border-color:var(--green);}
-.recall-step-title{font-family:'Press Start 2P',monospace;font-size:13px;color:#fff;line-height:1.5;margin-bottom:8px;}
-.recall-step-desc{font-family:var(--vt);font-size:15px;color:#b8c5dc;line-height:1.5;}
-.recall-step-foot{margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
-.recall-step-reward{font-family:'Press Start 2P',monospace;font-size:9px;padding:5px 10px;border-radius:3px;background:rgba(255,215,0,0.12);color:var(--gold);border:1px solid var(--gold);}
-.recall-step-status{font-family:'Press Start 2P',monospace;font-size:9px;letter-spacing:1px;}
-.recall-step-status.locked{color:#7a8aa8;}
-.recall-step-status.done{color:var(--green);}
-.recall-step-status.ready{color:var(--cyan);}
+ * STEP 1 (Match-Up Game) then STEP 2 (Flashcards). Two big yellow sparkle
+ * buttons; Step 2 is disabled until Step 1 is done. */
+.recall-steps{display:flex;flex-direction:column;gap:16px;max-width:520px;margin:8px auto 0;}
+.recall-step-btn{width:100%;text-align:center;line-height:1.6;white-space:normal;}
 
 /* ─── ACTIVE RECALL — STEP 1: matching game (Toad House style) ─── */
 .rg-banner{background:linear-gradient(135deg,rgba(255,215,0,0.16),rgba(168,85,247,0.10));border:2px solid var(--gold);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:center;}
@@ -10551,43 +10537,30 @@ async function _recallRender(){
   var step2Done = (user && user.dailyRecallStep2DoneFor === todayKey);
   var step2Unlocked = step1Done;
 
-  // STEP 1 — Matching game. Always available; "done" once played today.
-  var step1Cls = 'recall-step ' + (step1Done ? 'done' : 'open');
-  var step1Click = step1Done ? '' : ' onclick="_recallStartGame()"';
-  var step1Status = step1Done
-    ? '<span class="recall-step-status done">✅ DONE TODAY</span>'
-    : '<span class="recall-step-status ready">▶ TAP TO START</span>';
-  var step1Html =
-    '<div class="' + step1Cls + '"' + step1Click + '>' +
-      '<div class="recall-step-tag">STEP 1</div>' +
-      '<div class="recall-step-title">🎮 Match-Up Game</div>' +
-      '<div class="recall-step-desc">Study 5 word pairs for 10 seconds, then match them from memory. Earn an egg for every correct match.</div>' +
-      '<div class="recall-step-foot">' +
-        '<span class="recall-step-reward">🪺 +1–5 EGGS</span>' +
-        step1Status +
-      '</div>' +
-    '</div>';
+  // STEP 1 — Match-Up Game. Always available; greys out once played today.
+  var step1;
+  if (step1Done){
+    step1 = '<button class="btn btn-gold btn-lg sparkle-btn recall-step-btn" disabled '
+          + 'style="opacity:0.5;cursor:not-allowed;">✅ STEP 1 — DONE TODAY</button>';
+  } else {
+    step1 = '<button class="btn btn-gold btn-lg sparkle-btn recall-step-btn" '
+          + 'onclick="_recallStartGame()">STEP 1 — MATCH-UP GAME (Up to 5 Eggs)</button>';
+  }
 
-  // STEP 2 — Flashcards. Locked until Step 1 done; "done" once today's egg is earned.
-  var step2Cls = 'recall-step ' + (step2Done ? 'done' : (step2Unlocked ? 'open' : 'locked'));
-  var step2Click = (step2Unlocked && !step2Done) ? ' onclick="_recallStartFlashcards()"' : '';
-  var step2Status = step2Done
-    ? '<span class="recall-step-status done">✅ DONE TODAY</span>'
-    : (step2Unlocked
-        ? '<span class="recall-step-status ready">▶ TAP TO START</span>'
-        : '<span class="recall-step-status locked">🔒 FINISH STEP 1 FIRST</span>');
-  var step2Html =
-    '<div class="' + step2Cls + '"' + step2Click + '>' +
-      '<div class="recall-step-tag">STEP 2</div>' +
-      '<div class="recall-step-title">🧠 Flashcards Quick Review</div>' +
-      '<div class="recall-step-desc">Flip each card, then mark whether you knew it. Missed cards come back around. Clear them all to earn your egg.</div>' +
-      '<div class="recall-step-foot">' +
-        '<span class="recall-step-reward">🪺 +1 EGG</span>' +
-        step2Status +
-      '</div>' +
-    '</div>';
+  // STEP 2 — Flashcards. Locked until Step 1 is done.
+  var step2;
+  if (step2Done){
+    step2 = '<button class="btn btn-gold btn-lg sparkle-btn recall-step-btn" disabled '
+          + 'style="opacity:0.5;cursor:not-allowed;">✅ STEP 2 — DONE TODAY</button>';
+  } else if (step2Unlocked){
+    step2 = '<button class="btn btn-gold btn-lg sparkle-btn recall-step-btn" '
+          + 'onclick="_recallStartFlashcards()">STEP 2 — FLASHCARDS (+1 Egg)</button>';
+  } else {
+    step2 = '<button class="btn btn-gold btn-lg sparkle-btn recall-step-btn" disabled '
+          + 'style="opacity:0.45;cursor:not-allowed;">🔒 STEP 2 — FINISH STEP 1 FIRST</button>';
+  }
 
-  host.innerHTML = '<div class="recall-steps">' + step1Html + step2Html + '</div>';
+  host.innerHTML = '<div class="recall-steps">' + step1 + step2 + '</div>';
 }
 window._recallRender = _recallRender;
 
