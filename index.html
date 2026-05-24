@@ -1541,8 +1541,11 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
  * .sc-name above it grew (1-line vs 3-line names). All chips line up at
  * the same Y position across the grid because the grid uses
  * align-items:stretch so every card matches the tallest row sibling. */
-.sc-card{background:#0a0a15;border:2px solid;border-radius:2px;padding:12px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform 0.15s,box-shadow 0.15s;box-shadow:3px 3px 0 rgba(0,0,0,0.8);height:100%;}
+.sc-card{position:relative;background:#0a0a15;border:2px solid;border-radius:2px;padding:12px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform 0.15s,box-shadow 0.15s;box-shadow:3px 3px 0 rgba(0,0,0,0.8);height:100%;}
 .sc-card:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(0,0,0,0.8);}
+/* Duplicate-count badge: red circle, upper-right of the thumbnail card.
+ * Black Press Start 2P text. Only rendered when a card is owned 2+ times. */
+.sc-dupe{position:absolute;top:-9px;right:-9px;z-index:5;min-width:26px;height:26px;padding:0 5px;border-radius:50%;background:#e24b4a;border:2px solid #0a0a15;box-shadow:2px 2px 0 rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;font-size:9px;color:#000;line-height:1;}
 /* Showcase thumbnails: gacha render images have extra padding/floor at top
  * and bottom. Crop 10px off each end so the character fills more of the
  * thumbnail. clip-path:inset removes the unwanted area without distorting;
@@ -1596,7 +1599,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 
 /* ── SHOP ── */
 /* Shop grid uses a fixed 7-row template so every card aligns row-for-row:
- *   row 1: icon          row 5: level-wrap   (or empty spacer on Wednesday)
+ *   row 1: icon          row 5: level-wrap   (or empty spacer on Friday)
  *   row 2: name          row 6: button
  *   row 3: desc (flex)   row 7: locked-reason
  *   row 4: price
@@ -1624,7 +1627,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .shop-card button{width:100%;}
 /* Locked-state buttons: neutral gray so locked items don't look "active" in
  * cyan or gold. The wrapper card no longer dims as a whole — only the button
- * goes gray + cursor changes. Applies to both Wednesday and 6-week tiles. */
+ * goes gray + cursor changes. Applies to both Friday and 6-week tiles. */
 .shop-card .btn:disabled,
 .shop-card button:disabled{
   background:#3a3a4a !important;
@@ -2085,7 +2088,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   </div>
   <div class="section-head daily">
     <div class="sh-title">🔀 YODAFICATION</div>
-    <div class="sh-sub">Rewrite each English sentence in as many different word orders as you can. Earn 1 egg for all 5.</div>
+    <div class="sh-sub">Rewrite each English sentence in as many different word orders as you can. Earn 2 eggs for all 5.</div>
   </div>
   <div id="dailyYodaHost"></div>
 </div>
@@ -2429,6 +2432,9 @@ function _loadGachaConfig(){
   } catch(e){ console.warn('Config load failed:', e); return Promise.resolve(); }
 }
 const SIGNUP_BONUS_ROLLS = 5;
+// DEPRECATED — points are no longer color-only. See _gachaPointsForRoll(),
+// which scores all four roll factors (animal/color/item/glitter) by rarity.
+// Kept only so legacy code/data references don't break; do NOT use for new logic.
 const POINTS_BY_RARITY = {
     holo:   50,
     pink:   30,
@@ -2442,10 +2448,10 @@ const POINTS_BY_RARITY = {
 // Make.com webhook. Leave blank ('') to disable — purchases still work, just no DM fires.
 const MAKE_WEBHOOK_URL = 'https://hook.us1.make.com/mk2cas4gre8l7e5hgzw4up0462clanab';
 const CLASS_LEVELS = ['Novice', 'Beginner', 'Advanced Beginner'];
-const PRICE_EXTRA_HELP = 100;     // Wednesday Extra Help (one session)
-const PRICE_SIX_WEEK = 1000;      // 6-week program
+const PRICE_EXTRA_HELP = 300;     // Friday Extra Help (one session)
+const PRICE_SIX_WEEK = 1850;      // 6-week program
 const SIX_WEEK_DURATION_DAYS = 35; // startDate counts as week 1, so +5 weeks = 35 days
-const CANCEL_FEE_POINTS = 20;
+const CANCEL_FEE_POINTS = 555;    // 30% of PRICE_SIX_WEEK
 const CANCEL_WINDOW_HOURS = 24;   // cancel locked within this many hours before startDate
 const CLASS_TIMEZONE = 'America/New_York'; // all class start dates are interpreted as midnight in this zone
 
@@ -3583,9 +3589,11 @@ function _dailyOpen(which){
     _setBgmForScreen('dailyYodaScreen');
     _yodaRender();
   } else if (which === 'recall'){
-    showFade('dailyRecallScreen');
-    _setBgmForScreen('dailyRecallScreen');
-    _recallRender();
+    // Active Recall now lives on its own page (recall.html) to keep index.html
+    // from growing too large. The student stays logged in there via shared
+    // Firebase Auth session (same domain, LOCAL persistence).
+    window.location.href = 'recall.html';
+    return;
   }
   try { window.scrollTo(0, 0); } catch(e){}
 }
@@ -3653,6 +3661,7 @@ const ADV_BONUS_THRESHOLD = 10; // when ≥10 students submit today, everyone ea
 const YODA_WEBHOOK = 'https://hook.us1.make.com/9v1y6rl1q21cgkvb1r4weldpaot4n2h3';
 const YODA_COLLECTION = 'gacha_yoda_activities';
 const YODA_SENTENCE_COUNT = 5;
+const YODA_EGG_REWARD = 2;  // eggs awarded for completing Yodafication once per NY day
 // Constituent label glossary — shown as tooltips next to each sentence.
 const YODA_LABEL_DEFS = {
   S:   'Subject',
@@ -7006,7 +7015,7 @@ function fireWebhook(event, payload){
       email: email,
       classDate: null,          // overridden by payload if relevant
       pointsSpent: 0,           // overridden by payload
-      classType: null,          // overridden by payload ('Wednesday' for extra help, class level for 6-week)
+      classType: null,          // overridden by payload ('Friday' for extra help, class level for 6-week)
       timestamp: new Date().toISOString(),
       userId: user ? user.id : null
     }, payload || {});
@@ -7148,23 +7157,23 @@ function _drawShop(){
       '</details>';
   }
 
-  // Wednesday Class credits indicator removed per request. Credit balance is
+  // Friday Class credits indicator removed per request. Credit balance is
   // still tracked on the user doc (user.extraHelpCredits) and shown in the
   // webhook payload to Make.com; just no on-screen card.
   var creditsHtml = '';
 
-  // ── Wednesday Extra Help card ──
+  // ── Friday Extra Help card ──
   // Empty placeholder divs occupy the same subgrid rows that the 6-Week card
   // uses for its CLASS LEVEL dropdown and locked-reason. Without them the
-  // Wednesday card's button would jump up a row and break alignment with the
+  // Friday card's button would jump up a row and break alignment with the
   // 6-Week PURCHASE/LOCKED button across the .shop-grid subgrid.
   var canBuyHelp = pts >= PRICE_EXTRA_HELP;
   var helpReason = canBuyHelp ? '' : 'Not enough points.';
   var helpCardHtml =
     '<div class="shop-card"' + (helpReason ? ' title="' + esc(helpReason) + '"' : '') + '>' +
       '<div class="shop-icon">🎟️</div>' +
-      '<div class="shop-name">WEDNESDAY<br>EXTRA HELP</div>' +
-      '<div class="shop-desc">Group class w/ Mr. Calvin, Wednesdays at 8 PM Eastern (NY). Ask any questions you have.</div>' +
+      '<div class="shop-name">FRIDAY<br>EXTRA HELP</div>' +
+      '<div class="shop-desc">Group class w/ Mr. Calvin, Fridays at 7:15 PM Eastern (NY). Ask any questions you have.</div>' +
       '<div class="shop-price"><span style="color:var(--gold);">⭐ ' + PRICE_EXTRA_HELP + '</span> <span style="color:#888;font-size:13px;">pts</span></div>' +
       '<div class="shop-level-spacer" aria-hidden="true"></div>' +
       '<button class="btn btn-cyan btn-md ' + (canBuyHelp ? 'sparkle-btn' : '') + '" onclick="buyExtraHelp()" ' + (canBuyHelp ? '' : 'disabled') + '>' +
@@ -7223,16 +7232,16 @@ function _fmtDate(iso){
   } catch(e){ return iso; }
 }
 
-/* ═══ BUY: WEDNESDAY EXTRA HELP ═══
+/* ═══ BUY: FRIDAY EXTRA HELP ═══
  * Despite the legacy variable/function names (extraHelpCredits, buyExtraHelp),
- * this purchases a credit for a Wednesday GROUP class with Mr. Calvin where
+ * this purchases a credit for a Friday GROUP class with Mr. Calvin where
  * students can ask any questions they have — not a 1-on-1. Fires a distinct
- * webhook event (purchase.wednesday_class) so Make.com can branch separately
+ * webhook event (purchase.friday_class) so Make.com can branch separately
  * from the 6-week purchase. */
 async function buyExtraHelp(){
   if (!user) return;
   if ((user.points||0) < PRICE_EXTRA_HELP){ toast('Not enough points.', 'var(--pink)'); return; }
-  if (!confirm('Purchase 1 Wednesday Group Class credit for ' + PRICE_EXTRA_HELP + ' points?\n\nThis lets you join a Wednesday group class with Mr. Calvin to ask any questions you have.\n\nYou currently have ' + user.points + ' points.')) return;
+  if (!confirm('Purchase 1 Friday Group Class credit for ' + PRICE_EXTRA_HELP + ' points?\n\nThis lets you join a Friday group class with Mr. Calvin to ask any questions you have.\n\nYou currently have ' + user.points + ' points.')) return;
   playSelect();
   try {
     await db.collection(TC).doc(user.id).update({
@@ -7241,30 +7250,30 @@ async function buyExtraHelp(){
     });
     user.points -= PRICE_EXTRA_HELP;
     user.extraHelpCredits = (user.extraHelpCredits || 0) + 1;
-    toast('+1 WEDNESDAY CLASS CREDIT', 'var(--cyan)');
+    toast('+1 FRIDAY CLASS CREDIT', 'var(--cyan)');
     playSfx(SOUND_WIN, 0.9);
     // Build an enrollment-shaped object so every mapping in the existing Make
     // scenario (which was built around the 6-week payload) resolves cleanly —
     // no router or new DM template needed. Fields mirror the 6-week shape;
-    // values are populated to make sense for a one-off Wednesday class credit.
+    // values are populated to make sense for a one-off Friday class credit.
     var nowIso = new Date().toISOString();
     var enrollment = {
-      type: 'wednesday_class',
-      classLevel: 'Wednesday Group Class',
+      type: 'friday_class',
+      classLevel: 'Friday Group Class',
       status: 'credit_purchased',
       purchasedAt: nowIso,
-      startDate: 'Next Wednesday 8 PM ET',
+      startDate: 'Next Friday 7:15 PM ET',
       endDate: null,
       adminOverride: false,
       signedName: user.displayName || user.username || '',
       signedAt: nowIso,
       signedPolicyVersion: null
     };
-    fireWebhook('purchase.wednesday_class', {
-      classType: 'Wednesday Group Class',
+    fireWebhook('purchase.friday_class', {
+      classType: 'Friday Group Class',
       classDate: null,
       pointsSpent: PRICE_EXTRA_HELP,
-      item: 'wednesday_class',
+      item: 'friday_class',
       enrollment: enrollment,
       newCreditBalance: user.extraHelpCredits,
       remainingPoints: user.points,
@@ -7996,7 +8005,26 @@ function _drawShowcase(){
     return;
   }
 
-  body.innerHTML = '<div class="showcase-grid">' + shown.map(function(c, i){
+  // Collapse duplicates: a "card" is identified by animal + color + item + glitter.
+  // A glittering card and its non-glitter twin are genuinely different cards
+  // (different value & look), so glitter is part of the identity key. The first
+  // occurrence of each unique card is kept (carrying its stored fields); repeats
+  // just bump its `count`. The sort above already grouped by rarity/animal, so
+  // identical cards land adjacent — but we key into a map regardless to be safe.
+  var uniqueMap = {};
+  var uniqueCards = [];
+  shown.forEach(function(c){
+    var key = (c.animalKey||'') + '|' + (c.colorKey||'') + '|' + (c.itemKey||'') + '|' + (c.glitter ? 'g' : 'n');
+    if (uniqueMap[key]){
+      uniqueMap[key].count++;
+    } else {
+      var entry = Object.assign({}, c, { count: 1 });
+      uniqueMap[key] = entry;
+      uniqueCards.push(entry);
+    }
+  });
+
+  body.innerHTML = '<div class="showcase-grid">' + uniqueCards.map(function(c, i){
     var badge = rarityBadge[c.rarity] || rarityBadge.blue;
     var label = rarityLabel[c.rarity] || 'BLUE ★';
     var name = (c.animal || 'Unknown') + (c.item ? ' · ' + c.item : '');
@@ -8010,15 +8038,22 @@ function _drawShowcase(){
     var img = imgUrl
       ? '<img src="' + esc(imgUrl) + '" alt="" loading="lazy" decoding="async">'
       : '<div style="height:110px;display:flex;align-items:center;justify-content:center;color:#555;">?</div>';
+    // Duplicate-count badge — only when the student owns 2 or more of this card.
+    var dupeBadge = c.count > 1
+      ? '<div class="sc-dupe">\u00d7' + c.count + '</div>'
+      : '';
     return '<div class="sc-card ' + c.rarity + '" onclick="showCardDetail(' + i + ')" style="cursor:pointer;">' +
+      dupeBadge +
       img +
       '<div class="sc-name">' + esc(name) + '</div>' +
       '<div class="sc-rarity" style="' + badge + '">' + label + '</div>' +
     '</div>';
   }).join('') + '</div>';
 
-  // Expose the currently-shown subset so showCardDetail can look up by index
-  window._scShownCards = shown;
+  // Expose the currently-shown subset so showCardDetail can look up by index.
+  // This is the COLLAPSED list — one entry per unique card — which is what the
+  // grid renders, so detail-view indices stay in sync.
+  window._scShownCards = uniqueCards;
 }
 function setShowcaseFilter(k){ _scFilter = k; _drawShowcase(); }
 window.setShowcaseFilter = setShowcaseFilter;
@@ -8576,9 +8611,9 @@ var _GACHA_ANIMALS = [
     { name: 'Wombatman',     key: 'wombat',        weight: 26 }
 ];
 var _GACHA_COLORS = [
-    { name: 'Holo Chrome/Silver', key: 'silver', weight: 3,  rarity: 'holo',   badge: 'badge-holo' },
+    { name: 'Holo Chrome/Silver', key: 'silver', weight: 2,  rarity: 'holo',   badge: 'badge-holo' },
     { name: 'Metallic Pink',      key: 'pink',   weight: 5,  rarity: 'pink',   badge: 'badge-pink' },
-    { name: 'Red',                key: 'red',    weight: 15, rarity: 'red',    badge: 'badge-red' },
+    { name: 'Red',                key: 'red',    weight: 16, rarity: 'red',    badge: 'badge-red' },
     { name: 'Yellow',             key: 'yellow', weight: 18, rarity: 'yellow', badge: 'badge-yellow' },
     { name: 'Green',              key: 'green',  weight: 27, rarity: 'green',  badge: 'badge-green' },
     { name: 'Blue',               key: 'blue',   weight: 32, rarity: 'blue',   badge: 'badge-blue' }
@@ -8597,6 +8632,12 @@ var _GACHA_ITEMS = [
     { name: 'Mr. Calvin slippers',                key: 'calvin_slipper', weight: 13.5, tier: 1 },
     { name: 'KoreanLearnin fan',                  key: 'fan',            weight: 13.5, tier: 1 }
 ];
+// Glitter is an INDEPENDENT roll (0.5% chance), not derived from color.
+// Any card — including a common blue — can come back glittering.
+var _GACHA_GLITTER = [
+    { glitter: true,  weight: 0.5 },
+    { glitter: false, weight: 99.5 }
+];
 
 function _gachaWeightedRoll(table){
     var total = table.reduce(function(s,e){ return s + e.weight; }, 0);
@@ -8611,11 +8652,17 @@ function _gachaRollOne(){
     var animal = _gachaWeightedRoll(_GACHA_ANIMALS);
     var color  = _gachaWeightedRoll(_GACHA_COLORS);
     var item   = _gachaWeightedRoll(_GACHA_ITEMS);
+    var glitterRoll = _gachaWeightedRoll(_GACHA_GLITTER);
+    var isGlitter = !!glitterRoll.glitter;
     var pA = animal.weight / _GACHA_ANIMALS.reduce(function(s,e){ return s+e.weight; }, 0);
     var pC = color.weight / _GACHA_COLORS.reduce(function(s,e){ return s+e.weight; }, 0);
     var pI = item.weight / _GACHA_ITEMS.reduce(function(s,e){ return s+e.weight; }, 0);
-    var pct = pA * pC * pI * 100;
-    return { animal: animal, color: color, item: item, pct: pct, glitter: (color.rarity === 'holo' || color.rarity === 'pink') };
+    var pG = glitterRoll.weight / _GACHA_GLITTER.reduce(function(s,e){ return s+e.weight; }, 0);
+    // pct = combined chance of THIS exact card. Glitter is only folded in when the
+    // card actually glitters — otherwise every glitter card would read ~200x smaller
+    // than its non-glitter twin. A non-glitter card's pct stays the 3-factor product.
+    var pct = pA * pC * pI * (isGlitter ? pG : 1) * 100;
+    return { animal: animal, color: color, item: item, pct: pct, glitter: isGlitter };
 }
 function _gachaGetImg(animalKey, colorKey, itemKey){
     return _GACHA_IMG_LOOKUP[animalKey + '|' + colorKey + '|' + itemKey] || null;
@@ -8625,6 +8672,60 @@ function _gachaFmtPct(p){
     if (p < 0.1) return p.toFixed(3) + '%';
     if (p < 1) return p.toFixed(2) + '%';
     return p.toFixed(1) + '%';
+}
+
+/* ═══════════════════════════════════════════════════════ */
+/* POINTS — rarity-weighted across all 4 roll factors      */
+/* ═══════════════════════════════════════════════════════ */
+// Points reward rarity. Each factor (animal / color / item / glitter) is scored
+// by how rare the chosen option is WITHIN ITS OWN TABLE, using -ln(p) as the
+// rarity measure (information content), normalized 0..1 so the commonest option
+// in a table scores 0 and the rarest scores 1. The four normalized scores are
+// combined with weights, then mapped onto the [MIN, MAX] points range.
+//   Rarest possible card  -> POINTS_MAX
+//   Commonest possible card -> POINTS_MIN
+var POINTS_MIN = 0.5;
+var POINTS_MAX = 55;
+var POINTS_WEIGHTS = { animal: 0.20, color: 0.20, item: 0.20, glitter: 0.40 };
+
+// Returns a map of optionKey -> normalized rarity score (0..1) for one table.
+// `keyFn` extracts the identifying key from each table entry.
+function _gachaRarityScores(table, keyFn){
+    var total = table.reduce(function(s,e){ return s + e.weight; }, 0);
+    var rows = table.map(function(e){
+        var p = e.weight / total;
+        return { key: keyFn(e), rarity: -Math.log(p) };
+    });
+    var lo = Math.min.apply(null, rows.map(function(r){ return r.rarity; }));
+    var hi = Math.max.apply(null, rows.map(function(r){ return r.rarity; }));
+    var span = hi - lo;
+    var out = {};
+    rows.forEach(function(r){
+        out[r.key] = span > 0 ? (r.rarity - lo) / span : 0;
+    });
+    return out;
+}
+
+// Built once — the tables are static after load.
+var _GACHA_POINT_SCORES = {
+    animal:  _gachaRarityScores(_GACHA_ANIMALS,  function(e){ return e.key; }),
+    color:   _gachaRarityScores(_GACHA_COLORS,   function(e){ return e.key; }),
+    item:    _gachaRarityScores(_GACHA_ITEMS,    function(e){ return e.key; }),
+    glitter: _gachaRarityScores(_GACHA_GLITTER,  function(e){ return e.glitter ? 'yes' : 'no'; })
+};
+
+// Compute points for a roll result. Rounds to the nearest 0.5.
+function _gachaPointsForRoll(roll){
+    var sA = _GACHA_POINT_SCORES.animal[roll.animal.key]  || 0;
+    var sC = _GACHA_POINT_SCORES.color[roll.color.key]    || 0;
+    var sI = _GACHA_POINT_SCORES.item[roll.item.key]      || 0;
+    var sG = _GACHA_POINT_SCORES.glitter[roll.glitter ? 'yes' : 'no'] || 0;
+    var index = sA * POINTS_WEIGHTS.animal +
+                sC * POINTS_WEIGHTS.color +
+                sI * POINTS_WEIGHTS.item +
+                sG * POINTS_WEIGHTS.glitter;
+    var raw = POINTS_MIN + index * (POINTS_MAX - POINTS_MIN);
+    return Math.round(raw * 2) / 2;
 }
 
 /* ═══════════════════════════════════════════════════════ */
@@ -9408,7 +9509,7 @@ function _revealCharacter(roll){
 
     setTimeout(function(){
         var imgUrl = _gachaGetImg(roll.animal.key, roll.color.key, roll.item.key);
-        var pointsEarned = POINTS_BY_RARITY[roll.color.rarity] || 0;
+        var pointsEarned = _gachaPointsForRoll(roll);
 
         var ro = document.createElement('div');
         ro.id = '_revealOverlay';
@@ -9536,6 +9637,11 @@ function showRarityTables(){
         return '<tr><td>' + esc(it.name) + '</td><td class="t' + it.tier + '">' + TIER_LABELS[it.tier] + '</td><td class="pct">' + _gachaFmtPct(pct) + '</td></tr>';
     }).join('');
 
+    // Glitter chance, derived from the glitter table so it can never drift out of sync.
+    var tG = _GACHA_GLITTER.reduce(function(s,e){ return s + e.weight; }, 0);
+    var glitterEntry = _GACHA_GLITTER.find(function(e){ return e.glitter; }) || { weight: 0 };
+    var glitterPct = (glitterEntry.weight / tG) * 100;
+
     var ar = document.createElement('div');
     ar.id = '_grarov';
     ar.className = '_grarov';
@@ -9550,7 +9656,7 @@ function showRarityTables(){
             '<table class="_grartbl"><tr><th>Name</th><th>Tier</th><th class="pct">Chance</th></tr>' + itemRows + '</table>' +
             '<div class="_grarsect">Bonus</div>' +
             '<table class="_grartbl"><tr><th>Effect</th><th class="pct">Chance</th></tr>' +
-                '<tr><td class="glit">\u2756 Glitter</td><td class="pct">1%</td></tr>' +
+                '<tr><td class="glit">\u2756 Glitter</td><td class="pct">' + _gachaFmtPct(glitterPct) + '</td></tr>' +
             '</table>' +
             '<button class="_grarcls" onclick="closeRarityTables()">\u2715 Close</button>' +
         '</div>';
@@ -9739,9 +9845,15 @@ async function _saveBatchResults(results){
             // Free-eggs batch: in-memory wasn't pre-decremented, so apply it now.
             user.gachaRolls = Math.max(0, (user.gachaRolls || 0) - actualDecrement);
         } else {
-            // Single-roll path: rollOne already decremented by 1 in-memory.
-            // If persisted was lower than expected (parallel session spent rolls),
-            // we've over-subtracted in-memory; next page action / refetch reconciles.
+            // Single-roll path: rollOne already pre-decremented by 1 in-memory, but the
+            // transaction may have committed a smaller decrement (actualDecrement) if a
+            // parallel session had already spent the balance. Add back any over-subtraction
+            // so the in-memory count matches what was actually persisted.
+            var preDecremented = numRolls; // rollOne always pre-decrements exactly 1
+            var overSubtracted = preDecremented - actualDecrement;
+            if (overSubtracted > 0){
+                user.gachaRolls = (user.gachaRolls || 0) + overSubtracted;
+            }
         }
         user.points = (user.points || 0) + totalPoints;
         if (_eggBatchMode) user.freeEggsUsed = true;
@@ -10352,247 +10464,10 @@ window._yodaRender = _yodaRender;
    ═══════════════════════════════════════════════════════════════════ */
 const RECALL_COLLECTION = 'gacha_recall_activities';
 
-var _recallState = {
-  activityId: null,
-  activity: null,
-  queue: [],        // remaining card indices to clear (re-queue on "missed")
-  total: 0,         // number of distinct cards in the set
-  cleared: 0,       // distinct cards marked "got it" so far
-  clearedSet: null, // Set of card indices already cleared
-  flipped: false,
-  busy: false
-};
 
-async function _recallRender(){
-  var host = document.getElementById('dailyRecallHost');
-  if (!host) return;
-  host.innerHTML = '<div class="dr-empty">Loading…</div>';
-
-  var todayKey = _drTodayNYKey();
-
-  // Already done today → show the done screen straight away.
-  if (user && user.dailyRecallDoneFor === todayKey){
-    _recallState.activity = null;
-    _recallRenderDone(true);
-    return;
-  }
-
-  // Find the live activity (most recent if multiple somehow live).
-  var liveSnap = await db.collection(RECALL_COLLECTION).where('status','==','live').get().catch(function(){ return null; });
-  if (!liveSnap || liveSnap.empty){
-    host.innerHTML =
-      '<div class="dr-empty">' +
-        '<div class="big">No Active Recall set is live right now.</div>' +
-        '<div class="sub">Check back soon — your teacher hasn\'t posted today\'s cards yet.</div>' +
-      '</div>';
-    return;
-  }
-  var doc = liveSnap.docs[0];
-  if (liveSnap.size > 1){
-    doc = liveSnap.docs.slice().sort(function(a, b){
-      var am = (a.data().livedAt && a.data().livedAt.toMillis) ? a.data().livedAt.toMillis() : 0;
-      var bm = (b.data().livedAt && b.data().livedAt.toMillis) ? b.data().livedAt.toMillis() : 0;
-      return bm - am;
-    })[0];
-  }
-  _recallState.activityId = doc.id;
-  _recallState.activity = doc.data();
-
-  var cards = (_recallState.activity.cards || []).filter(function(c){
-    return c && (c.korean || '').trim() && (c.english || '').trim();
-  });
-  if (!cards.length){
-    host.innerHTML =
-      '<div class="dr-empty">' +
-        '<div class="big">Today\'s set has no cards yet.</div>' +
-        '<div class="sub">Check back soon.</div>' +
-      '</div>';
-    return;
-  }
-  _recallState.activity.cards = cards;
-  _recallState.total = cards.length;
-  _recallState.cleared = 0;
-  _recallState.clearedSet = new Set();
-  // Start the queue as a shuffled list of all card indices.
-  _recallState.queue = cards.map(function(_, i){ return i; });
-  for (var i = _recallState.queue.length - 1; i > 0; i--){
-    var j = Math.floor(Math.random() * (i + 1));
-    var tmp = _recallState.queue[i]; _recallState.queue[i] = _recallState.queue[j]; _recallState.queue[j] = tmp;
-  }
-  _recallState.flipped = false;
-  _recallRenderCard();
-}
-window._recallRender = _recallRender;
-
-function _recallRenderCard(){
-  var host = document.getElementById('dailyRecallHost');
-  if (!host) return;
-  var st = _recallState;
-
-  if (!st.queue.length){
-    _recallComplete();
-    return;
-  }
-
-  var cardIdx = st.queue[0];
-  var card = st.activity.cards[cardIdx];
-  st.flipped = false;
-
-  var bannerHtml =
-    '<div class="recall-banner">' +
-      '<div class="big">🧠 ' + _esc(st.activity.title || 'ACTIVE RECALL') + '</div>' +
-      '<div class="sub">Read the Korean, recall the meaning, then flip to check.</div>' +
-    '</div>';
-
-  var progressHtml =
-    '<div class="recall-progress">' +
-      '<span>CLEARED ' + st.cleared + ' / ' + st.total + '</span>' +
-      '<span class="recall-remain">' + st.queue.length + ' LEFT THIS ROUND</span>' +
-    '</div>';
-
-  var cardHtml =
-    '<div class="recall-scene">' +
-      '<div class="recall-card" id="recallCard" onclick="_recallFlip()">' +
-        '<div class="recall-face">' +
-          '<div class="recall-hint">KOREAN</div>' +
-          '<div class="recall-main">' + _esc(card.korean) + '</div>' +
-          '<div class="recall-tap-note">tap to flip</div>' +
-        '</div>' +
-        '<div class="recall-face recall-back-face">' +
-          '<div class="recall-hint">ENGLISH</div>' +
-          '<div class="recall-main">' + _esc(card.english) + '</div>' +
-          '<div class="recall-tap-note">tap to flip back</div>' +
-        '</div>' +
-      '</div>' +
-    '</div>';
-
-  // Grade buttons are disabled until the student flips at least once.
-  var gradeHtml =
-    '<div class="recall-grade-row" id="recallGradeRow">' +
-      '<button class="btn btn-pink btn-md" id="recallMissBtn" onclick="_recallGrade(false)" disabled style="opacity:0.45;">↻ MISSED IT</button>' +
-      '<button class="btn btn-green btn-md" id="recallGotBtn" onclick="_recallGrade(true)" disabled style="opacity:0.45;">✓ GOT IT</button>' +
-    '</div>' +
-    '<div style="text-align:center;font-family:var(--vt);font-size:13px;color:#7a8aa8;font-style:italic;margin-top:10px;">Flip the card before grading.</div>';
-
-  host.innerHTML = bannerHtml + progressHtml + cardHtml + gradeHtml;
-}
-
-function _recallFlip(){
-  var card = document.getElementById('recallCard');
-  if (!card) return;
-  _recallState.flipped = !_recallState.flipped;
-  card.classList.toggle('flipped', _recallState.flipped);
-  try { playSfx(SOUND_FLIP, 0.8); } catch(e){}
-  // Once flipped at all, enable the grade buttons.
-  if (_recallState.flipped){
-    var miss = document.getElementById('recallMissBtn');
-    var got = document.getElementById('recallGotBtn');
-    if (miss){ miss.disabled = false; miss.style.opacity = '1'; }
-    if (got){ got.disabled = false; got.style.opacity = '1'; }
-  }
-}
-window._recallFlip = _recallFlip;
-
-function _recallGrade(gotIt){
-  var st = _recallState;
-  if (!st.queue.length) return;
-  var cardIdx = st.queue.shift();
-
-  if (gotIt){
-    try { playSfx(SOUND_CORRECT, 0.8); } catch(e){}
-    if (!st.clearedSet.has(cardIdx)){
-      st.clearedSet.add(cardIdx);
-      st.cleared = st.clearedSet.size;
-    }
-  } else {
-    // Missed — re-queue to the back so it resurfaces this round (Quizlet-style).
-    // If it was previously cleared, un-clear it: it must be re-earned.
-    if (st.clearedSet.has(cardIdx)){
-      st.clearedSet.delete(cardIdx);
-      st.cleared = st.clearedSet.size;
-    }
-    st.queue.push(cardIdx);
-    try { playSfx(SOUND_FLIP, 0.6); } catch(e){}
-  }
-
-  if (!st.queue.length){
-    _recallComplete();
-  } else {
-    _recallRenderCard();
-  }
-}
-window._recallGrade = _recallGrade;
-
-async function _recallComplete(){
-  var st = _recallState;
-  if (st.busy) return;
-
-  var todayKey = _drTodayNYKey();
-
-  // If already credited today (e.g. they re-entered), just show done screen.
-  if (user && user.dailyRecallDoneFor === todayKey){
-    _recallRenderDone(false);
-    return;
-  }
-
-  st.busy = true;
-  try {
-    if (user && st.activityId){
-      // Record a lightweight completion doc for teacher review.
-      var subRef = db.collection(RECALL_COLLECTION).doc(st.activityId).collection('completions').doc(user.id);
-      await subRef.set({
-        userName: (user.displayName || user.username || 'Student'),
-        userEmail: user.username || '',
-        cardCount: st.total,
-        completedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        forKey: todayKey
-      }, { merge: true }).catch(function(){});
-
-      // Award the egg atomically — only if not already credited today.
-      var acctRef = db.collection(TC).doc(user.id);
-      var awarded = false;
-      await db.runTransaction(async function(tx){
-        var snap = await tx.get(acctRef);
-        if (!snap.exists) return;
-        var d = snap.data() || {};
-        if (d.dailyRecallDoneFor === todayKey) return;
-        tx.update(acctRef, {
-          gachaRolls: firebase.firestore.FieldValue.increment(1),
-          dailyRecallDoneFor: todayKey
-        });
-        awarded = true;
-      });
-      if (awarded){
-        user.gachaRolls = (user.gachaRolls || 0) + 1;
-      }
-      user.dailyRecallDoneFor = todayKey;
-      if (typeof updateCounts === 'function') updateCounts();
-    }
-    try { playSfx(SOUND_WIN, 0.9); } catch(e){}
-    _recallRenderDone(false);
-  } catch(e){
-    console.error('recall complete:', e);
-    toast('Couldn\'t save your egg — try again.', 'var(--pink)');
-  } finally {
-    st.busy = false;
-  }
-}
-
-function _recallRenderDone(alreadyDone){
-  var host = document.getElementById('dailyRecallHost');
-  if (!host) return;
-  var msg = alreadyDone
-    ? 'You\'ve already cleared today\'s Active Recall. Come back tomorrow for a new set!'
-    : 'You cleared every card! Your egg has been added. Come back tomorrow for a new set.';
-  host.innerHTML =
-    '<div class="recall-done-banner">' +
-      '<div class="big">✅ +1 EGG EARNED</div>' +
-      '<div class="sub">' + msg + '</div>' +
-    '</div>' +
-    '<div style="text-align:center;">' +
-      '<button class="btn btn-cyan btn-md" onclick="_dailyShowPicker()">← BACK TO ACTIVITIES</button>' +
-    '</div>';
-}
+// ─── Active Recall STUDENT-SIDE code moved to standalone recall.html ───
+// The picker tile (_dailyOpen) now navigates to recall.html. Only the
+// admin manager below remains here. RECALL_COLLECTION (above) is shared.
 
 /* ─── ACTIVE RECALL — ADMIN MANAGER ───
    Mirrors the Yodafication manager's draft/live/archive lifecycle, minus the
@@ -11231,7 +11106,7 @@ function _yodaRenderForm(){
   var introHtml =
     '<div class="dr-feed-banner active" style="margin-bottom:20px;">' +
       '<div class="big">🔀 ' + _esc(_yodaState.activity.title || 'YODAFICATION') + '</div>' +
-      '<div class="sub">Write each sentence in as many different orders as you can — one per line. Keep the verb at the end. Earn +1 egg when you submit!</div>' +
+      '<div class="sub">Write each sentence in as many different orders as you can — one per line. Keep the verb at the end. Earn +2 eggs when you submit!</div>' +
     '</div>';
 
   var cardsHtml = sentences.map(function(s, i){
@@ -11250,7 +11125,7 @@ function _yodaRenderForm(){
 
   var submitHtml =
     '<div class="yoda-actions">' +
-      '<button class="btn btn-green btn-lg sparkle-btn" id="yodaSubmitBtn" onclick="_yodaSubmit()">✅ SUBMIT ALL — EARN +1 EGG</button>' +
+      '<button class="btn btn-green btn-lg sparkle-btn" id="yodaSubmitBtn" onclick="_yodaSubmit()">✅ SUBMIT ALL — EARN +2 EGGS</button>' +
     '</div>';
 
   host.innerHTML = gradHtml + introHtml + cardsHtml + submitHtml;
@@ -11307,7 +11182,7 @@ async function _yodaSubmit(){
       var d = snap.data() || {};
       if (d.dailyYodaDoneFor === todayKey) return;
       tx.update(acctRef, {
-        gachaRolls: firebase.firestore.FieldValue.increment(1),
+        gachaRolls: firebase.firestore.FieldValue.increment(YODA_EGG_REWARD),
         dailyYodaDoneFor: todayKey,
         // Lifetime count of Yodafication completions for this student. Used
         // to decide when to nudge them toward harder activities (15+ done).
@@ -11316,7 +11191,7 @@ async function _yodaSubmit(){
       awarded = true;
     });
     if (awarded){
-      user.gachaRolls = (user.gachaRolls || 0) + 1;
+      user.gachaRolls = (user.gachaRolls || 0) + YODA_EGG_REWARD;
       user.yodaCompletionCount = (user.yodaCompletionCount || 0) + 1;
     }
     user.dailyYodaDoneFor = todayKey;
@@ -11333,7 +11208,7 @@ async function _yodaSubmit(){
   } catch(e){
     console.error('yoda submit:', e);
     toast('Save failed. Try again.', 'var(--pink)');
-    if (btn){ btn.disabled = false; btn.textContent = '✅ SUBMIT ALL — EARN +1 EGG'; }
+    if (btn){ btn.disabled = false; btn.textContent = '✅ SUBMIT ALL — EARN +2 EGGS'; }
   } finally {
     _yodaState.busy = false;
   }
