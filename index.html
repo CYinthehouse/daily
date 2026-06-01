@@ -110,22 +110,32 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .font-ctrls .tfc-btn:hover{background:#2d3a52;}
 .font-ctrls .tfc-big{font-size:14px;}
 
-.chip{font-family:var(--ps);font-size:9px;padding:6px 12px;border-radius:2px;background:#0a0a15;border:2px solid;box-shadow:2px 2px 0 rgba(0,0,0,0.8);text-shadow:var(--ps-outline-sm);white-space:nowrap;}
-/* Emoji inside chips: center the glyph with the pixel text instead of letting
- * its own baseline ride high/low. */
-.chip .chip-emoji{display:inline-flex;align-items:center;line-height:1;vertical-align:middle;}
+.chip{font-family:var(--ps);font-size:9px;padding:6px 12px;border-radius:2px;background:#0a0a15;border:2px solid;box-shadow:2px 2px 0 rgba(0,0,0,0.8);text-shadow:var(--ps-outline-sm);white-space:nowrap;display:inline-flex;align-items:center;gap:6px;}
+/* Emoji inside chips: flex item, centered with the pixel text via the chip's
+ * align-items:center. line-height:1 keeps the glyph box tight. */
+.chip .chip-emoji{display:inline-flex;align-items:center;justify-content:center;line-height:1;}
 /* EGGS chip becomes a clickable crack button when rolls are available. */
-.chip.eggs-ready{cursor:pointer;position:relative;overflow:visible;animation:eggsBlink 1.15s ease-in-out infinite;}
+.chip.eggs-ready{cursor:pointer;position:relative;overflow:visible;border-color:#ff4444;}
 .chip.eggs-ready:hover{filter:brightness(1.15);}
 .chip.eggs-ready:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(0,0,0,0.8);}
-/* Red blink: border + glow pulse, sized for the rectangular pixel chip. */
+/* Red blink on the FILL: a red layer covers the chip face and blinks its opacity
+ * (ported from the pasted blink keyframes — the fill blinks, not an outer halo).
+ * Sits above the dark chip bg but below the text/emoji (which are positioned). */
+.chip.eggs-ready::before{
+  content:'';position:absolute;top:0;left:0;right:0;bottom:0;
+  background:#ff4444;border-radius:inherit;z-index:0;
+  animation:eggsBlink 1.33s ease-out infinite;
+}
+.chip.eggs-ready > *{position:relative;z-index:1;}
+.chip.eggs-ready{color:#fff;}
 @keyframes eggsBlink{
-  0%,100%{border-color:#ff4444;box-shadow:2px 2px 0 rgba(0,0,0,0.8),0 0 0 rgba(255,68,68,0);}
-  50%{border-color:#ff8a8a;box-shadow:2px 2px 0 rgba(0,0,0,0.8),0 0 14px rgba(255,68,68,0.85);}
+  0%{opacity:1;}
+  20%{opacity:.45;}
+  100%{opacity:1;}
 }
 /* Floating ❗ at the upper-right corner, same scale as the chip emojis. */
-.chip .eggs-bang{position:absolute;top:-9px;right:-7px;font-size:11px;line-height:1;
-  pointer-events:none;animation:eggsBangFloat 1.15s ease-in-out infinite;text-shadow:0 1px 2px rgba(0,0,0,0.7);}
+.chip .eggs-bang{position:absolute;top:-11px;right:-9px;font-size:15px;line-height:1;z-index:2;
+  pointer-events:none;animation:eggsBangFloat 1.33s ease-out infinite;text-shadow:0 1px 2px rgba(0,0,0,0.7);}
 @keyframes eggsBangFloat{
   0%,100%{transform:translateY(0);}
   50%{transform:translateY(-3px);}
@@ -625,7 +635,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .recall-grade-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:0;}
 .recall-grade-row .btn{min-width:150px;display:inline-flex;align-items:center;justify-content:center;line-height:1;}
 /* Oversized ✓ / ↻ glyphs on the Missed/Got buttons so they're clearly legible. */
-.recall-grade-icon{font-size:2.4em;line-height:0;margin-right:8px;display:inline-flex;align-items:center;}
+.recall-grade-icon{font-size:2.4em;line-height:1;margin-right:8px;display:inline-flex;align-items:center;justify-content:center;transform:translateY(-0.02em);}
 .recall-done-banner{background:linear-gradient(135deg,rgba(57,255,20,0.16),rgba(57,255,20,0.04));border:2px solid var(--green);border-radius:10px;padding:18px 16px;text-align:center;margin-bottom:18px;}
 .recall-done-banner .big{font-family:'Press Start 2P',monospace;font-size:16px;color:var(--green);text-shadow:var(--ps-outline-sm);line-height:1.5;}
 .recall-done-banner .sub{font-family:var(--vt);font-size:17px;color:#cdd8ec;margin-top:8px;line-height:1.5;}
@@ -1162,10 +1172,11 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   border:2px solid #cc9900;border-radius:8px;padding:16px 22px;cursor:pointer;
   box-shadow:4px 4px 0 rgba(0,0,0,0.7);margin-bottom:18px;
   position:relative;overflow:hidden;transition:transform 0.1s,box-shadow 0.1s;
-  text-shadow:0 1px 0 rgba(255,255,255,0.4);line-height:1.5;text-align:center;
+  text-shadow:0 1px 0 rgba(255,255,255,0.4);line-height:1;text-align:center;
 }
 .weekly-bonus-banner:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 rgba(0,0,0,0.7);}
 .weekly-bonus-banner:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,0.7);}
+.weekly-bonus-banner > span{display:inline-flex;align-items:center;line-height:1;}
 .weekly-bonus-banner .wbb-emoji{font-size:20px;text-shadow:none;line-height:1;display:inline-flex;align-items:center;}
 .weekly-bonus-banner .wbb-chev{font-size:14px;text-shadow:none;line-height:1;display:inline-flex;align-items:center;}
 
@@ -3947,7 +3958,7 @@ function updateTopBar(){
   var r = $('topBarRight');
   r.innerHTML =
     '<span class="chip cyan"><span class="chip-emoji">👤</span> ' + esc(display.toUpperCase()) + '</span>' +
-    '<span class="chip purple" id="chipRolls" onclick="_eggChipClick()"><span class="chip-emoji">🪺</span> EGGS: ' + (user.gachaRolls||0) + '</span>' +
+    '<span class="chip purple" id="chipRolls" onclick="_eggChipClick()"><span class="chip-emoji">🪺</span><span class="chip-label"> EGGS: ' + (user.gachaRolls||0) + '</span></span>' +
     '<span class="chip gold" id="chipPoints"><span class="chip-emoji">⭐</span> POINTS: ' + (user.points||0) + '</span>' +
     '<button class="icon-btn" id="inboxBtn" onclick="_inboxOpen()" title="Inbox">📬<span class="inbox-badge" id="inboxBadge">0</span></button>' +
     '<div style="position:relative;display:inline-block;">' +
@@ -3979,7 +3990,7 @@ function updateCounts(){
   if (rollsChip){
     var nEggs = (user.gachaRolls||0);
     var ready = nEggs > 0;
-    rollsChip.innerHTML = '<span class="chip-emoji">🪺</span> EGGS: ' + nEggs +
+    rollsChip.innerHTML = '<span class="chip-emoji">🪺</span><span class="chip-label"> EGGS: ' + nEggs + '</span>' +
       (ready ? '<span class="eggs-bang">❗</span>' : '');
     rollsChip.classList.toggle('eggs-ready', ready);
     rollsChip.setAttribute('title', ready ? 'Click to crack an egg!' : '');
