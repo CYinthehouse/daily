@@ -537,7 +537,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   color:#d7dff4;
   background:#050711;
   border:3px solid #2d3752;
-  box-shadow:0 4px 0 #02030a;
+  box-shadow:7px 7px 0 #2d3752;
   letter-spacing:0.06em;
   line-height:1.7;
 }
@@ -545,7 +545,8 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .recall-progress .recall-remain{color:var(--gold);margin-top:6px;font-size:12px;}
 /* Drop shadow on the .recall-scene wrapper (a plain block, outside the card's
    3D context). border-radius matches the .recall-face corners so the shadow
-   follows the card's rounded shape. */
+   follows the card's rounded shape. Sharp (no blur); a darkened cyan, a bit
+   deeper than the card's cyan border. */
 .recall-scene{
   perspective:1000px;
   width:100%;
@@ -553,9 +554,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   height:230px;
   margin:0 auto 32px;
   border-radius:10px;
-  box-shadow:
-    7px 9px 0 rgba(0,0,0,0.9),
-    0 16px 26px rgba(0,0,0,0.7);
+  box-shadow:9px 9px 0 #0d4d6b;
 }
 .recall-card{width:100%;height:230px;position:relative;transform-style:preserve-3d;transition:transform 0.5s;cursor:pointer;}
 .recall-card.flipped{transform:rotateY(180deg);}
@@ -585,9 +584,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   text-align:center;
   line-height:1.05;
   font-weight:700;
-  text-shadow:
-    5px 5px 0 #000,
-    7px 7px 8px rgba(0,0,0,0.6);
+  text-shadow:5px 5px 0 #000;
 }
 /* "tap to flip" — a blinking arcade prompt pinned to the bottom of the card.
    Blinks exactly 3 times then settles (fresh markup per card restarts it). */
@@ -620,7 +617,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .recall-grade-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:0;}
 .recall-grade-row .btn{min-width:150px;}
 /* Oversized ✓ / ↻ glyphs on the Missed/Got buttons so they're clearly legible. */
-.recall-grade-icon{font-size:2.4em;line-height:1;vertical-align:-0.3em;margin-right:8px;display:inline-block;}
+.recall-grade-icon{font-size:2.4em;line-height:1;vertical-align:-0.05em;margin-right:8px;display:inline-block;}
 .recall-done-banner{background:linear-gradient(135deg,rgba(57,255,20,0.16),rgba(57,255,20,0.04));border:2px solid var(--green);border-radius:10px;padding:18px 16px;text-align:center;margin-bottom:18px;}
 .recall-done-banner .big{font-family:'Press Start 2P',monospace;font-size:16px;color:var(--green);text-shadow:var(--ps-outline-sm);line-height:1.5;}
 .recall-done-banner .sub{font-family:var(--vt);font-size:17px;color:#cdd8ec;margin-top:8px;line-height:1.5;}
@@ -11073,6 +11070,16 @@ window._yodaRender = _yodaRender;
    ═══════════════════════════════════════════════════════════════════ */
 const RECALL_COLLECTION = 'gacha_recall_activities';
 
+// Cloud Function that generates Active Recall flashcards from a topic. Holds
+// the OpenAI key server-side (same setup as the generatekeywords function).
+// Contract:
+//   POST { topic: string, count: number }
+//   → 200 { cards: [ { korean: "<dictionary form>", english: "<meaning>" } ] }
+// The function asks ChatGPT to pick `count` vocab words for `topic` and return
+// each Korean word in DICTIONARY FORM (verbs/adjectives in plain -다 form).
+// Leave the placeholder to hide the GENERATE button until deployed.
+const RECALL_AI_FN = 'https://generateflashcards-enxui54vmq-uc.a.run.app';
+
 
 var _recallState = {
   activityId: null,
@@ -12016,9 +12023,14 @@ async function _recallRenderManager(){
     });
 
     function renderRow(d){
-      var statusLabel = d.status === 'live' ? 'Live'
+      // A 'live' set whose live-day has rolled past 3 AM NY is functionally
+      // expired (students see "no set is live"). Surface that in the admin
+      // badge — same visual-only treatment as the Teamwork Reading panel.
+      var expired = (d.status === 'live') && _drIsExpired(d);
+      var statusLabel = expired ? 'Expired'
+                      : d.status === 'live' ? 'Live'
                       : d.status === 'archived' ? 'Archived' : 'Draft';
-      var statusBadge = '<span class="badge ' + d.status + '">' + statusLabel + '</span>';
+      var statusBadge = '<span class="badge ' + (expired ? 'expired' : d.status) + '">' + statusLabel + '</span>';
       var cardCount = (d.cards || []).length;
       var actions = '';
       if (d.status === 'draft'){
@@ -12123,7 +12135,12 @@ async function _recallEdit(id){
     '<input id="recallEditTitle_' + id + '" type="text" value="' + _esc(d.title || '') + '" style="width:100%;background:#0d1424;color:#e6ebf5;border:1px solid #334155;border-radius:5px;padding:8px;font-family:\'Noto Sans\',sans-serif;font-size:14px;box-sizing:border-box;margin:6px 0 12px;outline:none;">' +
     '<label style="font-family:\'Noto Sans\',sans-serif;font-size:11px;color:#a0aef7;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">CARDS (Korean → English)</label>' +
     '<div id="recallCardRows_' + id + '" style="margin-top:6px;">' + cards.map(cardRowHtml).join('') + '</div>' +
-    '<button class="btn btn-ghost" onclick="_recallAddCardRow(\'' + id + '\')" style="margin-top:4px;">+ ADD CARD</button>' +
+    '<div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">' +
+      '<button class="btn btn-ghost" onclick="_recallAddCardRow(\'' + id + '\')">+ ADD CARD</button>' +
+      (RECALL_AI_FN.indexOf('REPLACE-ME') === -1
+        ? '<button class="btn btn-purple" id="recallGenBtn_' + id + '" onclick="_recallGenerateCards(\'' + id + '\')">✨ GENERATE FROM TOPIC</button>'
+        : '') +
+    '</div>' +
     '<div style="display:flex;gap:8px;margin-top:14px;">' +
       '<button class="btn btn-cyan" onclick="_recallSaveEdit(\'' + id + '\')">💾 SAVE</button>' +
       '<button class="btn btn-ghost" onclick="this.closest(\'.drm-edit-area\').remove();">CANCEL</button>' +
@@ -12147,6 +12164,73 @@ function _recallAddCardRow(id){
   wrap.appendChild(div);
 }
 window._recallAddCardRow = _recallAddCardRow;
+
+/* AI flashcard generator. Admin gives a TOPIC and a count; the Cloud Function
+ * (RECALL_AI_FN) asks ChatGPT to pick that many Korean vocab words for the
+ * topic and return each in DICTIONARY FORM with an English meaning. Each
+ * returned pair is APPENDED as a new card row — existing rows are never wiped.
+ * Same call style as the generatekeywords Cloud Function: plain JSON in, plain
+ * JSON out, no markdown-fence handling needed. */
+async function _recallGenerateCards(id){
+  if (RECALL_AI_FN.indexOf('REPLACE-ME') !== -1){ toast('AI generator not configured.', 'var(--pink)'); return; }
+  var wrap = document.getElementById('recallCardRows_' + id);
+  if (!wrap) return;
+
+  var topic = prompt('Topic for the flashcard set\n(e.g. "kitchen verbs", "weather", "school subjects"):');
+  if (topic === null) return; // cancelled
+  topic = topic.trim();
+  if (!topic){ toast('No topic entered.', 'var(--pink)'); return; }
+
+  var countRaw = prompt('How many flashcards? (1–30)', '10');
+  if (countRaw === null) return; // cancelled
+  var count = parseInt(countRaw, 10);
+  if (!count || count < 1){ toast('Enter a number between 1 and 30.', 'var(--pink)'); return; }
+  if (count > 30) count = 30;
+
+  var btn = document.getElementById('recallGenBtn_' + id);
+  var btnLabel = btn ? btn.textContent : '';
+  if (btn){ btn.disabled = true; btn.textContent = '⏳ GENERATING…'; }
+
+  try {
+    var resp = await fetch(RECALL_AI_FN, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ topic: topic, count: count })
+    });
+    if (!resp.ok) throw new Error('Generator returned ' + resp.status);
+    var data = await resp.json();
+    // Accept { cards: [...] } or a bare array, for forgiveness.
+    var cards = (data && Array.isArray(data.cards)) ? data.cards
+              : (Array.isArray(data) ? data : null);
+    if (!cards || !cards.length) throw new Error('No cards in the response.');
+
+    // Append a card row per returned pair.
+    var added = 0;
+    cards.forEach(function(c){
+      var ko = (c && (c.korean || c.ko) || '').toString().trim();
+      var en = (c && (c.english || c.en) || '').toString().trim();
+      if (!ko && !en) return;
+      var i = wrap.querySelectorAll('.recall-edit-row').length;
+      var div = document.createElement('div');
+      div.className = 'recall-edit-row';
+      div.innerHTML =
+        '<span class="recall-edit-num">' + (i + 1) + '</span>' +
+        '<input type="text" class="recall-edit-ko" placeholder="Korean" value="' + _esc(ko) + '">' +
+        '<input type="text" class="recall-edit-en" placeholder="English" value="' + _esc(en) + '">' +
+        '<button class="recall-edit-del" onclick="_recallRemoveCardRow(this)">✕</button>';
+      wrap.appendChild(div);
+      added++;
+    });
+    if (!added) throw new Error('No usable cards in the response.');
+    toast('Added ' + added + ' card' + (added === 1 ? '' : 's') + ' — review, then SAVE.', 'var(--green)');
+  } catch(e){
+    console.error('recall AI generate:', e);
+    toast('Generation failed: ' + (e.message || 'unknown error'), 'var(--pink)');
+  } finally {
+    if (btn){ btn.disabled = false; btn.textContent = btnLabel; }
+  }
+}
+window._recallGenerateCards = _recallGenerateCards;
 
 function _recallRemoveCardRow(btn){
   var row = btn.closest('.recall-edit-row');
