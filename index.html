@@ -9245,30 +9245,64 @@ var _GACHA_GLITTER = [
     { glitter: false, weight: 99.5 }
 ];
 
-function _gachaWeightedRoll(table){
-    var total = table.reduce(function(s,e){ return s + e.weight; }, 0);
+// Tap-luck config. luck=0 → exact base odds. Higher luck slightly fattens the
+// RARE end of every wheel by raising each weight to the power (1 - luck): low
+// weights (rare options) shrink less in relative terms, so their share grows.
+// A flat multiply on all weights would cancel out — this is the honest "nudge
+// toward rare" that actually moves the odds. Applied EQUALLY to all four wheels.
+var _GACHA_MIN_TAPS_FOR_BONUS = 4;   // taps that earn ZERO bonus (must crack first)
+var _GACHA_MAX_TAPS_FOR_BONUS = 14;  // taps at/after which luck is maxed
+var _GACHA_MAX_LUCK = 0.05;          // tuned: Holo 2%→2.25%, glitter 0.5%→0.65%
+
+// Map a tap count to a luck value in [0, _GACHA_MAX_LUCK].
+function _gachaLuckFromTaps(taps){
+    taps = taps || 0;
+    var span = _GACHA_MAX_TAPS_FOR_BONUS - _GACHA_MIN_TAPS_FOR_BONUS;
+    var frac = (taps - _GACHA_MIN_TAPS_FOR_BONUS) / span;
+    if (frac < 0) frac = 0;
+    if (frac > 1) frac = 1;
+    return frac * _GACHA_MAX_LUCK;
+}
+
+// The "Tap Multiplier" shown to the student. This is the single scalar that the
+// four factors get multiplied by for the displayed rarity. It is derived from
+// luck so the number students see lines up with the bonus that was applied.
+// luck 0 → 1.00x ; full luck → ~1.30x.
+function _gachaTapMultiplier(luck){
+    return 1 + (luck / _GACHA_MAX_LUCK) * 0.30;
+}
+
+function _gachaWeightedRoll(table, luck){
+    var useW = function(e){
+        return (luck && luck > 0) ? Math.pow(e.weight, 1 - luck) : e.weight;
+    };
+    var total = table.reduce(function(s,e){ return s + useW(e); }, 0);
     var r = Math.random() * total;
     for (var i = 0; i < table.length; i++){
-        r -= table[i].weight;
+        r -= useW(table[i]);
         if (r <= 0) return table[i];
     }
     return table[table.length - 1];
 }
-function _gachaRollOne(){
-    var animal = _gachaWeightedRoll(_GACHA_ANIMALS);
-    var color  = _gachaWeightedRoll(_GACHA_COLORS);
-    var item   = _gachaWeightedRoll(_GACHA_ITEMS);
-    var glitterRoll = _gachaWeightedRoll(_GACHA_GLITTER);
+function _gachaRollOne(luck){
+    luck = luck || 0;
+    var animal = _gachaWeightedRoll(_GACHA_ANIMALS, luck);
+    var color  = _gachaWeightedRoll(_GACHA_COLORS,  luck);
+    var item   = _gachaWeightedRoll(_GACHA_ITEMS,   luck);
+    var glitterRoll = _gachaWeightedRoll(_GACHA_GLITTER, luck);
     var isGlitter = !!glitterRoll.glitter;
     var pA = animal.weight / _GACHA_ANIMALS.reduce(function(s,e){ return s+e.weight; }, 0);
     var pC = color.weight / _GACHA_COLORS.reduce(function(s,e){ return s+e.weight; }, 0);
     var pI = item.weight / _GACHA_ITEMS.reduce(function(s,e){ return s+e.weight; }, 0);
     var pG = glitterRoll.weight / _GACHA_GLITTER.reduce(function(s,e){ return s+e.weight; }, 0);
-    // pct = combined chance of THIS exact card. Glitter is only folded in when the
-    // card actually glitters — otherwise every glitter card would read ~200x smaller
-    // than its non-glitter twin. A non-glitter card's pct stays the 3-factor product.
-    var pct = pA * pC * pI * (isGlitter ? pG : 1) * 100;
-    return { animal: animal, color: color, item: item, pct: pct, glitter: isGlitter };
+    // Base (true) combined chance of this exact card, glitter folded in only when
+    // the card actually glitters. tapMult is the (TAP BONUS) factor applied for the
+    // SHOWN number: displayed % = tapMult x (color x item x glitter x character).
+    var tapMult = _gachaTapMultiplier(luck);
+    var basePct = pA * pC * pI * (isGlitter ? pG : 1) * 100;
+    var pct = basePct * tapMult;
+    return { animal: animal, color: color, item: item, pct: pct, basePct: basePct,
+             glitter: isGlitter, tapMult: tapMult, luck: luck };
 }
 function _gachaGetImg(animalKey, colorKey, itemKey){
     return _GACHA_IMG_LOOKUP[animalKey + '|' + colorKey + '|' + itemKey] || null;
@@ -9618,11 +9652,11 @@ function _closeEggOverlay(){
    Tap-gated countdown egg-crack system (ported from admin dashboard)
    Rules:
      - Must tap >= 4 times before 8.8s or lose the roll
-     - If tapping, cracks happen automatically at 2.25, 4.5, 6.75, 8.8s
-     - At 3s and 6s, if tapCount < 5, show "Tap faster!!" warning
+     - If tapping, cracks happen automatically at 1.1, 2.25, 3.4, 4.4s
+     - At 1.5s and 3s, if tapCount < 5, show "Tap faster!!" warning
      - At 10s: check tap count → reveal OR lose the roll
    ═════════════════════════════════════════════════════════════════════ */
-var _TOTAL_TIME = 10, _CRACK_TIMES = [2250, 4500, 6750, 8800], _MIN_TAPS = 4;
+var _TOTAL_TIME = 5, _CRACK_TIMES = [1100, 2250, 3400, 4400], _MIN_TAPS = 4;
 var _TAP_WARN_THRESHOLD = 5;
 var _gCountdownTimer = null, _gAutoTimer = null, _gStageTimers = [], _gTapWarnTimers = [];
 var _gTimeLeft = _TOTAL_TIME, _gEggStarted = false, _gTapCount = 0;
@@ -9793,7 +9827,7 @@ function _startEggFor(roll, queueInfo){
     if (fm){ fm.classList.remove('show'); fm.classList.remove('fade-out'); }
     if (timerBox){ timerBox.style.display = 'none'; timerBox.classList.remove('fade-out'); timerBox.style.opacity = ''; timerBox.style.transition = ''; timerBox.style.pointerEvents = ''; }
     if (fill){ fill.classList.remove('urgent'); fill.style.width = '100%'; fill.style.transition = 'none'; }
-    if (cd){ cd.classList.remove('urgent'); cd.textContent = '10'; }
+    if (cd){ cd.classList.remove('urgent'); cd.textContent = '5'; }
     if (tapwarn){ tapwarn.style.opacity = '0'; tapwarn.classList.remove('show'); }
     var gew = document.getElementById('_gew');
     if (gew){ gew.style.display = ''; gew.classList.remove('wiggle','shake','fade-out'); gew.style.opacity = ''; gew.style.transition = ''; gew.style.pointerEvents = ''; }
@@ -9868,13 +9902,13 @@ function _gStartCountdown(){
     var fill = document.getElementById('_gtfill');
     var cd = document.getElementById('_gcdown');
     if (timerBox) timerBox.style.display = 'flex';
-    if (cd){ cd.textContent = '10'; cd.classList.remove('urgent'); }
+    if (cd){ cd.textContent = '5'; cd.classList.remove('urgent'); }
     if (fill){
         fill.classList.remove('urgent');
         fill.style.transition = 'none';
         fill.style.width = '100%';
         void fill.offsetWidth;
-        fill.style.transition = 'width 10s linear';
+        fill.style.transition = 'width 5s linear';
         fill.style.width = '0%';
     }
     // Start gentle wiggle
@@ -9913,13 +9947,13 @@ function _gStartCountdown(){
         _gStageTimers.push(t);
     });
     // Tap warnings at 3s and 6s if not tapping enough
-    [3000, 6000].forEach(function(ms){
+    [1500, 3000].forEach(function(ms){
         var tw = setTimeout(function(){
             if (_gTapCount < _TAP_WARN_THRESHOLD) _gShowTapWarn();
         }, ms);
         _gTapWarnTimers.push(tw);
     });
-    // At 9.1s: check tap count → reveal or lose.
+    // At 4.55s: check tap count → reveal or lose.
     // Pass `false` so the countdown interval is NOT cleared — it self-clears at 0,
     // letting the timer tick "1" (full second) → "0" naturally instead of freezing at 1.
     _gAutoTimer = setTimeout(function(){
@@ -9929,7 +9963,7 @@ function _gStartCountdown(){
         } else {
             _gForceReveal();
         }
-    }, 9100);
+    }, 4550);
 }
 
 function _handleEggTap(){
@@ -10087,6 +10121,18 @@ function _gLoseRoll(){
 }
 
 function _revealCharacter(roll){
+    // Tap bonus: the card is first SEEN here, so apply the luck the player earned by
+    // tapping. _gTapCount is final at reveal (both effects paths call reveal after the
+    // last crack). Re-roll the just-decided card with tap-based luck so more taps =
+    // slightly better real odds. luck 0 (only min taps) leaves the wheels untouched.
+    var _earnedLuck = _gachaLuckFromTaps(_gTapCount);
+    if (_earnedLuck > 0){
+        roll = _gachaRollOne(_earnedLuck);
+        if (_eggState) _eggState.roll = roll;
+    } else if (roll && roll.tapMult === undefined){
+        // Older pre-rolled card with no tap fields — normalize so display code is safe.
+        roll.tapMult = 1; roll.basePct = roll.pct; roll.luck = 0;
+    }
     // Note: _gfl (white flash) is intentionally NOT re-triggered here. The explosion (_glb)
     // is still playing when reveal arrives, providing the visual punch. An additional
     // full-screen white flash at this moment would clash with the explosion's own light.
@@ -10159,7 +10205,9 @@ function _revealCharacter(roll){
                 '</div>' +
                 '<div class="_gcmb">' + (roll.glitter
                     ? 'Pull chance: ' + _gachaFmtPct(roll.pct) + ' &nbsp;<span>\u2756 GLITTER \u2756</span>'
-                    : 'Combined pull chance: <span>' + _gachaFmtPct(roll.pct) + '</span>') + '</div>' +
+                    : 'Combined pull chance: <span>' + _gachaFmtPct(roll.pct) + '</span>') +
+                    '<div style="font-size:11px;opacity:.85;margin-top:4px;">Tap Multiplier <span style="color:#f5c842;font-weight:bold;">' + (roll.tapMult || 1).toFixed(2) + '\u00d7</span></div>' +
+                '</div>' +
                 '<button class="_gsrb" onclick="showRarityTables()">\u2756 See All Rarities</button>' +
                 _buildRollCounter() +
                 _buildRevealButton() +
