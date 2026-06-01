@@ -110,18 +110,26 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .font-ctrls .tfc-btn:hover{background:#2d3a52;}
 .font-ctrls .tfc-big{font-size:14px;}
 
-/* Global "Crack Your Eggs" banner, appears whenever user has unspun gachaRolls.
- * Sticky so it follows the user as they scroll, sits just below the font row. */
-#globalRollCta{
-  position:sticky; top:0; z-index:98;
-  display:flex; justify-content:center; align-items:center;
-  padding:10px 24px;
-  background:linear-gradient(135deg,#1a0e3a,#0f0a2a);
-  border-bottom:2px solid var(--purple);
-  box-shadow:0 2px 8px rgba(168,85,247,0.3);
-}
-#globalRollCta .btn{font-size:14px;padding:12px 28px;}
 .chip{font-family:var(--ps);font-size:9px;padding:6px 12px;border-radius:2px;background:#0a0a15;border:2px solid;box-shadow:2px 2px 0 rgba(0,0,0,0.8);text-shadow:var(--ps-outline-sm);white-space:nowrap;}
+/* Emoji inside chips: center the glyph with the pixel text instead of letting
+ * its own baseline ride high/low. */
+.chip .chip-emoji{display:inline-flex;align-items:center;line-height:1;vertical-align:middle;}
+/* EGGS chip becomes a clickable crack button when rolls are available. */
+.chip.eggs-ready{cursor:pointer;position:relative;overflow:visible;animation:eggsBlink 1.15s ease-in-out infinite;}
+.chip.eggs-ready:hover{filter:brightness(1.15);}
+.chip.eggs-ready:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(0,0,0,0.8);}
+/* Red blink: border + glow pulse, sized for the rectangular pixel chip. */
+@keyframes eggsBlink{
+  0%,100%{border-color:#ff4444;box-shadow:2px 2px 0 rgba(0,0,0,0.8),0 0 0 rgba(255,68,68,0);}
+  50%{border-color:#ff8a8a;box-shadow:2px 2px 0 rgba(0,0,0,0.8),0 0 14px rgba(255,68,68,0.85);}
+}
+/* Floating ❗ at the upper-right corner, same scale as the chip emojis. */
+.chip .eggs-bang{position:absolute;top:-9px;right:-7px;font-size:11px;line-height:1;
+  pointer-events:none;animation:eggsBangFloat 1.15s ease-in-out infinite;text-shadow:0 1px 2px rgba(0,0,0,0.7);}
+@keyframes eggsBangFloat{
+  0%,100%{transform:translateY(0);}
+  50%{transform:translateY(-3px);}
+}
 .chip.cyan{border-color:var(--cyan);color:var(--cyan);}
 .chip.purple{border-color:var(--purple);color:var(--purple);}
 .chip.gold{border-color:var(--gold);color:var(--gold);}
@@ -615,9 +623,9 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   100%{filter:brightness(1);}
 }
 .recall-grade-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:0;}
-.recall-grade-row .btn{min-width:150px;}
+.recall-grade-row .btn{min-width:150px;display:inline-flex;align-items:center;justify-content:center;line-height:1;}
 /* Oversized ✓ / ↻ glyphs on the Missed/Got buttons so they're clearly legible. */
-.recall-grade-icon{font-size:2.4em;line-height:1;vertical-align:-0.05em;margin-right:8px;display:inline-block;}
+.recall-grade-icon{font-size:2.4em;line-height:0;margin-right:8px;display:inline-flex;align-items:center;}
 .recall-done-banner{background:linear-gradient(135deg,rgba(57,255,20,0.16),rgba(57,255,20,0.04));border:2px solid var(--green);border-radius:10px;padding:18px 16px;text-align:center;margin-bottom:18px;}
 .recall-done-banner .big{font-family:'Press Start 2P',monospace;font-size:16px;color:var(--green);text-shadow:var(--ps-outline-sm);line-height:1.5;}
 .recall-done-banner .sub{font-family:var(--vt);font-size:17px;color:#cdd8ec;margin-top:8px;line-height:1.5;}
@@ -630,9 +638,9 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   width:100%;text-align:center;line-height:1.7;white-space:normal;
   padding:26px 28px;font-size:13px;letter-spacing:1px;
   border-radius:6px;
-  /* White 8-direction outline on the button label, matching the app's
-   * pixel-text treatment but in white instead of the navy --ps-outline. */
-  text-shadow:-2px -2px 0 #fff,2px -2px 0 #fff,-2px 2px 0 #fff,2px 2px 0 #fff,0 -2px 0 #fff,0 2px 0 #fff,-2px 0 0 #fff,2px 0 0 #fff;
+  /* Smooth white ring on the button label: 16-direction shadow at small radii
+   * reads as an even outline instead of the blocky 8-direction version. */
+  text-shadow:0 -2px 0 #fff,1.4px -1.4px 0 #fff,2px 0 0 #fff,1.4px 1.4px 0 #fff,0 2px 0 #fff,-1.4px 1.4px 0 #fff,-2px 0 0 #fff,-1.4px -1.4px 0 #fff,0 -1px 0 #fff,1px -1px 0 #fff,1px 0 0 #fff,1px 1px 0 #fff,0 1px 0 #fff,-1px 1px 0 #fff,-1px 0 0 #fff,-1px -1px 0 #fff;
   box-shadow:4px 4px 0 rgba(0,0,0,0.7), 0 0 22px rgba(255,215,0,0.45);
   animation:recallStepGlow 2.6s ease-in-out infinite;
 }
@@ -1158,8 +1166,8 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 }
 .weekly-bonus-banner:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 rgba(0,0,0,0.7);}
 .weekly-bonus-banner:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,0.7);}
-.weekly-bonus-banner .wbb-emoji{font-size:20px;text-shadow:none;}
-.weekly-bonus-banner .wbb-chev{font-size:14px;text-shadow:none;}
+.weekly-bonus-banner .wbb-emoji{font-size:20px;text-shadow:none;line-height:1;display:inline-flex;align-items:center;}
+.weekly-bonus-banner .wbb-chev{font-size:14px;text-shadow:none;line-height:1;display:inline-flex;align-items:center;}
 
 /* ─── DIARY, weekly activity ─── */
 .diary-composer{background:#10172a;border:2px solid #2a3650;border-radius:10px;padding:18px;margin-bottom:18px;}
@@ -2551,11 +2559,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
     <button class="tfc-btn tfc-big" onclick="_fontDelta(1)" title="Larger">A+</button>
   </div>
 </div>
-<!-- Persistent CTA shown whenever user has unspun gachaRolls. Visibility is
-     driven by updateCounts() → _refreshGlobalRollCta(). Hidden on login. -->
-<div id="globalRollCta" class="hidden">
-  <button class="btn btn-purple btn-lg sparkle-btn" onclick="rollOne()">🎰 <span id="globalRollCtaText">CRACK YOUR EGGS</span></button>
-</div>
+
 
 <!-- ═══ MAIN MENU ═══ -->
 <div id="menuScreen" class="hidden">
@@ -3942,9 +3946,9 @@ function updateTopBar(){
   if (display.length > 14) display = display.slice(0, 13) + '…';
   var r = $('topBarRight');
   r.innerHTML =
-    '<span class="chip cyan">👤 ' + esc(display.toUpperCase()) + '</span>' +
-    '<span class="chip purple" id="chipRolls">🪺 ' + (user.gachaRolls||0) + '</span>' +
-    '<span class="chip gold" id="chipPoints">⭐ ' + (user.points||0) + '</span>' +
+    '<span class="chip cyan"><span class="chip-emoji">👤</span> ' + esc(display.toUpperCase()) + '</span>' +
+    '<span class="chip purple" id="chipRolls" onclick="_eggChipClick()"><span class="chip-emoji">🪺</span> EGGS: ' + (user.gachaRolls||0) + '</span>' +
+    '<span class="chip gold" id="chipPoints"><span class="chip-emoji">⭐</span> POINTS: ' + (user.points||0) + '</span>' +
     '<button class="icon-btn" id="inboxBtn" onclick="_inboxOpen()" title="Inbox">📬<span class="inbox-badge" id="inboxBadge">0</span></button>' +
     '<div style="position:relative;display:inline-block;">' +
       '<button class="icon-btn" onclick="toggleVolPanel()" title="Volume">🔊</button>' +
@@ -3965,12 +3969,22 @@ function updateTopBar(){
 
   // Subscribe to the user's inbox for unread count once topbar is rendered
   _inboxStartUnreadListener();
+  // Apply egg-chip ready state / bang / point label immediately (no flash).
+  updateCounts();
 }
 
 function updateCounts(){
   if (!user) return;
-  var rollsChip = $('chipRolls'); if (rollsChip) rollsChip.textContent = '🪺 ' + (user.gachaRolls||0);
-  var pointsChip = $('chipPoints'); if (pointsChip) pointsChip.textContent = '⭐ ' + (user.points||0);
+  var rollsChip = $('chipRolls');
+  if (rollsChip){
+    var nEggs = (user.gachaRolls||0);
+    var ready = nEggs > 0;
+    rollsChip.innerHTML = '<span class="chip-emoji">🪺</span> EGGS: ' + nEggs +
+      (ready ? '<span class="eggs-bang">❗</span>' : '');
+    rollsChip.classList.toggle('eggs-ready', ready);
+    rollsChip.setAttribute('title', ready ? 'Click to crack an egg!' : '');
+  }
+  var pointsChip = $('chipPoints'); if (pointsChip) pointsChip.innerHTML = '<span class="chip-emoji">⭐</span> POINTS: ' + (user.points||0);
   var cs = $('countShop'); if (cs) cs.textContent = (user.points||0) + ' pts';
   var csc = $('countShowcase'); if (csc) {
     // Prefer the cached count (works for users with thousands of cards in the
@@ -3994,16 +4008,23 @@ function updateCounts(){
 
 // Show the sticky "Crack Your Eggs" banner whenever the user has unspun
 // gachaRolls. Hidden when none. Pluralizes the label when count > 1.
+function _eggChipClick(){
+  // The EGGS chip is the crack trigger now (replaces the old giant banner).
+  // Only fires when eggs are available; rollOne() itself guards gachaRolls > 0.
+  if (!user || (user.gachaRolls||0) <= 0) return;
+  rollOne();
+}
+window._eggChipClick = _eggChipClick;
+
 function _refreshGlobalRollCta(){
-  var cta = $('globalRollCta');
-  var txt = $('globalRollCtaText');
-  if (!cta) return;
-  var n = (user && user.gachaRolls) || 0;
-  if (n > 0){
-    cta.classList.remove('hidden');
-    if (txt) txt.textContent = n === 1 ? 'CRACK YOUR EGG' : 'CRACK YOUR EGGS (' + n + ')';
-  } else {
-    cta.classList.add('hidden');
+  // Legacy giant "Crack Your Eggs" banner has been removed; the EGGS top-bar chip
+  // now carries the blink + click-to-crack behavior. Kept as a no-op so existing
+  // callers don't break, and to ensure the chip reflects current egg count.
+  var rollsChip = $('chipRolls');
+  if (rollsChip && user){
+    var nEggs = (user.gachaRolls||0);
+    var ready = nEggs > 0;
+    rollsChip.classList.toggle('eggs-ready', ready);
   }
 }
 
