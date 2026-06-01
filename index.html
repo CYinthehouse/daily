@@ -102,7 +102,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 #topBar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:#08081a;border-bottom:2px solid rgba(255,255,255,0.2);position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:10px;zoom:1.2;}
 .topbar-logo img{height:44px;width:auto;display:block;}
 .topbar-user{font-family:var(--ps);font-size:11px;color:var(--green);display:flex;align-items:center;gap:12px;text-shadow:var(--ps-outline-sm);flex-wrap:wrap;}
-/* Font-size controls row — sits beneath the topBar, right-aligned. Hidden on login. */
+/* Font-size controls row, sits beneath the topBar, right-aligned. Hidden on login. */
 #fontControlsRow{display:flex;justify-content:flex-end;padding:6px 24px;background:#08081a;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;z-index:99;zoom:1.2;}
 .font-ctrls{display:flex;align-items:center;gap:6px;}
 .font-ctrls .tfc-label{font-family:var(--ps);font-size:9px;color:#9aa3b8;text-shadow:var(--ps-outline-sm);}
@@ -110,7 +110,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .font-ctrls .tfc-btn:hover{background:#2d3a52;}
 .font-ctrls .tfc-big{font-size:14px;}
 
-/* Global "Crack Your Eggs" banner — appears whenever user has unspun gachaRolls.
+/* Global "Crack Your Eggs" banner, appears whenever user has unspun gachaRolls.
  * Sticky so it follows the user as they scroll, sits just below the font row. */
 #globalRollCta{
   position:sticky; top:0; z-index:98;
@@ -210,10 +210,10 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 @media (min-width: 820px){
   #dailyPickerGrid.has-yoda { grid-template-columns: repeat(6, 1fr); }
   #dailyPickerGrid.has-yoda > .menu-card { grid-column: span 2; }
-  /* Row 1 — the centered pair (columns 2-3 and 4-5). */
+  /* Row 1, the centered pair (columns 2-3 and 4-5). */
   #dailyPickerGrid.has-yoda > .menu-card.yoda   { grid-row: 1; grid-column: 2 / span 2; }
   #dailyPickerGrid.has-yoda > .menu-card.recall { grid-row: 1; grid-column: 4 / span 2; }
-  /* Row 2 — the 3 remaining activities span the full 6 columns. */
+  /* Row 2, the 3 remaining activities span the full 6 columns. */
   #dailyPickerGrid.has-yoda > .menu-card:not(.yoda):not(.recall) { grid-row: 2; }
 }
 .menu-card{background:#0d0d1f;border:2px solid rgba(255,255,255,0.2);border-radius:2px;padding:40px 28px;text-align:center;cursor:pointer;transition:transform 0.15s,box-shadow 0.15s,border-color 0.15s;position:relative;overflow:hidden;box-shadow:4px 4px 0 rgba(0,0,0,0.8);display:flex;flex-direction:column;align-items:center;}
@@ -310,7 +310,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 @keyframes _drRecPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,59,59,0.7);}50%{box-shadow:0 0 0 14px rgba(255,59,59,0);}}
 .dr-rec-status{font-family:var(--vt);font-size:13px;color:#aaa;min-height:18px;}
 
-/* ═══ DAILY READING — SOCIAL FEED ═══ */
+/* ═══ DAILY READING, SOCIAL FEED ═══ */
 .dr-loading,.dr-empty{padding:32px;text-align:center;font-family:var(--vt);color:#a8d6f0;background:rgba(0,0,0,0.25);border:1px solid #2a3650;border-radius:10px;margin-bottom:18px;}
 .dr-empty .big{font-family:'Press Start 2P',monospace;color:#ff8c3c;font-size:14px;margin-bottom:8px;text-shadow:var(--ps-outline-sm);}
 .dr-empty .sub{font-size:13px;color:#a8d6f0;}
@@ -347,7 +347,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .dr-me-tag{display:inline-block;background:var(--cyan);color:#000;font-size:9px;font-family:'Press Start 2P',monospace;padding:2px 5px;border-radius:3px;margin-left:6px;vertical-align:middle;}
 .dr-slot-sentence{font-family:'Noto Sans KR','Apple SD Gothic Neo',sans-serif;font-size:17px;line-height:1.5;color:#fff;padding:8px 10px;background:rgba(0,0,0,0.3);border-radius:6px;border-left:3px solid #2a3650;}
 .dr-slot.empty .dr-slot-sentence{color:#9aa3b8;font-style:italic;border-left-color:#3a4a6e;}
-/* "View Keywords" — collapsible Korean keyword (English meaning) reference,
+/* "View Keywords", collapsible Korean keyword (English meaning) reference,
  * hidden behind a button so it doesn't clutter the read. Korean is bold,
  * English is gray italic, separated by a small middle-dot. Button + panel
  * appear only when sentenceData.keywords was populated at AI-generation time;
@@ -366,7 +366,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .dr-rec-label{font-family:'Press Start 2P',monospace;font-size:11px;color:var(--cyan);text-shadow:var(--ps-outline-sm);text-align:center;margin-bottom:10px;}
 .dr-feed-hidden-note{padding:14px;text-align:center;font-family:var(--vt);font-size:17px;color:#7a8aa8;font-style:italic;background:rgba(0,0,0,0.18);border:1px dashed #2a3650;border-radius:8px;margin-top:8px;}
 
-/* ═══ DAILY LISTENING — RECITATION ═══ */
+/* ═══ DAILY LISTENING, RECITATION ═══ */
 .dl-screen{display:flex;flex-direction:column;gap:16px;}
 .dl-passage-block{background:#10172a;border:1px solid #2a3650;border-radius:10px;padding:16px;}
 .dl-passage-body{margin-top:10px;padding:12px 14px;background:rgba(0,0,0,0.4);border-radius:8px;border-left:3px solid #ff8c3c;}
@@ -419,7 +419,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .dl-feed-l2{margin-top:8px;padding-top:8px;border-top:1px dashed #2a3650;}
 .dl-feed-l2-label{font-family:var(--vt);font-size:11px;color:#ff8c3c;margin-right:8px;}
 
-/* ═══ DAILY ADVANCED TEAMWORK — 40-conjugation drill ═══ */
+/* ═══ DAILY ADVANCED TEAMWORK, 40-conjugation drill ═══ */
 .adv-screen{display:flex;flex-direction:column;gap:16px;}
 .adv-context{padding:12px 16px;background:rgba(0,0,0,0.3);border:1px solid #2a3650;border-radius:10px;}
 .adv-ending{font-family:var(--vt);font-size:14px;color:#cfd8e8;}
@@ -466,7 +466,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .advm-input{padding:6px 8px;background:rgba(255,255,255,0.06);border:1px solid #2a3650;border-radius:5px;color:#fff;font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;min-width:0;}
 .advm-input:focus{border-color:var(--cyan);}
 
-/* ─── YODAFICATION — student-side form ─── */
+/* ─── YODAFICATION, student-side form ─── */
 /* Red "time to graduate" disclaimer shown when the student has done this
  * activity 15+ times OR their account is 35+ days old. */
 .yoda-grad-banner{
@@ -520,13 +520,13 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .yoda-edit-row textarea{min-height:80px;line-height:1.5;resize:vertical;}
 .yoda-edit-row .yoda-edit-labels{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
 
-/* ─── ACTIVE RECALL — student-side flashcards ───
+/* ─── ACTIVE RECALL, student-side flashcards ───
  * Flip-card visuals adapted from the Lesson Portal: 3D rotateY flip, fixed
  * container height, tap to flip. Korean on front, English on back. */
 .recall-banner{background:linear-gradient(135deg,rgba(65,192,255,0.18),rgba(168,85,247,0.12));border:2px solid var(--cyan);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:center;}
 .recall-banner .big{font-family:'Press Start 2P',monospace;font-size:15px;color:var(--cyan);text-shadow:var(--ps-outline-sm);line-height:1.5;}
 .recall-banner .sub{font-family:var(--vt);font-size:17px;color:#cdd8ec;margin-top:6px;line-height:1.5;}
-/* Progress line — framed like an arcade scoreboard, not page text. */
+/* Progress line, framed like an arcade scoreboard, not page text. */
 .recall-progress{
   width:fit-content;
   margin:32px auto 32px;
@@ -560,7 +560,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .recall-card.flipped{transform:rotateY(180deg);}
 .recall-face{position:absolute;inset:0;backface-visibility:hidden;background:#10172a;border:2px solid var(--cyan);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;overflow:hidden;}
 .recall-back-face{transform:rotateY(180deg);border-color:var(--gold);}
-/* KOREAN / ENGLISH label — a machine/HUD label centered at the top of the
+/* KOREAN / ENGLISH label, a machine/HUD label centered at the top of the
    card screen. */
 .recall-hint{
   position:absolute;
@@ -576,7 +576,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   border:2px solid #263550;
   letter-spacing:0.12em;
 }
-/* The word — bold hard drop shadow so it reads clearly on the card. */
+/* The word, bold hard drop shadow so it reads clearly on the card. */
 .recall-main{
   font-family:'Noto Sans KR','Apple SD Gothic Neo','Noto Sans',sans-serif;
   font-size:clamp(34px,7vw,58px);
@@ -586,7 +586,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   font-weight:700;
   text-shadow:5px 5px 0 #000;
 }
-/* "tap to flip" — a blinking arcade prompt pinned to the bottom of the card.
+/* "tap to flip", a blinking arcade prompt pinned to the bottom of the card.
    Blinks exactly 3 times then settles (fresh markup per card restarts it). */
 .recall-tap-note{
   position:absolute;
@@ -606,7 +606,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   0%,45%{opacity:1;}
   46%,100%{opacity:0.35;}
 }
-/* Screen-flicker on flip — applied to the face content, not the rotating
+/* Screen-flicker on flip, applied to the face content, not the rotating
    card, so it doesn't fight the 3D rotateY. */
 .recall-flicker{animation:recallScreenFlip 180ms steps(3);}
 @keyframes recallScreenFlip{
@@ -622,7 +622,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .recall-done-banner .big{font-family:'Press Start 2P',monospace;font-size:16px;color:var(--green);text-shadow:var(--ps-outline-sm);line-height:1.5;}
 .recall-done-banner .sub{font-family:var(--vt);font-size:17px;color:#cdd8ec;margin-top:8px;line-height:1.5;}
 
-/* ─── ACTIVE RECALL — two-step landing screen ───
+/* ─── ACTIVE RECALL, two-step landing screen ───
  * STEP 1 (Match-Up Game) then STEP 2 (Flashcards). Two big yellow sparkle
  * buttons; Step 2 is disabled until Step 1 is done. */
 .recall-steps{display:flex;flex-direction:column;gap:34px;max-width:560px;margin:64px auto 0;}
@@ -656,7 +656,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   transform:translate(-2px,-3px);
   box-shadow:6px 7px 0 rgba(0,0,0,0.7), 0 0 38px rgba(255,215,0,0.85);
 }
-/* Locked / done buttons: calm — no glow pulse, no shimmer. */
+/* Locked / done buttons: calm, no glow pulse, no shimmer. */
 .recall-step-btn:disabled{
   animation:none;
   box-shadow:4px 4px 0 rgba(0,0,0,0.6);
@@ -664,7 +664,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .recall-step-btn:disabled::before{display:none;}
 .recall-step-btn:disabled:hover{transform:none;}
 
-/* ─── ACTIVE RECALL — STEP 1: matching game (Toad House style) ─── */
+/* ─── ACTIVE RECALL, STEP 1: matching game (Toad House style) ─── */
 .rg-banner{
   max-width:860px;
   margin:0 auto 16px;
@@ -686,7 +686,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
  * -sm is used by the match phase, which sits a little higher. */
 .rg-topgap{height:72px;}
 .rg-topgap-sm{height:72px;}
-/* Study-phase arrow row — one image arrow per column, linking each Korean
+/* Study-phase arrow row, one image arrow per column, linking each Korean
  * word to its English meaning directly below. */
 .rg-arrows{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:2px 0;}
 .rg-arrow{display:flex;align-items:center;justify-content:center;}
@@ -697,15 +697,15 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 }
 .rg-banner .big{font-family:'Press Start 2P',monospace;font-size:14px;color:var(--gold);text-shadow:var(--ps-outline-sm);line-height:1.5;}
 .rg-banner .sub{font-family:var(--vt);font-size:17px;color:#cdd8ec;margin-top:6px;line-height:1.5;}
-/* Countdown timer row — icon + depleting pixel bar + numeric seconds. */
+/* Countdown timer row, icon + depleting pixel bar + numeric seconds. */
 .rg-timer{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;font-family:'Press Start 2P',monospace;font-size:16px;color:var(--cyan);text-shadow:var(--ps-outline-sm);}
 .rg-timer.urgent{color:var(--pink);}
-/* When the timer is low, the seconds number pulses in size — same feel as the
+/* When the timer is low, the seconds number pulses in size, same feel as the
  * gacha egg-game countdown. #rgTimerNum needs inline-block for the scale. */
 #rgTimerNum{display:inline-block;}
 .rg-timer.urgent #rgTimerNum{animation:rgNumPulse 0.4s ease-in-out infinite;}
 @keyframes rgNumPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.28);}}
-/* Depleting bar — same length for study (10s) and match (30s); only the JS
+/* Depleting bar, same length for study (10s) and match (30s); only the JS
    transition duration differs, so the match bar drains 3x slower. Pixel-
    striped fill, mirrors the Gacha egg-game countdown bar, scaled smaller. */
 .rg-tbar{
@@ -733,13 +733,13 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .rg-grid{display:flex;flex-direction:column;gap:10px;max-width:640px;margin:0 auto 16px;}
 .rg-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
 .rg-cell{min-height:64px;border-radius:8px;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px 6px;font-family:'Noto Sans KR','Apple SD Gothic Neo','Noto Sans',sans-serif;font-weight:700;font-size:clamp(13px,2.4vw,17px);line-height:1.3;box-shadow:3px 3px 0 rgba(0,0,0,0.7);border:2px solid;word-break:break-word;}
-/* Korean row — cyan; selectable during match phase */
+/* Korean row, cyan; selectable during match phase */
 .rg-ko{background:#10172a;border-color:var(--cyan);color:#fff;}
 .rg-ko.selectable{cursor:pointer;}
 .rg-ko.selectable:hover{filter:brightness(1.2);}
 .rg-ko.active{border-color:var(--gold);box-shadow:0 0 14px rgba(255,215,0,0.6),3px 3px 0 rgba(0,0,0,0.7);}
 .rg-ko.paired{opacity:0.55;}
-/* English row — gold; words stay visible (Duolingo-style match exercise) */
+/* English row, gold; words stay visible (Duolingo-style match exercise) */
 .rg-en{background:#1a1530;border-color:var(--gold);color:#ffe9a8;}
 .rg-en.selectable{cursor:pointer;}
 .rg-en.selectable:hover{filter:brightness(1.2);}
@@ -747,7 +747,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .rg-en.correct{border-color:var(--green);background:#16261a;box-shadow:0 0 14px rgba(57,255,20,0.55),3px 3px 0 rgba(0,0,0,0.7);}
 .rg-en.wrong{border-color:#ff3b3b;background:#2a1414;color:#ffb3b3;box-shadow:0 0 16px rgba(255,59,59,0.7),3px 3px 0 rgba(0,0,0,0.7);}
 /* Phase-2 shuffle: English cells physically SLIDE from their old (aligned)
-   slots into their new scrambled slots — a FLIP animation. JS sets the
+   slots into their new scrambled slots, a FLIP animation. JS sets the
    per-card transform; this rule just defines the transition + lifted look
    while travelling. .rg-shuffle-pre is the inverted (pre-play) state with no
    transition, so the jump-back is instant. */
@@ -759,21 +759,21 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
     0 10px 0 #7b6200,
     8px 8px 0 rgba(0,0,0,0.7);
 }
-/* Match-phase prompt — the active instruction; the reading focal point. */
+/* Match-phase prompt, the active instruction; the reading focal point. */
 .rg-prompt{text-align:center;font-family:'Press Start 2P',monospace;font-size:13px;color:#eaf1ff;line-height:1.7;margin-bottom:10px;text-shadow:var(--ps-outline-sm);}
 .rg-prompt b{color:var(--gold);}
-/* Progress counter — a small status line, not a headline. */
+/* Progress counter, a small status line, not a headline. */
 .rg-progress{text-align:center;font-family:'Press Start 2P',monospace;font-size:13px;color:var(--green);text-shadow:var(--ps-outline-sm);margin-bottom:12px;letter-spacing:1px;}
 @media (max-width:560px){
   .rg-cell{min-height:54px;font-size:12px;}
   .rg-row{gap:5px;}
 }
 
-/* ─── ACTIVE RECALL — MATCH-UP "PIXEL ROOM" ───
+/* ─── ACTIVE RECALL, MATCH-UP "PIXEL ROOM" ───
    Scoped wrapper for the Match-Up game: study phase, match phase, and result
    screen. Everything lives inside .post-recall-game-room so nothing above the
-   Active Recall box is touched. Built like a retro game room — hard edges,
-   tile-layered frame, dithered texture, a visible checker floor — not a
+   Active Recall box is touched. Built like a retro game room, hard edges,
+   tile-layered frame, dithered texture, a visible checker floor, not a
    modern SaaS card. The frame is purple while playing; green (.is-result)
    only on the reward screen, since green should read as "success." */
 .post-recall-game-room{
@@ -781,7 +781,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   max-width:980px;
   margin:14px auto 0;
   padding:24px 24px 40px;
-  /* Dithered diagonal hatch over a flat near-black — texture, not a smooth
+  /* Dithered diagonal hatch over a flat near-black, texture, not a smooth
      gradient (smooth gradients are an AI/Tailwind giveaway). */
   background:
     radial-gradient(circle at 50% 0%, rgba(111,53,255,0.08), transparent 36%),
@@ -797,7 +797,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
     6px 6px 0 rgba(0,0,0,0.65);
   overflow:hidden;
 }
-/* Result/reward screen — swap the purple frame for a green "success" frame. */
+/* Result/reward screen, swap the purple frame for a green "success" frame. */
 .post-recall-game-room.is-result{
   background:
     radial-gradient(circle at 50% 0%, rgba(53,255,53,0.08), transparent 36%),
@@ -809,7 +809,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   box-shadow:
     6px 6px 0 rgba(0,0,0,0.65);
 }
-/* Checker floor — a real, visible floor that anchors the room, not mist.
+/* Checker floor, a real, visible floor that anchors the room, not mist.
    Starts higher and holds opacity longer before fading. */
 .post-recall-game-room::after{
   content:"";
@@ -829,7 +829,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   mask-image:linear-gradient(to top, black 0%, black 45%, transparent 100%);
 }
 
-/* Reward banner — a chunky pixel prize sign: hard edges, hard offset shadow,
+/* Reward banner, a chunky pixel prize sign: hard edges, hard offset shadow,
    corner bolts. (Result screen only.) */
 .post-recall-game-room .recall-done-banner{
   position:relative;
@@ -861,7 +861,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .post-recall-game-room .recall-done-banner::before{left:12px;}
 .post-recall-game-room .recall-done-banner::after{right:12px;}
 
-/* Center prize moment — a bobbing egg between the sign and the cards. */
+/* Center prize moment, a bobbing egg between the sign and the cards. */
 .egg-prize{
   position:relative;
   z-index:1;
@@ -890,7 +890,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   50%{transform:translateY(-6px);}
 }
 
-/* Platform/stage under the cards — a placed pixel platform, not a dashboard
+/* Platform/stage under the cards, a placed pixel platform, not a dashboard
    card. Hard border, hard base shadow, and inset corner-bracket tiles. */
 .reward-stage{
   position:relative;
@@ -906,7 +906,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
     0 6px 0 #050710,
     inset 0 0 0 3px rgba(255,255,255,0.035);
 }
-/* Corner-bracket tiles — top-left + bottom-right — so it reads as designed. */
+/* Corner-bracket tiles, top-left + bottom-right, so it reads as designed. */
 .reward-stage::before,
 .reward-stage::after{
   content:"";
@@ -919,9 +919,9 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .reward-stage::after{bottom:10px;right:10px;border-left:0;border-top:0;}
 .reward-stage .rg-grid{margin-bottom:0;}
 
-/* Room-object props — small placed pixel crates. They sit in a row below the
+/* Room-object props, small placed pixel crates. They sit in a row below the
    cards: pushed to the far bottom corners on wide screens, collapsed to a
-   centered cluster on narrow screens (see media query). Two props max —
+   centered cluster on narrow screens (see media query). Two props max ,
    "room," not clutter. */
 .room-props{
   position:relative;
@@ -950,7 +950,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
     3px 3px 0 rgba(0,0,0,0.65);
 }
 
-/* ─── INTRO POPUP — explains the two phases before the timer starts ─── */
+/* ─── INTRO POPUP, explains the two phases before the timer starts ─── */
 .rg-intro{
   position:relative;
   z-index:1;
@@ -1011,7 +1011,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   .rg-intro-step{padding:14px;}
 }
 
-/* Matched word cards — pixel blocks. Scoped to the room. The chunky 0 5px 0
+/* Matched word cards, pixel blocks. Scoped to the room. The chunky 0 5px 0
    base shadow is added only on the result screen (.is-result); the live
    study/match phases get the same blocks but flat (no base shadow), so the
    shuffle wobble and hover/select lift don't fight a detached drop shadow. */
@@ -1027,7 +1027,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
       transparent 2px, transparent 7px),
     #111a31;
 }
-/* Korean (cyan) block — hard offset shadow, tiny secondary glow. */
+/* Korean (cyan) block, hard offset shadow, tiny secondary glow. */
 .post-recall-game-room .rg-ko{
   border-color:var(--cyan);
   color:#f5f7ff;
@@ -1036,7 +1036,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
     4px 4px 0 rgba(0,0,0,0.65),
     0 0 8px rgba(67,199,255,0.18);
 }
-/* English (gold) block — hard offset shadow, tiny secondary glow. */
+/* English (gold) block, hard offset shadow, tiny secondary glow. */
 .post-recall-game-room .rg-en{
   background:
     repeating-linear-gradient(135deg,
@@ -1050,7 +1050,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
     4px 4px 0 rgba(0,0,0,0.65),
     0 0 8px rgba(255,215,0,0.16);
 }
-/* Correct match — green block (result screen) */
+/* Correct match, green block (result screen) */
 .post-recall-game-room .rg-en.correct{
   border-color:var(--green);
   background:
@@ -1064,7 +1064,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
     4px 4px 0 rgba(0,0,0,0.65),
     0 0 8px rgba(53,255,53,0.22);
 }
-/* Wrong / unmatched — red block (result screen) */
+/* Wrong / unmatched, red block (result screen) */
 .post-recall-game-room .rg-en.wrong{
   border-color:#ff3b3b;
   background:
@@ -1079,7 +1079,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
     0 0 8px rgba(255,59,59,0.22);
 }
 /* ── Live-phase states (study + match). ── */
-/* Selected Korean word during the match phase — gold ring over the block. */
+/* Selected Korean word during the match phase, gold ring over the block. */
 .post-recall-game-room .rg-ko.active{
   border-color:var(--gold);
   box-shadow:
@@ -1090,7 +1090,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 /* Paired cells dim, same as before. */
 .post-recall-game-room .rg-ko.paired,
 .post-recall-game-room .rg-en.paired{opacity:0.55;}
-/* Shuffle slide — JS-driven FLIP via .rg-sliding; cards are flat here. */
+/* Shuffle slide, JS-driven FLIP via .rg-sliding; cards are flat here. */
 /* Arrows row in the study phase sits above the tiled floor. */
 .post-recall-game-room .rg-arrows{position:relative;z-index:1;}
 /* Banner / timer / progress / prompt all ride above the floor too. */
@@ -1099,7 +1099,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .post-recall-game-room .rg-progress,
 .post-recall-game-room .rg-prompt{position:relative;z-index:1;}
 
-/* Continue button — hard pixel press inside the reward room. */
+/* Continue button, hard pixel press inside the reward room. */
 .post-recall-game-room .recall-continue-btn{
   position:relative;
   z-index:1;
@@ -1161,7 +1161,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .weekly-bonus-banner .wbb-emoji{font-size:20px;text-shadow:none;}
 .weekly-bonus-banner .wbb-chev{font-size:14px;text-shadow:none;}
 
-/* ─── DIARY — weekly activity ─── */
+/* ─── DIARY, weekly activity ─── */
 .diary-composer{background:#10172a;border:2px solid #2a3650;border-radius:10px;padding:18px;margin-bottom:18px;}
 .diary-composer.locked{border-color:#39ff14;}
 .diary-field-label{font-family:'Press Start 2P',monospace;font-size:14px;color:var(--cyan);text-shadow:var(--ps-outline-sm);margin-bottom:8px;letter-spacing:0.5px;}
@@ -1176,7 +1176,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .diary-rec-status{font-family:var(--vt);font-size:17px;color:#cdd8ec;text-align:center;}
 .diary-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:14px;}
 
-/* Diary feed entry — Discord/social style, mirrors the Teamwork Reading cards */
+/* Diary feed entry, Discord/social style, mirrors the Teamwork Reading cards */
 .diary-entry{background:#10172a;border:1px solid #2a3650;border-radius:10px;padding:14px;}
 .diary-entry.mine{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(65,192,255,0.2);}
 .diary-entry-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
@@ -1189,7 +1189,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 
 /* ─── APP FONT-SIZE ADJUSTER ───
  * --app-zoom is set on <body> (default 1.2) and persisted to localStorage.
- * `zoom` scales the entire app uniformly (text + layout) — way simpler than
+ * `zoom` scales the entire app uniformly (text + layout), way simpler than
  * walking every fixed-px rule. Cross-browser supported as of Firefox 126.
  * Applied at body level so modals (which sit at the body level, outside #app)
  * scale along with everything else.
@@ -1197,7 +1197,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 /* Apply the app-wide zoom to every top-level child of <body> instead of to
  * <body> itself. Zooming the body throws off `vh` units (used by #app,
  * #loginScreen, fixed overlays) because vh reports the unzoomed viewport
- * height while content renders at the zoomed scale — breaking centering.
+ * height while content renders at the zoomed scale, breaking centering.
  *
  * Zooming each top-level child instead keeps the body at native scale (vh
  * accurate) while scaling everything the user sees: #app, the background
@@ -1225,7 +1225,7 @@ body > #_gepipop,
 body > ._gepipop { zoom: 1 !important; }
 
 /* ═══════════════════════════════════════════════════════════
- * ADMIN PAGE REDESIGN — readability-first hierarchy
+ * ADMIN PAGE REDESIGN, readability-first hierarchy
  * ═══════════════════════════════════════════════════════════
  * Design principles:
  *   - One pixel-font moment: the page title "ENROLLMENT ADMIN" only.
@@ -1233,7 +1233,7 @@ body > ._gepipop { zoom: 1 !important; }
  *   - Three type sizes only: page title (pixel), section heading (18px Noto
  *     bold), body (14px Noto). No more "everywhere is bold" or per-element
  *     font swaps.
- *   - Sentence case for section/subsection headings — not ALL CAPS.
+ *   - Sentence case for section/subsection headings, not ALL CAPS.
  *     ALL CAPS reserved for short status badges only.
  *   - Color hierarchy:
  *       primary actions  → cyan
@@ -1263,7 +1263,7 @@ body > ._gepipop { zoom: 1 !important; }
   color: #e6ebf5 !important;
 }
 
-/* ─── 2. PAGE TITLE — only place pixel font lives in admin ─── */
+/* ─── 2. PAGE TITLE, only place pixel font lives in admin ─── */
 #adminScreen .section-head {
   background: transparent !important;
   border: none !important;
@@ -1298,7 +1298,7 @@ body > ._gepipop { zoom: 1 !important; }
   color: #cbd5e1 !important;
 }
 
-/* Back-to-menu button — slightly larger than before so it feels primary */
+/* Back-to-menu button, slightly larger than before so it feels primary */
 #adminScreen .back-row .btn {
   padding: 8px 14px !important;
   font-size: 13px !important;
@@ -1340,7 +1340,7 @@ body > ._gepipop { zoom: 1 !important; }
   letter-spacing: 0 !important;
   text-transform: none !important;
 }
-/* Subtler chevron — small and dimmed */
+/* Subtler chevron, small and dimmed */
 #adminScreen .admin-section-head .chev {
   font-size: 10px !important;
   color: #64748b !important;
@@ -1444,7 +1444,7 @@ body > ._gepipop { zoom: 1 !important; }
   margin-top: 4px;
 }
 
-/* ─── 6. STATUS BADGES — flat, low-saturation, sentence case ─── */
+/* ─── 6. STATUS BADGES, flat, low-saturation, sentence case ─── */
 #adminScreen .drm-row-meta .badge,
 #adminScreen .badge,
 .drm-row-meta .badge {
@@ -1463,7 +1463,7 @@ body > ._gepipop { zoom: 1 !important; }
   margin: 0 !important;
   text-shadow: none !important;
 }
-/* Status: live — soft green dot + text, not a full-fill pill */
+/* Status: live, soft green dot + text, not a full-fill pill */
 .drm-row-meta .badge.live,
 #adminScreen .badge.live {
   color: #4ade80 !important;
@@ -1479,19 +1479,19 @@ body > ._gepipop { zoom: 1 !important; }
   background: #22c55e;
   box-shadow: 0 0 6px rgba(34,197,94,0.6);
 }
-/* Status: draft — muted gray */
+/* Status: draft, muted gray */
 .drm-row-meta .badge.draft,
 #adminScreen .badge.draft {
   color: #94a3b8 !important;
   background: transparent !important;
 }
-/* Status: archived — same muted gray */
+/* Status: archived, same muted gray */
 .drm-row-meta .badge.archived,
 #adminScreen .badge.archived {
   color: #64748b !important;
   background: transparent !important;
 }
-/* Status: expired — soft red */
+/* Status: expired, soft red */
 .drm-row-meta .badge.expired,
 #adminScreen .badge.expired {
   color: #f87171 !important;
@@ -1506,7 +1506,7 @@ body > ._gepipop { zoom: 1 !important; }
   border-radius: 50%;
   background: #ef4444;
 }
-/* Status: scheduled — small muted-blue chip with calendar emoji */
+/* Status: scheduled, small muted-blue chip with calendar emoji */
 .drm-row-meta .badge.scheduled,
 #adminScreen .badge.scheduled {
   background: rgba(168,85,247,0.12) !important;
@@ -1516,7 +1516,7 @@ body > ._gepipop { zoom: 1 !important; }
   font-size: 12px !important;
   font-weight: 500 !important;
 }
-/* Activity-type badges (Teamwork Reading, Solo Reading) — muted slate */
+/* Activity-type badges (Teamwork Reading, Solo Reading), muted slate */
 #adminScreen .badge.activity-reading-pair,
 .drm-row-meta .badge.activity-reading-pair {
   background: rgba(65,192,255,0.10) !important;
@@ -1534,7 +1534,7 @@ body > ._gepipop { zoom: 1 !important; }
   font-weight: 500 !important;
 }
 
-/* ─── 7. BUTTONS — one consistent visual language ─── */
+/* ─── 7. BUTTONS, one consistent visual language ─── */
 /* Default (secondary): solid muted slate fill.
  * Scoped to admin screen + admin-style modals (.drm-modal, .ea-modal). */
 #adminScreen .btn,
@@ -1576,7 +1576,7 @@ body > ._gepipop { zoom: 1 !important; }
   padding: 8px 14px !important;
   font-size: 13px !important;
 }
-/* Primary action — cyan fill (used for the main action per section) */
+/* Primary action, cyan fill (used for the main action per section) */
 #adminScreen .btn-cyan,    #drmStoryModal .btn-cyan,    #drmScheduleModal .btn-cyan,
 #adminScreen .btn-pink,    #drmStoryModal .btn-pink,    #drmScheduleModal .btn-pink,
 .ea-modal .btn-cyan, .ea-modal .btn-pink {
@@ -1616,7 +1616,7 @@ body > ._gepipop { zoom: 1 !important; }
   border-color: #334155 !important;
 }
 #adminScreen .btn-ghost:hover, .ea-modal .btn-ghost:hover { background: #283449 !important; border-color: #475569 !important; color: #fff !important; }
-/* Danger — red fill, used sparingly */
+/* Danger, red fill, used sparingly */
 #adminScreen .btn-danger, #drmStoryModal .btn-danger, #drmScheduleModal .btn-danger,
 .ea-modal .btn-danger {
   background: #7f1d1d !important;
@@ -1680,7 +1680,7 @@ body > ._gepipop { zoom: 1 !important; }
   margin-top: 4px;
 }
 
-/* Target-words picker (listening admin) — keep it functional but quieter */
+/* Target-words picker (listening admin), keep it functional but quieter */
 .dlm-tw-picker {
   display: flex; flex-wrap: wrap; gap: 6px;
   padding: 10px;
@@ -1711,9 +1711,9 @@ body > ._gepipop { zoom: 1 !important; }
 #adminScreen .pill-done,
 #adminScreen .pill-cancelled { color: inherit !important; }
 
-/* WIP toggle row at the top — keep it visible but compact */
+/* WIP toggle row at the top, keep it visible but compact */
 #adminScreen .admin-section + div[style*="margin-bottom:18px"] {
-  /* This isn't a stable selector — the WIP toggle row is the inline-styled
+  /* This isn't a stable selector, the WIP toggle row is the inline-styled
      div with the toggleDailyBtn. Styles applied inline still work; we just
      don't need extra rules here. */
 }
@@ -1722,11 +1722,11 @@ body > ._gepipop { zoom: 1 !important; }
  * ═══════════════════════════════════════════════════════════ */
 
 /* ═══════════════════════════════════════════════════════════
- * ENROLLMENT ADMIN — status chips + action menu
+ * ENROLLMENT ADMIN, status chips + action menu
  * ═══════════════════════════════════════════════════════════ */
 
 /* Status summary chips at top of Enrollments list. Override the tiny pixel-font
- * .chip from the top bar — admin needs readable Noto Sans chips. */
+ * .chip from the top bar, admin needs readable Noto Sans chips. */
 #adminScreen .admin-summary .chip {
   font-family: 'Noto Sans', sans-serif !important;
   font-size: 13px !important;
@@ -1808,7 +1808,7 @@ body > ._gepipop { zoom: 1 !important; }
 #adminScreen .admin-row .ar-dates b { color: #f1f5f9 !important; font-weight: 600 !important; }
 #adminScreen .admin-row .ar-signed { font-size: 12px !important; color: #cbd5e1 !important; }
 
-/* Action menu — primary action button + a "More" dropdown that contains
+/* Action menu, primary action button + a "More" dropdown that contains
  * the rest of the actions. */
 .ar-action-wrap { position: relative; display: inline-flex; gap: 6px; align-items: center; }
 .ar-more-btn { position: relative; }
@@ -1915,12 +1915,12 @@ body > ._gepipop { zoom: 1 !important; }
 /* End of enrollment admin block
  * ═══════════════════════════════════════════════════════════ */
 
-/* Hide the cyan-grid background when the admin screen is active — the
+/* Hide the cyan-grid background when the admin screen is active, the
  * grid + bordered cards + emoji + many controls together feel noisy.
  * The grid still shows on student-facing screens. */
 body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 
-/* Story-prompt modal (admin generation) — adapted from Tuesday Reading */
+/* Story-prompt modal (admin generation), adapted from Tuesday Reading */
 .drm-modal{display:none;position:fixed;inset:0;z-index:100000;background:rgba(0,0,0,0.85);justify-content:center;align-items:center;padding:20px;}
 .drm-modal.show{display:flex;}
 .drm-modal-inner{background:linear-gradient(135deg,#0f172a,#1e293b);border-radius:12px;padding:22px;max-width:580px;width:100%;border:2px solid var(--cyan);box-shadow:0 20px 60px rgba(0,0,0,0.5);max-height:90vh;overflow-y:auto;}
@@ -1999,7 +1999,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
  * elements (titles, badges, stat tallies) are intentionally left at their
  * original size to preserve hierarchy.
  *
- * Scoped to the six screens — Daily picker, Teamwork Reading, Solo Reading,
+ * Scoped to the six screens, Daily picker, Teamwork Reading, Solo Reading,
  * Advanced Teamwork, Point Shop, Gacha Showcase. Admin is excluded.
  */
 #dailyScreen .sh-sub,
@@ -2028,7 +2028,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 
 /* Unified "No activity available" empty-state sizing across every daily
  * sub-screen. Keep all four pages (Reading, Listening, Advanced, Yoda)
- * locked to the same readable size — container 17px, .sub 16px — so the
+ * locked to the same readable size, container 17px, .sub 16px, so the
  * empty state doesn't change shape as students bounce between activities. */
 #dailyReadingScreen .dr-empty,
 #dailyListeningScreen .dr-empty,
@@ -2070,7 +2070,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 #dailyAdvancedScreen .dr-card-sub,
 #dailyAdvancedScreen .dr-loading        { font-size: 16px !important; }
 
-/* Daily picker screen — uses the same dr-banner / menu-card text.
+/* Daily picker screen, uses the same dr-banner / menu-card text.
  * NOTE: do NOT bump .menu-count or .menu-desc here. The picker tiles must
  * match the main Gacha Arcade menu cards exactly (same 16px description,
  * same 10px Press Start 2P badges). Bumping them throws off vertical
@@ -2078,7 +2078,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
  * it can still get a readability bump. */
 #dailyScreen .dr-banner                 { font-size: 17px !important; }
 
-/* Point Shop classes — descriptions use the base 16px from .shop-card .shop-desc
+/* Point Shop classes, descriptions use the base 16px from .shop-card .shop-desc
  * to match the Gacha Arcade menu cards exactly. No override needed. */
 
 /* Gacha Showcase classes */
@@ -2112,8 +2112,8 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
  * a filter-btn with a rarity class but no .active (e.g. `filter-btn yellow`)
  * doesn't inherit the rarity color. Only `.filter-btn.<rarity>.active`
  * rules below paint the rarity color.
- * !important is required because something in the cascade — possibly an
- * earlier rule we couldn't track down — was still painting YELLOW/GREEN
+ * !important is required because something in the cascade, possibly an
+ * earlier rule we couldn't track down, was still painting YELLOW/GREEN
  * text in their rarity colors even when not active. */
 .filter-btn{background:#0a0a15;border:2px solid rgba(255,255,255,0.25);color:#aaa;padding:9px 14px;border-radius:2px;font-family:var(--ps);font-size:11px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,0.8);transition:all 0.1s;text-shadow:var(--ps-outline-sm);}
 .filter-btn.holo:not(.active),
@@ -2204,7 +2204,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
  * result: ⭐ 100 lines up with ⭐ 1000, PURCHASE lines up with LOCKED, even
  * though only the 6-Week card has the CLASS LEVEL dropdown in row 5.
  *
- * Subgrid support: Chrome 117+, Safari 16+, Firefox 71+ — all evergreen now.
+ * Subgrid support: Chrome 117+, Safari 16+, Firefox 71+, all evergreen now.
  * On older browsers the cards just fall back to their previous flex layout
  * (slight misalignment of price/button) without breaking. */
 .shop-grid{
@@ -2222,7 +2222,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .shop-card .shop-price{font-family:var(--ps);font-size:16px;text-shadow:var(--ps-outline-sm);margin:6px 0 4px;}
 .shop-card button{width:100%;}
 /* Locked-state buttons: neutral gray so locked items don't look "active" in
- * cyan or gold. The wrapper card no longer dims as a whole — only the button
+ * cyan or gold. The wrapper card no longer dims as a whole, only the button
  * goes gray + cursor changes. Applies to both Friday and 6-week tiles. */
 .shop-card .btn:disabled,
 .shop-card button:disabled{
@@ -2243,7 +2243,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
  * so it's readable without straining. */
 .shop-card .shop-locked-reason{font-size:15px;color:#ff9090;margin-top:10px;text-align:center;font-style:italic;font-family:var(--vt);line-height:1.5;}
 .shop-level-wrap{width:100%;display:flex;flex-direction:column;gap:8px;align-items:stretch;margin-top:4px;}
-/* Invisible spacers — occupy a subgrid row so cards line up element-for-element
+/* Invisible spacers, occupy a subgrid row so cards line up element-for-element
  * even when one card doesn't have a level dropdown or locked-reason. */
 .shop-level-spacer,
 .shop-locked-spacer{width:100%;}
@@ -2270,7 +2270,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
  *   4. The PENDING badge sits inline immediately after the title (gap-driven,
  *      not right-aligned via space-between) so the eye reads title → status
  *      → expand chevron in one left-to-right sweep.
- *   5. Cancellation fee is now plain text directly under the button — no
+ *   5. Cancellation fee is now plain text directly under the button, no
  *      pink-tinted box. The button is the visual anchor; the fee is just
  *      a small clarifying caption below it. */
 .enroll-card{background:#0d0d1f;border:2px solid rgba(255,255,255,0.15);border-radius:2px;margin-bottom:20px;box-shadow:4px 4px 0 rgba(0,0,0,0.8);}
@@ -2291,7 +2291,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .enroll-card .enroll-meta{font-size:15px;color:#ddd;line-height:1.8;margin-bottom:14px;}
 .enroll-card .enroll-meta .awaiting{color:#aaa;font-style:italic;}
 .enroll-card .enroll-actions{display:flex;flex-direction:column;align-items:center;gap:6px;}
-/* Cancel button + fee. Fee is plain centered text under the button — no
+/* Cancel button + fee. Fee is plain centered text under the button, no
  * boxed wrapper, no pink background. Reads as a caption, not as a callout. */
 .enroll-cancel-group{display:flex;flex-direction:column;align-items:stretch;max-width:340px;width:100%;margin:0 auto;gap:8px;}
 .enroll-cancel-fee{font-size:13px;color:#aaa;text-align:center;line-height:1.4;}
@@ -2395,7 +2395,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .policy-title{font-family:var(--ps);font-size:13px;line-height:1.6;color:var(--gold);text-shadow:var(--ps-outline-sm);letter-spacing:1px;text-align:center;}
 .policy-sub{font-family:var(--vt);font-size:13px;color:#ccc;text-align:center;margin-top:8px;}
 /* Body is the ONLY scrollable region. `min-height:0` is the magic property
- * that makes flex children actually shrink and trigger overflow:auto — without
+ * that makes flex children actually shrink and trigger overflow:auto, without
  * it, a flex child's default min-height:auto sizes to content and the overflow
  * never engages, which made the policy text spill past the modal's clipped
  * area. Hard `max-height` cap makes the scrollable area predictable.
@@ -2583,7 +2583,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
     <div class="menu-card showcase" onclick="handleTileTap('showcase')">
       <span class="menu-emoji">🎴</span>
       <div class="grad-wrap"><div class="menu-name grad-text grad-purple">GACHA<br>SHOWCASE</div></div>
-      <div class="menu-desc">Every character you've rolled — all in one place.</div>
+      <div class="menu-desc">Every character you've rolled, all in one place.</div>
       <span class="menu-count" id="countShowcase">0 cards</span>
     </div>
   </div>
@@ -2621,7 +2621,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   <div class="back-row"><button class="btn btn-ghost btn-sm" onclick="_openWeekly()">← BACK TO WEEKLY</button></div>
   <div class="section-head daily">
     <div class="sh-title">📔 DIARY</div>
-    <div class="sh-sub">Write about your day in Korean. Add an optional voice recording of you reading it. Submit to earn 9 eggs — then read everyone else's entries.</div>
+    <div class="sh-sub">Write about your day in Korean. Add an optional voice recording of you reading it. Submit to earn 9 eggs, then read everyone else's entries.</div>
   </div>
   <div id="weeklyDiaryHost"></div>
 </div>
@@ -2753,7 +2753,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 
   <!-- Per-activity WIP/LIVE toggles. Master switch above gates all of these. -->
   <div style="margin-bottom:18px;">
-    <div style="font-family:var(--vt);font-size:13px;color:#8a93a8;margin-bottom:8px;letter-spacing:0.5px;">PER-ACTIVITY TOGGLES — master switch above must be LIVE for these to take effect</div>
+    <div style="font-family:var(--vt);font-size:13px;color:#8a93a8;margin-bottom:8px;letter-spacing:0.5px;">PER-ACTIVITY TOGGLES, master switch above must be LIVE for these to take effect</div>
     <div id="dailyActivityToggles" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
   </div>
 
@@ -2876,7 +2876,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
     <div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
       <label for="drmStoryLenInput" style="font-family:var(--vt);font-size:12px;color:#a0aef7;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Passage length:</label>
       <input type="number" id="drmStoryLenInput" min="2" max="40" step="2" value="16" style="width:80px;padding:6px 10px;background:rgba(255,255,255,0.08);border:1px solid rgba(102,126,234,0.4);border-radius:6px;color:#fff;font-size:13px;font-family:var(--vt);outline:none;">
-      <span id="drmLenHint" style="font-family:var(--vt);font-size:11px;color:#9aa3b8;">sentences (must be even — students read in pairs)</span>
+      <span id="drmLenHint" style="font-family:var(--vt);font-size:11px;color:#9aa3b8;">sentences (must be even, students read in pairs)</span>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
       <button id="drmGpToggleBtn" class="drm-gp-toggle-btn" onclick="_drmToggleGpPanel()">📚 Grammar Points</button>
@@ -2977,7 +2977,7 @@ try {
 
 /* ═══ CONSTANTS ═══ */
 const TC = 'tevello_accounts';
-// Hardcoded admin allowlist — these emails are always treated as admin regardless
+// Hardcoded admin allowlist, these emails are always treated as admin regardless
 // of the isAdmin/role fields on their Firestore doc. Emails are compared case-insensitively.
 const ADMIN_EMAILS = ['calvin@koreanlearnin.com'];
 function _isAdminEmail(email){
@@ -3010,7 +3010,7 @@ function _loadGachaConfig(){
     return db.collection(GACHA_CONFIG_DOC.collection).doc(GACHA_CONFIG_DOC.id).get().then(function(snap){
       if (snap.exists){
         var d = snap.data() || {};
-        // Default true if field missing — only flips off if explicitly false.
+        // Default true if field missing, only flips off if explicitly false.
         _dailyEnabled = d.dailyEnabled !== false;
         // Per-activity flags. Each missing key defaults to true (live).
         var da = d.dailyActivities || {};
@@ -3028,7 +3028,7 @@ function _loadGachaConfig(){
   } catch(e){ console.warn('Config load failed:', e); return Promise.resolve(); }
 }
 const SIGNUP_BONUS_ROLLS = 5;
-// DEPRECATED — points are no longer color-only. See _gachaPointsForRoll(),
+// DEPRECATED, points are no longer color-only. See _gachaPointsForRoll(),
 // which scores all four roll factors (animal/color/item/glitter) by rarity.
 // Kept only so legacy code/data references don't break; do NOT use for new logic.
 const POINTS_BY_RARITY = {
@@ -3041,7 +3041,7 @@ const POINTS_BY_RARITY = {
 };
 
 /* ═══ SHOP / ENROLLMENT CONFIG ═══ */
-// Make.com webhook. Leave blank ('') to disable — purchases still work, just no DM fires.
+// Make.com webhook. Leave blank ('') to disable, purchases still work, just no DM fires.
 const MAKE_WEBHOOK_URL = 'https://hook.us1.make.com/mk2cas4gre8l7e5hgzw4up0462clanab';
 const CLASS_LEVELS = ['Novice', 'Beginner', 'Advanced Beginner'];
 const PRICE_EXTRA_HELP = 300;     // Friday Extra Help (one session)
@@ -3060,7 +3060,7 @@ function _nyMidnightToISO(ymd){
   var y = +m[1], mo = +m[2], d = +m[3];
   // Step 1: pretend it's UTC midnight on that date
   var utcGuess = Date.UTC(y, mo - 1, d, 0, 0, 0);
-  // Step 2: ask "what is that UTC instant in NY?" — gives us NY's clock at that moment
+  // Step 2: ask "what is that UTC instant in NY?", gives us NY's clock at that moment
   var fmt = new Intl.DateTimeFormat('en-US', {
     timeZone: CLASS_TIMEZONE,
     year: 'numeric', month: '2-digit', day: '2-digit',
@@ -3138,7 +3138,7 @@ let _exitAudioReady = false;
     _exitAudioCtx = new Ctx();
     // XHR with responseType='arraybuffer' tends to be more permissive than
     // fetch() against CDN CORS configs. If both fail we silently fall through
-    // to the HTMLAudio fallback in _playExitSound — no console noise.
+    // to the HTMLAudio fallback in _playExitSound, no console noise.
     var xhr = new XMLHttpRequest();
     xhr.open('GET', SOUND_EXIT, true);
     xhr.responseType = 'arraybuffer';
@@ -3171,7 +3171,7 @@ document.addEventListener('keydown', _ensureExitAudioRunning, { passive: true })
 
 // Fire the exit sound the moment a back button is touched (pointerdown), not
 // when it's released (click). This shaves the ~100-300ms touch-up delay off
-// perceived latency. Navigation still happens on click as normal — only the
+// perceived latency. Navigation still happens on click as normal, only the
 // audio fires early. We use capture-phase so this runs before any other
 // listener on the button, and we look for a marker class so future back
 // buttons (or buttons that should also play this cue) just need the class.
@@ -3266,7 +3266,7 @@ function welcomeBgmStop(){ welcomeBgmAudio.pause(); welcomeBgmAudio.currentTime 
 // Egg-overlay BGM (Apex Signal) is its own thing managed inside _createEggOverlay.
 function _setBgmForScreen(screenId){
   var ambient = ['shopScreen','showcaseScreen','dailyScreen'];
-  // Admin works with a lot of text + recordings — keeping silent so audio
+  // Admin works with a lot of text + recordings, keeping silent so audio
   // playback (student recordings, etc.) doesn't compete with background music.
   var silent  = ['dailyReadingScreen','dailyListeningScreen','dailyAdvancedScreen','dailyYodaScreen','dailyRecallScreen','weeklyDiaryScreen','inboxScreen','adminScreen'];
   if (ambient.indexOf(screenId) !== -1){
@@ -3356,7 +3356,7 @@ function show(id){
   // Font controls row mirrors topBar visibility (login hides topBar; this hides too)
   if (id === 'topBar'){
     var fc = $('fontControlsRow'); if (fc) fc.classList.remove('hidden');
-    // Global "Crack Your Eggs" CTA also rides with topBar — but its OWN visibility
+    // Global "Crack Your Eggs" CTA also rides with topBar, but its OWN visibility
     // is gated by user.gachaRolls > 0 inside _refreshGlobalRollCta, so just call that.
     if (typeof _refreshGlobalRollCta === 'function') _refreshGlobalRollCta();
   }
@@ -3425,7 +3425,7 @@ async function _loadUserProfile(authUser){
   var ref = db.collection(TC).doc(authUser.uid);
   var snap = await ref.get();
   if (!snap.exists){
-    // Fresh Firebase Auth account with no profile doc yet — create the bare minimum.
+    // Fresh Firebase Auth account with no profile doc yet, create the bare minimum.
     // (This shouldn't normally happen since signup writes both at once, but it's a
     // safety net for, e.g., admin-created accounts via the Firebase console.)
     var fresh = {
@@ -3453,7 +3453,7 @@ async function _loadUserProfile(authUser){
     freeEggsUsed: !!d.freeEggsUsed,
     gachaCollection: d.gachaCollection || [],
     // Cached count of cards in the gachaCollection subcollection. For legacy
-    // users not yet migrated this field is missing — fall back to the array
+    // users not yet migrated this field is missing, fall back to the array
     // length so the menu tile still shows the right number.
     gachaCollectionCount: typeof d.gachaCollectionCount === 'number'
       ? d.gachaCollectionCount
@@ -3471,15 +3471,15 @@ async function _loadUserProfile(authUser){
     // a page reload and the activity becomes replayable.
     dailyRecallStep1DoneFor: d.dailyRecallStep1DoneFor || null,
     dailyRecallStep2DoneFor: d.dailyRecallStep2DoneFor || null,
-    // NY-WEEK key of the last Diary submission. Diary is a weekly activity —
+    // NY-WEEK key of the last Diary submission. Diary is a weekly activity ,
     // this resets every Monday 3 AM NY, gating the 9-egg award.
     weeklyDiaryDoneFor: d.weeklyDiaryDoneFor || null,
     // How many times this student has completed a Yodafication ever. Used
     // alongside accountCreatedAt to decide when to show the "graduate from
-    // Yoda — try harder activities" disclaimer banner.
+    // Yoda, try harder activities" disclaimer banner.
     yodaCompletionCount: typeof d.yodaCompletionCount === 'number' ? d.yodaCompletionCount : 0,
     // Account creation timestamp (Firestore Timestamp). Some legacy users
-    // may not have this — we treat missing as "very old account" so the
+    // may not have this, we treat missing as "very old account" so the
     // disclaimer always applies to them, which is what we want.
     accountCreatedAt: d.createdAt || null,
     isAdmin: !!(d.isAdmin || d.role === 'admin' || _isAdminEmail(d.username || authUser.email))
@@ -3500,7 +3500,7 @@ async function _loadUserProfile(authUser){
  * just listen for the auth state and load the profile if a user is present.
  */
 (function autoLogin(){
-  // Load global config in parallel — non-blocking. enterApp will refresh the daily
+  // Load global config in parallel, non-blocking. enterApp will refresh the daily
   // tile based on _dailyEnabled when it resolves.
   _loadGachaConfig();
   if (!auth) return;
@@ -3592,7 +3592,7 @@ async function doLogin(){
     var legacyDoc = legacy.docs[0];
     var legacyData = legacyDoc.data();
     if (!legacyData.passwordHash){
-      // Legacy doc but no hash — something's off. Tell the user to reset.
+      // Legacy doc but no hash, something's off. Tell the user to reset.
       err.style.color = '#ff4444'; err.textContent = 'Account needs reset. Contact support.'; return;
     }
     var hashed = await tevHash(pass);
@@ -3633,7 +3633,7 @@ async function doLogin(){
 window.doLogin = doLogin;
 
 /* ═══ SIGNUP ═══
- * Pure Firebase Auth — no homegrown hashing. Creates the auth account first,
+ * Pure Firebase Auth, no homegrown hashing. Creates the auth account first,
  * then writes the profile doc keyed by auth.uid.
  */
 async function doSignup(){
@@ -3742,7 +3742,7 @@ function showMenu(){
   updateCounts();
   showFade('menuScreen');
   _setBgmForScreen('menuScreen');
-  // (Roll CTA is now global — sticks at top whenever user.gachaRolls > 0;
+  // (Roll CTA is now global, sticks at top whenever user.gachaRolls > 0;
   //  visibility handled in updateCounts → _refreshGlobalRollCta)
   // Admin tile (injected only for admins; removed otherwise so non-admins never see it)
   _updateAdminTile();
@@ -3786,7 +3786,7 @@ function _updateDailyTile(){
   var count = tile.querySelector('.menu-count');
   if (showWip){
     tile.classList.add('wip');
-    if (desc) desc.textContent = '🚧 Work in Progress — coming soon!';
+    if (desc) desc.textContent = '🚧 Work in Progress, coming soon!';
     if (count) count.textContent = 'Coming soon';
     tile.onclick = function(){ /* no-op; gated in WIP mode */ };
   } else {
@@ -3833,9 +3833,9 @@ function _renderActivityToggles(){
     var on = (_dailyActivities[key] !== false);
     var btn = document.createElement('button');
     btn.className = 'btn btn-md ' + (on ? 'btn-green' : 'btn-ghost');
-    btn.textContent = (on ? '✅ ' : '⏳ ') + DAILY_ACTIVITY_LABELS[key] + (on ? ' — LIVE' : ' — WIP');
+    btn.textContent = (on ? '✅ ' : '⏳ ') + DAILY_ACTIVITY_LABELS[key] + (on ? ': LIVE' : ': WIP');
     btn.onclick = function(){ toggleDailyActivity(key); };
-    // Dim when the master switch is off — the per-activity flag still saves, but
+    // Dim when the master switch is off, the per-activity flag still saves, but
     // has no effect on students until the master is LIVE.
     btn.style.opacity = _dailyEnabled ? '1' : '0.5';
     wrap.appendChild(btn);
@@ -3916,13 +3916,13 @@ window.showMenu = showMenu;
 
 function handleTileTap(which){
   // Hard gate: if daily is disabled and user isn't admin, don't navigate even if
-  // somebody calls this directly (defense in depth — the tile click is also no-op'd
+  // somebody calls this directly (defense in depth, the tile click is also no-op'd
   // in WIP mode by _updateDailyTile).
   if (which === 'daily' && !_dailyEnabled && !(user && user.isAdmin)) return;
   playSelect();
   // Sub-screens preserve the menu's scroll position by default since we just
   // toggle visibility on overlapping divs. Force scroll-to-top so each new
-  // screen always shows its header — most noticeable on admin, which has
+  // screen always shows its header, most noticeable on admin, which has
   // tall content that lands asynchronously after Firestore fetches and would
   // otherwise feel like the page is "jostling" beneath the user.
   try { window.scrollTo({ top: 0, left: 0, behavior: 'instant' }); }
@@ -3986,9 +3986,9 @@ function updateCounts(){
     var name = user.displayName || user.username || '';
     if (name.indexOf('@') > 0) name = name.split('@')[0];
     if (name.length > 16) name = name.slice(0, 15) + '…';
-    mw.textContent = 'HEY ' + name.toUpperCase() + ' — PICK WHERE YOU WANT TO GO!';
+    mw.textContent = 'HEY ' + name.toUpperCase() + ': PICK WHERE YOU WANT TO GO!';
   }
-  // Global "Crack your eggs" CTA — visible whenever user has unspun rolls
+  // Global "Crack your eggs" CTA, visible whenever user has unspun rolls
   _refreshGlobalRollCta();
 }
 
@@ -4013,7 +4013,7 @@ function renderDaily(){
   var banner = document.getElementById('drBanner');
   if (banner){
     var pts = (user && user.points) || 0;
-    banner.innerHTML = 'YOU HAVE <b>' + pts + '</b> POINTS — earn enough and you can redeem a <b>CLASS</b>!' +
+    banner.innerHTML = 'YOU HAVE <b>' + pts + '</b> POINTS, earn enough and you can redeem a <b>CLASS</b>!' +
       '<button type="button" class="dr-banner-link" onclick="_openPointsInfo()">How do I earn Points?</button>';
   }
   // Render the picker grid (3 activity tiles)
@@ -4153,7 +4153,7 @@ function _renderDailyPicker(){
       card.classList.add('wip');
       var desc = card.querySelector('.menu-desc');
       var count = card.querySelector('.menu-count');
-      if (desc) desc.textContent = '🚧 Work in Progress — coming soon!';
+      if (desc) desc.textContent = '🚧 Work in Progress, coming soon!';
       if (count){
         count.textContent = 'Coming soon';
         count.removeAttribute('style');
@@ -4168,7 +4168,7 @@ function _renderDailyPicker(){
 // user can focus on listening / their own recording.
 function _dailyOpen(which){
   // Hard gate: if this activity isn't effectively live and the user isn't admin,
-  // don't navigate even if somebody calls this directly (defense in depth — the
+  // don't navigate even if somebody calls this directly (defense in depth, the
   // tile click is also no-op'd in WIP mode by _renderDailyPicker).
   if (!_activityIsLive(which) && !(user && user.isAdmin)) return;
   playSelect();
@@ -4200,7 +4200,7 @@ window._dailyOpen = _dailyOpen;
 
 // Back-to-picker handler used by the back button on each activity sub-screen.
 // Resumes ambient (gacha BGM) since the picker is one of the ambient screens.
-// Exit sound fires on pointerdown via the global listener — no need to call
+// Exit sound fires on pointerdown via the global listener, no need to call
 // _playExitSound here.
 function _dailyShowPicker(){
   // If a Match-Up game was in progress, kill its ticking audio + timers so
@@ -4219,7 +4219,7 @@ function _dailyShowPicker(){
 window._dailyShowPicker = _dailyShowPicker;
 
 /* ═══════════════════════════════════════════════════════ */
-/* DAILY READING — pair-reading activity                  */
+/* DAILY READING, pair-reading activity                  */
 /* ═══════════════════════════════════════════════════════ */
 /*
  * Architecture:
@@ -4236,7 +4236,7 @@ window._dailyShowPicker = _dailyShowPicker;
  * can't accidentally end up as reader1 of the same slot. Same for joining.
  */
 
-// Cloud Run AI proxy URL. NO LONGER USED for daily-reading grading — we removed
+// Cloud Run AI proxy URL. NO LONGER USED for daily-reading grading, we removed
 // AI grading; users just record + submit, recording is saved for teacher review.
 // Kept here for the future "comparison mode" feature where the teacher might
 // run AI analysis on saved recordings.
@@ -4268,18 +4268,18 @@ const YODA_WEBHOOK = 'https://hook.us1.make.com/9v1y6rl1q21cgkvb1r4weldpaot4n2h3
 const YODA_COLLECTION = 'gacha_yoda_activities';
 const YODA_SENTENCE_COUNT = 5;
 const YODA_EGG_REWARD = 2;  // eggs awarded for completing Yodafication once per NY day
-// Constituent label glossary — shown as tooltips next to each sentence.
+// Constituent label glossary, shown as tooltips next to each sentence.
 const YODA_LABEL_DEFS = {
   S:   'Subject',
   O:   'Object',
-  PP:  'Prepositional phrase (temporal — when)',
+  PP:  'Prepositional phrase (temporal, when)',
   PPN: 'Prepositional phrase with possessive noun (where/with)',
   V:   'Action verb',
   VAV: 'Verb + auxiliary verb'
 };
 // Yodafication auto-grader is owned by the `yodaGrade` Cloud Function.
-// The webhook URL lives in Secret Manager (YODA_GRADE_WEBHOOK_URL) — never
-// in client code — so students can't bypass the server and forge inbox
+// The webhook URL lives in Secret Manager (YODA_GRADE_WEBHOOK_URL), never
+// in client code, so students can't bypass the server and forge inbox
 // messages. The function calls Make, parses ChatGPT's reply, and writes
 // the inbox message using admin SDK.
 
@@ -4342,11 +4342,11 @@ function _drDayKeyForMs(ms){
 // That is: the next 3am NY rollover after livedAt has passed.
 // Returns true if the passage should be visually treated as expired (no longer
 // the active daily passage). DB doc itself stays in 'live' status until admin
-// manually archives — this is purely a render-time gate.
+// manually archives, this is purely a render-time gate.
 function _drIsExpired(d){
   if (!d || d.status !== 'live') return false;
   var liveMs = (d.livedAt && d.livedAt.toMillis) ? d.livedAt.toMillis() : (typeof d.livedAt === 'number' ? d.livedAt : null);
-  if (!liveMs) return false; // no livedAt — can't compute, treat as fresh
+  if (!liveMs) return false; // no livedAt, can't compute, treat as fresh
   return _drDayKeyForMs(liveMs) < _drTodayNYKey();
 }
 
@@ -4441,7 +4441,7 @@ async function _drFindLivePassage(activityType){
     var d = doc.data();
     var t = d.activityType || 'reading-pair';
     if (t !== activityType) return;
-    if (_drIsExpired(d)) return; // visually treated as expired — skip on student side
+    if (_drIsExpired(d)) return; // visually treated as expired, skip on student side
     matches.push(doc);
   });
   if (matches.length === 0) return null;
@@ -4468,7 +4468,7 @@ async function _drClaimPairSlot(){
   var passageRef = db.collection(DR_PASSAGES_COLLECTION).doc(_drState.passageId);
   var pairs = _drState.pairs.slice();
   // Snapshot the current user's display info so we can denormalize it onto the
-  // pair doc — saves the feed from doing N user lookups per pair.
+  // pair doc, saves the feed from doing N user lookups per pair.
   var myName = (user && (user.displayName || user.username)) || 'Student';
   var myPhoto = (user && user.photoURL) || null;
 
@@ -4542,7 +4542,7 @@ async function _drClaimPairSlot(){
     } catch(e){ console.warn('Claim txn:', e); }
   }
 
-  // Third option: passage is fully completed — cycle it
+  // Third option: passage is fully completed, cycle it
   var allComplete = pairs.every(function(p){ return p.status === 'complete'; });
   if (allComplete && pairs.length > 0){
     await _drCyclePassage();
@@ -4571,7 +4571,7 @@ async function _drCyclePassage(){
 }
 
 function _drRenderDone(host){
-  // Don't return early — fall through to the feed render. This function is now
+  // Don't return early, fall through to the feed render. This function is now
   // unused; kept as a no-op to avoid breaking any leftover refs.
 }
 
@@ -4594,7 +4594,7 @@ function _drRenderPairCard(pair, assignedRole, sentences, sentenceData){
   var pairIndex = pair.pairIndex || 0;
   var s1 = sentences[pairIndex * 2] || '';
   var s2 = sentences[pairIndex * 2 + 1] || '';
-  // Per-sentence keyword reference data, when available. Optional — older
+  // Per-sentence keyword reference data, when available. Optional, older
   // passages have no sentenceData and these come back undefined, which the
   // slotHTML renderer treats as "skip the reference line".
   var d1 = (sentenceData && sentenceData[pairIndex * 2]) || null;
@@ -4629,7 +4629,7 @@ function _drRenderPairCard(pair, assignedRole, sentences, sentenceData){
       ? '<div class="dr-slot-name">' + _esc(name) + ' ' + meTag + '</div>'
       : '<div class="dr-slot-name dr-slot-empty">' + _esc(name) + '</div>';
     var sentenceHtml = '<div class="dr-slot-sentence">' + _esc(sentence) + '</div>';
-    // "View Keywords" — Korean keyword (English meaning) list, hidden behind a
+    // "View Keywords", Korean keyword (English meaning) list, hidden behind a
     // toggle button so it doesn't clutter the read. Korean (English) Korean (English)
     // fashion, with a note that it's reference-only. Older passages have no
     // `data.keywords` so the button is omitted entirely.
@@ -4645,7 +4645,7 @@ function _drRenderPairCard(pair, assignedRole, sentences, sentenceData){
           '<button type="button" class="dr-kw-btn" id="' + kwId + '_btn" onclick="_drToggleKeywords(\'' + kwId + '\')">🔑 VIEW KEYWORDS</button>' +
           '<div class="dr-kw-panel" id="' + kwId + '_panel" style="display:none;">' +
             '<div class="dr-kw-list">' + kwStr + '</div>' +
-            '<div class="dr-kw-note">Just for your reference — you only need to read the Korean.</div>' +
+            '<div class="dr-kw-note">Just for your reference, you only need to read the Korean.</div>' +
           '</div>' +
         '</div>';
     }
@@ -4674,8 +4674,8 @@ function _drRenderPairCard(pair, assignedRole, sentences, sentenceData){
   var recordControls = '';
   if (assigned){
     var label = assignedRole === 'reader1'
-      ? 'You\'re Reader 1 — record sentence 1 below.'
-      : 'You\'re Reader 2 — record sentence 2 below.';
+      ? 'You\'re Reader 1, record sentence 1 below.'
+      : 'You\'re Reader 2, record sentence 2 below.';
     recordControls =
       '<div class="dr-rec-host">' +
         '<div class="dr-rec-label">' + _esc(label) + '</div>' +
@@ -4718,7 +4718,7 @@ function _drRenderFeed(host){
   var sentences = passage.sentences || [];
   // sentenceData is the per-sentence keyword reference array (parallel to
   // sentences[]). Older passages generated before the keyword feature shipped
-  // won't have it — that's fine, the renderer treats absent keywords as "no
+  // won't have it, that's fine, the renderer treats absent keywords as "no
   // reference line shown" so legacy passages keep working unchanged.
   var sentenceData = passage.sentenceData || [];
   var todayKey = _drTodayNYKey();
@@ -4730,7 +4730,7 @@ function _drRenderFeed(host){
     banner =
       '<div class="dr-feed-banner done">' +
         '<div class="big">✅ DONE FOR TODAY!</div>' +
-        '<div class="sub">You earned your egg. Browse everyone\'s recordings below — come back at 3 AM NY for tomorrow\'s reading.</div>' +
+        '<div class="sub">You earned your egg. Browse everyone\'s recordings below. Come back at 3 AM NY for tomorrow\'s reading.</div>' +
       '</div>';
   } else if (_drState.myPair){
     var roleStr = _drState.myRole === 'reader1' ? 'Reader 1' : 'Reader 2';
@@ -4751,7 +4751,7 @@ function _drRenderFeed(host){
     return !!(p.reader1Uid || p.reader2Uid);
   });
   // Keep pairs in natural chronological order (Pair 1, Pair 2, ...). The
-  // user is auto-scrolled to their assigned card on entry — see below.
+  // user is auto-scrolled to their assigned card on entry, see below.
   visiblePairs.sort(function(a, b){
     return (a.pairIndex || 0) - (b.pairIndex || 0);
   });
@@ -4883,12 +4883,12 @@ function _drOnRecordingStopped(){
   var actions = document.getElementById('drRecActionRow');
   if (actions) actions.style.display = 'flex';
 
-  // Mic button hides while reviewing — re-record button takes its role
+  // Mic button hides while reviewing, re-record button takes its role
   var btn = document.getElementById('drRecBtn');
   if (btn){ btn.style.display = 'none'; btn.disabled = false; }
 
   var st = document.getElementById('drRecStatus');
-  if (st) st.textContent = 'Listen to your recording, then tap SUBMIT — or RE-RECORD to try again.';
+  if (st) st.textContent = 'Listen to your recording, then tap SUBMIT, or RE-RECORD to try again.';
 }
 
 // Hide the playback row (called when user starts a new recording or after submit)
@@ -4959,7 +4959,7 @@ async function _drSubmitRecording(){
 window._drSubmitRecording = _drSubmitRecording;
 
 // Write the participation result to Firestore: pair update + egg award + daily-done.
-// (Renamed from _drCommitPass — there's no more "pass/fail," just participation.)
+// (Renamed from _drCommitPass, there's no more "pass/fail," just participation.)
 async function _drCommitParticipation(audioUrl, audioPath, audioMime){
   var todayKey = _drTodayNYKey();
   var passageRef = db.collection(DR_PASSAGES_COLLECTION).doc(_drState.passageId);
@@ -4968,7 +4968,7 @@ async function _drCommitParticipation(audioUrl, audioPath, audioMime){
   var myPhoto = (user && user.photoURL) || null;
 
   // Update the pair: stamp my recording + denormalized name/photo, flip status.
-  // No "score" — teacher can listen to the audio later and assess if needed.
+  // No "score", teacher can listen to the audio later and assess if needed.
   var update = {};
   if (_drState.myRole === 'reader1'){
     update.reader1Audio = {
@@ -5002,7 +5002,7 @@ async function _drCommitParticipation(audioUrl, audioPath, audioMime){
       if (!snap.exists) return;
       var d = snap.data() || {};
       if (d.dailyReadingDoneFor === todayKey){
-        // Already credited today — skip the increment but still ensure the
+        // Already credited today, skip the increment but still ensure the
         // local flag matches reality.
         return;
       }
@@ -5037,7 +5037,7 @@ function _drToggleKeywords(kwId){
 window._drToggleKeywords = _drToggleKeywords;
 
 /* ═══════════════════════════════════════════════════════ */
-/* DAILY LISTENING — recitation activity (4 levels)        */
+/* DAILY LISTENING, recitation activity (4 levels)        */
 /* ═══════════════════════════════════════════════════════ */
 /*
  * Architecture:
@@ -5067,7 +5067,7 @@ var _dlState = {
   audioChunks: [],
   recordedBlob: null,
   recordedMime: '',
-  recordedFor: null,     // 'l1' | 'l2' | 'l3' — which level we're recording for
+  recordedFor: null,     // 'l1' | 'l2' | 'l3', which level we're recording for
   audioUrl: null,
   // L4 unscramble UI state
   l4SentenceIndex: -1,
@@ -5127,7 +5127,7 @@ async function _dlRender(){
     try { await _dlLoadMyRecording(); } catch(e){ console.warn('DL load my recording:', e); _dlState.myRecording = null; }
     try { await _dlLoadFeed(); } catch(e){ console.warn('DL load feed:', e); _dlState.feed = []; }
 
-    // Decide L4 sentence index for this user (random — sticky once chosen, persisted in their recording doc)
+    // Decide L4 sentence index for this user (random, sticky once chosen, persisted in their recording doc)
     if (_dlState.myRecording && typeof _dlState.myRecording.l4SentenceIndex === 'number'){
       _dlState.l4SentenceIndex = _dlState.myRecording.l4SentenceIndex;
     } else {
@@ -5188,7 +5188,7 @@ function _dlRenderUI(host){
     targetWords.forEach(function(tw){
       if (!tw) return;
       var twSafe = _esc(tw);
-      // Wrap occurrences (case-sensitive Korean — case doesn't matter for hangul)
+      // Wrap occurrences (case-sensitive Korean, case doesn't matter for hangul)
       rendered = rendered.split(twSafe).join('<mark class="dl-tw">' + twSafe + '</mark>');
     });
     return '<div class="dl-passage-line">' + rendered + '</div>';
@@ -5203,7 +5203,7 @@ function _dlRenderUI(host){
 
   // Feed of all students' recordings
   var feedCards = _dlState.feed.map(_dlRenderFeedCard).join('');
-  if (!feedCards) feedCards = '<div class="dr-feed-hidden-note">No recordings yet — be the first!</div>';
+  if (!feedCards) feedCards = '<div class="dr-feed-hidden-note">No recordings yet. Be the first!</div>';
 
   host.innerHTML =
     '<div class="dl-screen">' +
@@ -5306,7 +5306,7 @@ function _dlRenderUnscrambleUI(){
       var j = Math.floor(Math.random() * (i + 1));
       var tmp = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = tmp;
     }
-    // Avoid the rare unshuffled draw — if shuffle === original, swap first two
+    // Avoid the rare unshuffled draw, if shuffle === original, swap first two
     if (shuffled.join(' ') === tokens.join(' ') && shuffled.length > 1){
       var t = shuffled[0]; shuffled[0] = shuffled[1]; shuffled[1] = t;
     }
@@ -5520,7 +5520,7 @@ async function _dlMarkLevelDone(key, extraRecordingFields){
   var myName = (user && (user.displayName || user.username)) || 'Student';
   var myPhoto = (user && user.photoURL) || null;
 
-  // 1) Write/merge user's recording doc (idempotent — arrayUnion + merge:true)
+  // 1) Write/merge user's recording doc (idempotent, arrayUnion + merge:true)
   var recPatch = Object.assign({
     userName: myName,
     userPhoto: myPhoto,
@@ -5529,7 +5529,7 @@ async function _dlMarkLevelDone(key, extraRecordingFields){
   }, extraRecordingFields || {});
   await recRef.set(recPatch, { merge: true });
 
-  // 2) Update user's daily-listening progress object + add an egg — atomically.
+  // 2) Update user's daily-listening progress object + add an egg, atomically.
   var acctRef = db.collection(TC).doc(user.id);
   var awarded = false;
   var finalLevels = null;
@@ -5551,7 +5551,7 @@ async function _dlMarkLevelDone(key, extraRecordingFields){
         };
       }
       if (levels[key]){
-        // Already credited for this level today — don't double-award.
+        // Already credited for this level today, don't double-award.
         finalLevels = levels;
         return;
       }
@@ -5589,7 +5589,7 @@ function _dlRenderFeedCard(rec){
     ? '<audio class="dr-slot-audio" controls preload="none" playsinline src="' + _esc(primary.url) + '"></audio>'
     : '<div class="dr-slot-audio-empty">No audio yet</div>';
   var versionTag = (rec.l3Audio && rec.l3Audio.url) ? '<span class="dl-feed-version">v2</span>' : '';
-  // L2 (target words) audio gets its own row — short, separate from main playback
+  // L2 (target words) audio gets its own row, short, separate from main playback
   var targetAudio = (rec.l2Audio && rec.l2Audio.url)
     ? '<div class="dl-feed-l2"><span class="dl-feed-l2-label">🎯 Target words:</span><audio class="dr-slot-audio" controls preload="none" playsinline src="' + _esc(rec.l2Audio.url) + '"></audio></div>'
     : '';
@@ -5608,7 +5608,7 @@ function _dlRenderFeedCard(rec){
 }
 
 /* ═══════════════════════════════════════════════════════ */
-/* DAILY ADVANCED TEAMWORK — 40-conjugation drill         */
+/* DAILY ADVANCED TEAMWORK, 40-conjugation drill         */
 /* ═══════════════════════════════════════════════════════ */
 /*
  * Architecture:
@@ -5768,9 +5768,9 @@ function _advRenderUI(host){
   var banner;
   if (submitted){
     if (bonus){
-      banner = '<div class="dr-feed-banner done"><div class="big">✅ ALL 3 EGGS EARNED</div><div class="sub">Great work — you participated AND the team hit ' + ADV_BONUS_THRESHOLD + ' submissions.</div></div>';
+      banner = '<div class="dr-feed-banner done"><div class="big">✅ ALL 3 EGGS EARNED</div><div class="sub">Great work, you participated AND the team hit ' + ADV_BONUS_THRESHOLD + ' submissions.</div></div>';
     } else if (bonusUnlocked){
-      banner = '<div class="dr-feed-banner active"><div class="big">🎉 BONUS UNLOCKED — claiming your +2…</div><div class="sub">' + participantCount + ' / ' + ADV_BONUS_THRESHOLD + ' students submitted</div></div>';
+      banner = '<div class="dr-feed-banner active"><div class="big">🎉 BONUS UNLOCKED, claiming your +2…</div><div class="sub">' + participantCount + ' / ' + ADV_BONUS_THRESHOLD + ' students submitted</div></div>';
       // Auto-claim if we crossed the threshold but haven't gotten the bonus yet
       setTimeout(function(){ _advClaimBonusIfEligible(); }, 100);
     } else {
@@ -5794,7 +5794,7 @@ function _advRenderUI(host){
 
   // Feed
   var feedCards = _advState.feed.map(_advRenderFeedCard).join('');
-  if (!feedCards) feedCards = '<div class="dr-feed-hidden-note">No submissions yet — be the first!</div>';
+  if (!feedCards) feedCards = '<div class="dr-feed-hidden-note">No submissions yet. Be the first!</div>';
 
   host.innerHTML =
     '<div class="adv-screen">' +
@@ -5835,7 +5835,7 @@ function _advRenderDrillView(){
     return '<div class="adv-nav-row"><div class="adv-nav-label">' + ADV_TENSE_LABELS[t] + '</div><div class="adv-nav-dots">' + dots.join('') + '</div></div>';
   }).join('');
 
-  // Recorded state — show player + re-record + submit when a blob exists
+  // Recorded state, show player + re-record + submit when a blob exists
   var recordedHtml = '';
   if (_advState.recordedBlob){
     recordedHtml =
@@ -5877,10 +5877,10 @@ function _advGotoPrompt(idx){
   var max = ADV_VERB_COUNT * ADV_TENSES.length - 1;
   if (idx < 0 || idx > max) return;
   _advState.promptIdx = idx;
-  // Re-render only the drill area (not the whole screen — preserves recorded state visually)
+  // Re-render only the drill area (not the whole screen, preserves recorded state visually)
   var host = document.getElementById('dailyAdvancedHost');
   if (host) _advRenderUI(host);
-  // If a recording is in progress, leave audio chunks alone — they keep recording across prompt nav
+  // If a recording is in progress, leave audio chunks alone, they keep recording across prompt nav
 }
 window._advGotoPrompt = _advGotoPrompt;
 
@@ -6007,7 +6007,7 @@ async function _advSubmit(){
     // 3) Reload feed & check threshold for bonus
     await _advLoadFeed();
     if (_advState.feed.length >= ADV_BONUS_THRESHOLD){
-      // We just hit the threshold (or are past it as a late joiner) — backfill bonus eggs
+      // We just hit the threshold (or are past it as a late joiner), backfill bonus eggs
       await _advAwardBonusBackfill();
     }
 
@@ -6121,7 +6121,7 @@ function _advRenderFeedCard(sub){
 }
 
 /* ═══════════════════════════════════════════════════════ */
-/* DAILY READING — admin manager (passage publishing)     */
+/* DAILY READING, admin manager (passage publishing)     */
 /* ═══════════════════════════════════════════════════════ */
 
 /* Webhook used by Tuesday Reading admin in the main dashboard. Takes a free-form
@@ -6134,11 +6134,11 @@ const DR_STORY_WEBHOOK = 'https://hook.us1.make.com/ymrajr08rki5mxqr3m25pgksbqe2
 // builds the passage (DR_STORY_WEBHOOK above); this Gen 2 Cloud Function takes
 // the finished Korean sentences and returns per-sentence keyword translations
 // for the Teamwork Reading "View Keywords" button. If this URL is left as the
-// placeholder, or the call fails, the passage still saves — just without
+// placeholder, or the call fails, the passage still saves, just without
 // keywords (the View Keywords button is omitted for keyword-less passages).
 const DR_KEYWORDS_FN = 'https://generatekeywords-enxui54vmq-uc.a.run.app';
 
-/* Grammar point catalog — copied from Tuesday Reading admin in the main dashboard,
+/* Grammar point catalog, copied from Tuesday Reading admin in the main dashboard,
  * organized by level. The 'Click a grammar point' buttons append the chosen
  * point to the prompt textarea as a "Grammar focus: <point>" line.
  */
@@ -6206,15 +6206,15 @@ const DR_GRAMMAR_LEVEL_COLORS = {
 // palatalization, etc. Each rule has:
 //   - formula: the symbolic rule, used as label + sent to AI
 //   - description: human explanation, sent to AI as context
-//   - words: example word pool — AI is told to use these if they fit naturally
+//   - words: example word pool, AI is told to use these if they fit naturally
 const DR_BATCHIM_RULES = [
   { formula: '(ㄱ/ㄲ/ㅋ)+(ㄴ/ㅁ) → [ㅇ]+(ㄴ/ㅁ)', description: 'When ㄱ, ㄲ, or ㅋ is followed by ㄴ or ㅁ, it sounds like ㅇ leading into ㄴ or ㅁ.', words: ['한국말','백년','국물','깎는','밖 문','밖 날씨','북녘 마을','부엌 냄새','부엌문','한국말 잘해?','하는 거'] },
   { formula: '(ㄱ/ㄲ/ㅋ)+ㄹ → [ㅇ]+[ㄴ]', description: 'When ㄱ, ㄲ, or ㅋ is followed by ㄹ, it sounds like ㅇ leading into ㄴ.', words: ['식료품','격려','국립','밖 라이트','부엌 리모델링','새벽녘 라디오'] },
   { formula: 'ㅇ+ㄹ → [ㅇ]+[ㄴ]', description: 'When ㅇ is followed by ㄹ, it sounds like ㅇ leading into ㄴ.', words: ['종로','강릉','생략','동료','승리','경력','명령','성령','공략','청량리','능력'] },
-  { formula: 'ㄴ+ㄹ → [ㄹ]+[ㄹ]', description: 'When ㄴ is followed by ㄹ, the ㄴ changes to ㄹ — double ㄹ sound.', words: ['난로','신뢰','진리','편리하다','관리하다','권리','분리하다','신랑','한류','연락'] },
-  { formula: 'ㄹ+ㄴ → [ㄹ]+[ㄹ]', description: 'When ㄹ is followed by ㄴ, the ㄴ changes to ㄹ — double ㄹ sound.', words: ['일년','불놀이','열나','설날','잘난 척','별난','물냉면','물난리','줄넘기','실내','발냄새'] },
+  { formula: 'ㄴ+ㄹ → [ㄹ]+[ㄹ]', description: 'When ㄴ is followed by ㄹ, the ㄴ changes to ㄹ, double ㄹ sound.', words: ['난로','신뢰','진리','편리하다','관리하다','권리','분리하다','신랑','한류','연락'] },
+  { formula: 'ㄹ+ㄴ → [ㄹ]+[ㄹ]', description: 'When ㄹ is followed by ㄴ, the ㄴ changes to ㄹ, double ㄹ sound.', words: ['일년','불놀이','열나','설날','잘난 척','별난','물냉면','물난리','줄넘기','실내','발냄새'] },
   { formula: '(ㅂ/ㅍ)+(ㄴ/ㅁ) → [ㅁ]+(ㄴ/ㅁ)', description: 'When ㅂ or ㅍ is followed by ㄴ or ㅁ, it sounds like ㅁ leading into ㄴ or ㅁ.', words: ['밥물','밥맛','업무','집마다','덮는','밥 먹자','앞머리','앞문','옆문','접는','습니다','앞마당'] },
-  { formula: 'ㅁ+ㄹ → [ㅁ]+[ㄴ]', description: 'When ㅁ is followed by ㄹ, the ㄹ changes to ㄴ — ㅁ + ㄴ sound.', words: ['심리','담력','임로','심란','범람','감량','염려','금리','음력','음료수','침례','침략'] },
+  { formula: 'ㅁ+ㄹ → [ㅁ]+[ㄴ]', description: 'When ㅁ is followed by ㄹ, the ㄹ changes to ㄴ, ㅁ + ㄴ sound.', words: ['심리','담력','임로','심란','범람','감량','염려','금리','음력','음료수','침례','침략'] },
   { formula: 'ㅎ+(ㄱ/ㄷ/ㅈ) → [ㅋ/ㅌ/ㅊ]', description: 'When ㅎ is followed by ㄱ/ㄷ/ㅈ, the ㄱ/ㄷ/ㅈ change to ㅋ/ㅌ/ㅊ.', words: ['좋다','낳다','놓다','좋고 나쁘고','놓고 가요','그렇지','넣고 먹어요','좋지 않아요','많지 않아요','괜찮지'] },
   { formula: '(ㄱ/ㄷ/ㅂ/ㅈ)+ㅎ → [ㅋ/ㅌ/ㅍ/ㅊ]', description: 'When a ㄱ/ㄷ/ㅂ/ㅈ batchim is followed by ㅎ, they merge into ㅋ/ㅌ/ㅍ/ㅊ.', words: ['기술 익혀요','막히다','속하다','잡히다','입학하다','뽑히다','얹히다','꽂히다','뜻하다','맏형'] },
   { formula: 'ㅌ+이/여 → [치/쳐]', description: 'When ㅌ is followed by 이 or 여, it changes to 치 or 쳐.', words: ['같이','밑이','끝이','겉이','붙이다','꽃이','밭이','팥이','낱낱이','끝이면','붙여','묻혀요','걷혀요'] },
@@ -6228,7 +6228,7 @@ const DR_BATCHIM_RULES = [
   { formula: 'ㅅ+ㅎ → [ㅌ]', description: 'When ㅅ is in the 받침 position followed by ㅎ, the ㅅ sounds like ㅌ.', words: ['옷 한벌','나쁜 짓하다','못하다','못해서','공부 못해요','운전 못해요','곳 하나 남았어요','잘 못해요'] },
   { formula: 'ㅎ+ㄴ → [ㄴ]', description: 'When ㅎ is followed by ㄴ, it sounds like ㄴ leading into ㄴ.', words: ['좋네','많네','닿는','괜찮네','넣는 데','쌓는','않는','놓는','시간이 정말 많네'] },
   { formula: 'ㅎ+ㅅ → [ㅆ]', description: 'When ㅎ is followed by ㅅ, the ㅎ is silent and the ㅅ sounds like ㅆ. (Mainly formal-polite present tense.)', words: ['좋습니다','많습니다','괜찮습니다','싫습니다','낳습니다','넣습니다','쌓습니다','놓습니다','닿습니다','않습니다'] },
-  { formula: 'ㄴ+ㅁ → [ㅁ]+[ㅁ]', description: 'When ㄴ is followed by ㅁ, the ㄴ becomes ㅁ — pronounced ㅁㅁ.', words: ['안마','한명','신문','선명하다','단맛','찬물','간명하다','한마디','선물','눈물','본모습','논문'] },
+  { formula: 'ㄴ+ㅁ → [ㅁ]+[ㅁ]', description: 'When ㄴ is followed by ㅁ, the ㄴ becomes ㅁ, pronounced ㅁㅁ.', words: ['안마','한명','신문','선명하다','단맛','찬물','간명하다','한마디','선물','눈물','본모습','논문'] },
   { formula: 'ㄴ+ㄱ → [ㅇ]+[ㄱ]', description: 'When ㄴ is followed by ㄱ, the ㄴ becomes ㅇ.', words: ['한국','인기','안경','단골손님','신고하다','연구','안개','계좌잔고','단기','반갑다','난간','신고 먼저 하세요'] }
 ];
 
@@ -6273,7 +6273,7 @@ function _drmOpenStoryModal(){
 }
 window._drmOpenStoryModal = _drmOpenStoryModal;
 
-// Activity dropdown changed — update hint text under it and the length-input hint.
+// Activity dropdown changed, update hint text under it and the length-input hint.
 // Reading Pair requires even-numbered passages (students read in pairs).
 // Listening doesn't require even numbering (each student reads the whole passage).
 function _drmOnActivityChange(){
@@ -6289,7 +6289,7 @@ function _drmOnActivityChange(){
     if (lenInput){ lenInput.min = '2'; lenInput.step = '1'; }
   } else {
     if (actHint) actHint.textContent = 'Two students alternate sentences (must be even).';
-    if (lenHint) lenHint.textContent = 'sentences (must be even — students read in pairs)';
+    if (lenHint) lenHint.textContent = 'sentences (must be even, students read in pairs)';
     var lenInput2 = document.getElementById('drmStoryLenInput');
     if (lenInput2){ lenInput2.min = '2'; lenInput2.step = '2'; }
   }
@@ -6319,7 +6319,7 @@ window._drmToggleSection = _drmToggleSection;
 // Used by Class Manager, Daily Reading Manager, and Enrollments at the page
 // level. Toggles `.collapsed` on the parent `.admin-section`. State persists
 // in localStorage keyed by `data-admin-section`. Default starts collapsed
-// (markup includes `collapsed` class) — admin opts in to expand each one.
+// (markup includes `collapsed` class), admin opts in to expand each one.
 // On expand, smooth-scrolls the section so the whole panel is visible
 // (or at least the header is at top of viewport for tall sections).
 function _adminToggleSection(headEl){
@@ -6374,7 +6374,7 @@ function _adminRestoreSectionStates(){
  * in #topBar which is hidden on the login screen).
  *
  * Default is 1.2 (≈two A+ steps above 1.0). Calvin's retro fonts read
- * more comfortably at this size for most users — anyone who wants smaller
+ * more comfortably at this size for most users, anyone who wants smaller
  * can use A− and their preference is remembered via localStorage.
  */
 const APP_ZOOM_DEFAULT = 1.2;
@@ -6426,7 +6426,7 @@ const APP_SETTINGS_KEYS_TO_RESET = ['appZoom'];
       try { localStorage.removeItem(k); } catch(e){}
     });
     localStorage.setItem(APP_SETTINGS_VERSION_KEY, APP_SETTINGS_VERSION);
-  } catch(e){ /* localStorage unavailable — nothing to do */ }
+  } catch(e){ /* localStorage unavailable, nothing to do */ }
 })();
 
 // Apply saved zoom on initial load so the user's preference is restored
@@ -6539,7 +6539,7 @@ function _drmAddGrammarPoint(chipEl){
   if (!ta) return;
   var current = ta.value.trim();
   if (current.indexOf(point) !== -1){
-    // Toggle off — remove
+    // Toggle off, remove
     ta.value = current.replace('\n\nGrammar focus: ' + point, '').replace('Grammar focus: ' + point, '').trim();
     chipEl.classList.remove('selected');
     var i = _drmSelectedGrammarPoints.indexOf(point);
@@ -6628,11 +6628,11 @@ async function _drmSubmitStoryPrompt(){
       return '• RULE: ' + r.formula + '\n  EXPLANATION: ' + r.description + '\n  PREFERRED EXAMPLE WORDS (use these if they fit): ' + r.words.join(', ');
     }).filter(Boolean).join('\n');
     batchimBlock =
-      '\n\n--- BATCHIM PRONUNCIATION FOCUS — MANDATORY ---\n' +
+      '\n\n--- BATCHIM PRONUNCIATION FOCUS, MANDATORY ---\n' +
       'Every rule listed below MUST appear in the passage at least once (ideally multiple times). For EACH rule:\n' +
       '  1) FIRST, try to incorporate one or more of the preferred example words naturally into the story.\n' +
       '  2) IF NONE of the preferred words can fit the story, you MUST instead construct a sentence using OTHER Korean words that organically trigger the same consonant pattern from the rule\'s formula. Pick vocabulary that creates the required batchim → next-consonant adjacency on its own. Do NOT skip the rule just because the example words don\'t fit.\n' +
-      '  3) The rule must produce real pronunciation assimilation in natural speech — don\'t fake it with a contrived sentence boundary.\n' +
+      '  3) The rule must produce real pronunciation assimilation in natural speech, don\'t fake it with a contrived sentence boundary.\n' +
       'Selected rules:\n' +
       ruleBlocks;
   }
@@ -6645,7 +6645,7 @@ async function _drmSubmitStoryPrompt(){
     activityBlock = '\nThis passage will be read aloud in full by individual students (recitation activity). Make it flow as one connected piece a student would naturally read end-to-end.';
   }
 
-  // Keyword generation no longer happens here — Make.com only produces the
+  // Keyword generation no longer happens here, Make.com only produces the
   // passage (title + Korean sentences). Keywords are generated separately by
   // the DR_KEYWORDS_FN Cloud Function after this response is parsed. So the
   // output spec is the same plain sentences-only format for both activities.
@@ -6699,14 +6699,14 @@ async function _drmSubmitStoryPrompt(){
       throw new Error('Webhook returned only ' + rawSents.length + ' sentences; expected ' + desiredLen + '. Try again or edit the draft manually.');
     }
 
-    // Sentences now arrive clean from Make (no " | " keyword parts — keyword
+    // Sentences now arrive clean from Make (no " | " keyword parts, keyword
     // generation moved to the separate DR_KEYWORDS_FN call below). Each line
     // is a Korean sentence as-is.
     var sents = rawSents.map(function(s){ return String(s || '').trim(); });
 
     // ─── Separate keyword step ───
     // For Teamwork Reading only, call the keyword Cloud Function with the
-    // finished sentences. Solo Reading skips this — it's a pronunciation drill
+    // finished sentences. Solo Reading skips this, it's a pronunciation drill
     // where students sound out Korean without English crutches. The call is
     // best-effort: any failure (placeholder URL, network, bad response) just
     // means the passage saves with empty keyword arrays, and the "View
@@ -6738,10 +6738,10 @@ async function _drmSubmitStoryPrompt(){
             }
           });
         } else {
-          console.warn('Keyword function returned ' + kwResp.status + ' — saving passage without keywords.');
+          console.warn('Keyword function returned ' + kwResp.status + ', saving passage without keywords.');
         }
       } catch(kwErr){
-        console.warn('Keyword generation failed — saving passage without keywords:', kwErr);
+        console.warn('Keyword generation failed, saving passage without keywords:', kwErr);
       }
     }
 
@@ -6759,7 +6759,7 @@ async function _drmSubmitStoryPrompt(){
       generatedByAI: true,
       grammarPoints: _drmSelectedGrammarPoints.slice(),
       batchimRules: _drmSelectedBatchimRules.slice().map(function(i){ return (DR_BATCHIM_RULES[i] || {}).formula || ''; }).filter(Boolean),
-      targetWords: [], // listening only — admin sets these later via the draft editor
+      targetWords: [], // listening only, admin sets these later via the draft editor
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       createdBy: (user && user.username) || ''
     });
@@ -6794,18 +6794,18 @@ async function _drmRenderManager(){
     var sched = '';
     if (d.scheduledFor){
       var ms = d.scheduledFor.toMillis ? d.scheduledFor.toMillis() : d.scheduledFor;
-      // Compact, human date: "May 11, 9:00 PM" — no seconds, no weekday
+      // Compact, human date: "May 11, 9:00 PM", no seconds, no weekday
       var dt = new Date(ms);
       var schedStr = dt.toLocaleString('en-US', {
         month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
       });
       sched = ' <span class="badge scheduled">📅 ' + schedStr + '</span>';
     }
-    // Activity-type badge — defaults to reading-pair for legacy docs without the field
+    // Activity-type badge, defaults to reading-pair for legacy docs without the field
     var activityType = d.activityType || 'reading-pair';
     var actLabel = activityType === 'listening' ? 'Solo Reading' : 'Teamwork Reading';
     var actBadge = '<span class="badge activity-' + activityType + '">' + actLabel + '</span>';
-    // Live passages from previous days render as "Expired" — visual only,
+    // Live passages from previous days render as "Expired", visual only,
     // doc still has status:'live' in DB until admin archives manually.
     var expired = _drIsExpired(d);
     var statusLabel = expired ? 'Expired'
@@ -6817,7 +6817,7 @@ async function _drmRenderManager(){
       ? '<span class="badge expired">' + statusLabel + '</span>'
       : '<span class="badge ' + d.status + '">' + statusLabel + '</span>';
     var actions = '';
-    // View Submissions button — routes to either the pair-recordings (Teamwork
+    // View Submissions button, routes to either the pair-recordings (Teamwork
     // Reading) or per-student level recordings (Solo Reading) renderer based
     // on activityType. Shown for live + archived. Not for drafts (no subs).
     var passageTitle = d.title || 'Untitled passage';
@@ -6898,7 +6898,7 @@ async function _drmEdit(id){
     ? 'SENTENCES (one per line, must be even count)'
     : 'SENTENCES (one per line)';
 
-  // Target-words picker for Listening passages — clickable chips, max 5 selected.
+  // Target-words picker for Listening passages, clickable chips, max 5 selected.
   // Uses an internal data attribute on the area to track current selection
   // without re-rendering on every click.
   var twPickerHtml = '';
@@ -7044,7 +7044,7 @@ async function _drmPublish(id){
   await batch.commit();
 
   // For Reading Pair: init the pairs subcollection. For Listening: no pair
-  // structure needed (each student records the full passage independently —
+  // structure needed (each student records the full passage independently ,
   // see _drListening* functions for the subcollection layout).
   if (activityType === 'reading-pair'){
     await _drmInitPairs(id, (data.sentences || []).length);
@@ -7093,7 +7093,7 @@ async function _drmSchedule(id){
   var ampmEl = document.getElementById('drmSchedAmPm');
   if (ampmEl) ampmEl.value = 'AM';
 
-  // Wire change listeners (idempotent — same handler each time)
+  // Wire change listeners (idempotent, same handler each time)
   ['drmSchedDate','drmSchedHour','drmSchedMinute','drmSchedAmPm'].forEach(function(eid){
     var el = document.getElementById(eid);
     if (el) el.oninput = el.onchange = _drmUpdateSchedPreview;
@@ -7249,7 +7249,7 @@ async function _advmRenderManager(){
       else if (data.status === 'archived') archived.push(data);
     });
     function renderRow(d){
-      // Live passages from previous days show as Expired (visual only — doc
+      // Live passages from previous days show as Expired (visual only, doc
       // remains status:'live' in DB until admin archives manually)
       var expired = _drIsExpired(d);
       var statusLabel = expired ? 'Expired'
@@ -7271,7 +7271,7 @@ async function _advmRenderManager(){
       }
       var ending = d.grammarEnding || '?';
       var verbCount = (d.verbs || []).length;
-      // View Submissions button — visible on live + archived since submissions
+      // View Submissions button, visible on live + archived since submissions
       // can accumulate after publish and persist when archived. Drafts have no
       // submissions yet, so we skip it there.
       var viewSubsBtn = (d.status === 'live' || d.status === 'archived')
@@ -7342,7 +7342,7 @@ async function _advmRenderManager(){
 }
 window._advmRenderManager = _advmRenderManager;
 
-/* Toggle for advanced-teamwork manager collapsible sections — mirrors
+/* Toggle for advanced-teamwork manager collapsible sections, mirrors
  * the daily reading manager's _drmToggleSection but uses its own
  * localStorage namespace. */
 function _advmToggleSection(headEl){
@@ -7358,7 +7358,7 @@ window._advmToggleSection = _advmToggleSection;
 
 // One-click generation. Admin clicks GENERATE → webhook fires → ChatGPT
 // returns 10 random verbs + a randomly chosen grammar ending + the full
-// 40-conjugation answer key + an English hint. No prompt input from admin —
+// 40-conjugation answer key + an English hint. No prompt input from admin ,
 // the structure is always the same (4 fixed tenses × 10 verbs).
 async function _advmGenerate(){
   var btn = document.getElementById('advmGenBtn');
@@ -7371,28 +7371,28 @@ async function _advmGenerate(){
   var prompt =
     'You are a Korean grammar drill generator. Generate ONE complete drill activity.\n' +
     '\n' +
-    'STEP 1 — Pick a single connective grammar ending suitable for beginner-to-intermediate Korean learners.\n' +
+    'STEP 1, Pick a single connective grammar ending suitable for beginner-to-intermediate Korean learners.\n' +
     'Examples of suitable endings: 으니까, 지만, 으면, 는데, 거나, 으면서, 어서/아서, 으려고, 기 때문에, 으니, 으면, 든지.\n' +
-    'Choose ONE ending. Vary your choice — do not always pick 으니까.\n' +
+    'Choose ONE ending. Vary your choice, do not always pick 으니까.\n' +
     '\n' +
-    'STEP 2 — Pick exactly 10 distinct, common Korean verbs in dictionary form (ending in -다).\n' +
+    'STEP 2, Pick exactly 10 distinct, common Korean verbs in dictionary form (ending in -다).\n' +
     'Mix action verbs, motion verbs, and stative verbs. Use everyday vocabulary a beginner-intermediate learner would know.\n' +
     'Include a mix of regular and irregular verbs (ㄹ-irregular, ㅂ-irregular, ㅡ-irregular, etc.) so the drill exposes students to natural conjugation variety.\n' +
     'Examples: 가다, 먹다, 쉬다, 보다, 듣다, 만들다, 자다, 일하다, 마시다, 살다.\n' +
     '\n' +
-    'STEP 3 — For EACH of the 10 verbs, produce 4 conjugated forms by attaching the chosen grammar ending to:\n' +
+    'STEP 3, For EACH of the 10 verbs, produce 4 conjugated forms by attaching the chosen grammar ending to:\n' +
     '  • root  → verb stem + ending  (e.g. for 가다 + 으니까 → 가니까)\n' +
     '  • past  → past-tense stem (-았/었) + ending  (e.g. 가다 → 갔으니까)\n' +
     '  • presentContinuous → -고 있다 form + ending  (e.g. 가다 → 가고 있으니까)\n' +
     '  • future → -ㄹ/을 거다 form + ending  (e.g. 가다 → 갈 거니까)\n' +
     'Apply correct Korean phonological rules: ㅡ-drop, ㄹ-irregular (살다 → 사니까, not 살으니까), ㅂ-irregular, vowel-harmony for past tense, etc.\n' +
-    'Be precise — these are answer keys students will match against.\n' +
+    'Be precise, these are answer keys students will match against.\n' +
     '\n' +
-    'STEP 4 — Write a brief English hint (2 sentences) explaining what the chosen grammar ending means and how it changes meaning across the 4 tenses.\n' +
+    'STEP 4, Write a brief English hint (2 sentences) explaining what the chosen grammar ending means and how it changes meaning across the 4 tenses.\n' +
     '\n' +
-    'OUTPUT — STRICT JSON ONLY. No markdown, no code fences, no preamble, no commentary. Exactly this shape:\n' +
+    'OUTPUT, STRICT JSON ONLY. No markdown, no code fences, no preamble, no commentary. Exactly this shape:\n' +
     '{\n' +
-    '  "title": "<short English drill name, max 6 words, no punctuation — e.g. \\"Because Drill\\" or \\"Reasoning with 으니까\\">",\n' +
+    '  "title": "<short English drill name, max 6 words, no punctuation, e.g. \\"Because Drill\\" or \\"Reasoning with 으니까\\">",\n' +
     '  "grammarEnding": "<the ending you picked, e.g. 으니까>",\n' +
     '  "verbs": ["가다", "먹다", "...10 total"],\n' +
     '  "answerKey": {\n' +
@@ -7407,7 +7407,7 @@ async function _advmGenerate(){
     'CRITICAL RULES:\n' +
     '• Order in every answerKey array MUST exactly match the verbs[] array order (index 0 in answerKey.root corresponds to verbs[0], etc.).\n' +
     '• Every array MUST have exactly 10 entries.\n' +
-    '• Output ONLY the JSON object — no other text.';
+    '• Output ONLY the JSON object, no other text.';
 
   try {
     var resp = await fetch(ADV_WEBHOOK, {
@@ -7603,7 +7603,7 @@ window._advmDelete = _advmDelete;
 /* ═══════════════════════════════════════════════════════ */
 
 /* Fire Make.com webhook with a standardized schema. No-op if URL not configured.
-   Fire-and-forget — never blocks purchase. Required fields for every event:
+   Fire-and-forget, never blocks purchase. Required fields for every event:
      event, who, email, classDate, pointsSpent, classType
    Plus extras (enrollment object, credit balance, etc.) passed per call. */
 function fireWebhook(event, payload){
@@ -7626,7 +7626,7 @@ function fireWebhook(event, payload){
       userId: user ? user.id : null
     }, payload || {});
     // NOTE: do NOT use mode:'no-cors' here. The browser silently strips
-    // custom headers in no-cors mode — including Content-Type:application/json,
+    // custom headers in no-cors mode, including Content-Type:application/json,
     // which gets downgraded to text/plain. Make.com only auto-parses JSON
     // payloads when the Content-Type header survives intact, so without this
     // the webhook bundle arrives as one giant text field called `value`
@@ -7675,7 +7675,7 @@ function _cancelPolicy(){
   if (!user || !user.enrollment) return { canCancel: false, reason: 'No enrollment' };
   var e = user.enrollment;
   if (e.status !== 'active' && e.status !== 'pending') return { canCancel: false, reason: 'Enrollment is ' + e.status };
-  // Pending (no startDate set yet) — always cancellable (fee still applies per your rule)
+  // Pending (no startDate set yet), always cancellable (fee still applies per your rule)
   if (!e.startDate) return { canCancel: true, reason: '' };
   var now = new Date();
   var start = new Date(e.startDate);
@@ -7688,7 +7688,7 @@ function renderShop(){
   if (!user) return;
   // Pull a fresh copy of the user doc on every shop open. The admin may have
   // set start/end dates, the class level, or admin override since the student
-  // logged in, and renderShop reads from the local user object — without this
+  // logged in, and renderShop reads from the local user object, without this
   // refresh, the shop would show stale "Awaiting start date" / status / level
   // indefinitely until next login. Fire-and-forget: if the refresh fails we
   // still render with whatever we have.
@@ -7746,7 +7746,7 @@ function _drawShop(){
         '</div>';
     }
 
-    // Use <details> for native collapse/expand. Collapsed by default — the
+    // Use <details> for native collapse/expand. Collapsed by default, the
     // summary row alone (title + badge + chevron) communicates status. Tap
     // to expand for the meta (start/end/level) and the cancel controls.
     statusHtml =
@@ -7841,7 +7841,7 @@ function _fmtDate(iso){
 /* ═══ BUY: FRIDAY EXTRA HELP ═══
  * Despite the legacy variable/function names (extraHelpCredits, buyExtraHelp),
  * this purchases a credit for a Friday GROUP class with Mr. Calvin where
- * students can ask any questions they have — not a 1-on-1. Fires a distinct
+ * students can ask any questions they have, not a 1-on-1. Fires a distinct
  * webhook event (purchase.friday_class) so Make.com can branch separately
  * from the 6-week purchase. */
 async function buyExtraHelp(){
@@ -7859,7 +7859,7 @@ async function buyExtraHelp(){
     toast('+1 FRIDAY CLASS CREDIT', 'var(--cyan)');
     playSfx(SOUND_WIN, 0.9);
     // Build an enrollment-shaped object so every mapping in the existing Make
-    // scenario (which was built around the 6-week payload) resolves cleanly —
+    // scenario (which was built around the 6-week payload) resolves cleanly ,
     // no router or new DM template needed. Fields mirror the 6-week shape;
     // values are populated to make sense for a one-off Friday class credit.
     var nowIso = new Date().toISOString();
@@ -7917,7 +7917,7 @@ async function buySixWeek(){
   var classLevel = sel ? sel.value : CLASS_LEVELS[0];
   if (CLASS_LEVELS.indexOf(classLevel) === -1){ toast('Pick a valid class level.', 'var(--pink)'); return; }
   playSelect();
-  // Open policy modal — actual purchase happens after sign-off
+  // Open policy modal, actual purchase happens after sign-off
   _showSixWeekPolicyModal(classLevel);
 }
 window.buySixWeek = buySixWeek;
@@ -8107,7 +8107,7 @@ function renderAdmin(){
     return;
   }
   // Restore each admin section's collapsed/expanded state from previous visits.
-  // (Markup default is "collapsed" — restore flips to expanded if user previously opened it.)
+  // (Markup default is "collapsed", restore flips to expanded if user previously opened it.)
   if (typeof _adminRestoreSectionStates === 'function') _adminRestoreSectionStates();
   // Refresh the daily-toggle button label + status to reflect current state
   _refreshDailyToggleUi();
@@ -8263,7 +8263,7 @@ document.addEventListener('click', function(ev){
   }
 }, true);
 
-/* ─── SET START DATE — modal picker with native date input ─── */
+/* ─── SET START DATE, modal picker with native date input ─── */
 async function adminSetStartDate(userId){
   if (!user || !user.isAdmin) return;
   // Pull current enrollment so we can prefill the date if one already exists
@@ -8353,7 +8353,7 @@ async function _confirmAdminSetStartDate(userId){
 }
 window._confirmAdminSetStartDate = _confirmAdminSetStartDate;
 
-/* ─── SET CLASS LEVEL — modal picker with dropdown ─── */
+/* ─── SET CLASS LEVEL, modal picker with dropdown ─── */
 async function adminSetClassLevel(userId){
   if (!user || !user.isAdmin) return;
   // Prefill with current level if any
@@ -8616,7 +8616,7 @@ function _drawShowcase(){
   // (different value & look), so glitter is part of the identity key. The first
   // occurrence of each unique card is kept (carrying its stored fields); repeats
   // just bump its `count`. The sort above already grouped by rarity/animal, so
-  // identical cards land adjacent — but we key into a map regardless to be safe.
+  // identical cards land adjacent, but we key into a map regardless to be safe.
   var uniqueMap = {};
   var uniqueCards = [];
   shown.forEach(function(c){
@@ -8640,11 +8640,11 @@ function _drawShowcase(){
     // (native browser behavior, supported in all evergreen browsers). Combined
     // with decoding="async" so even when 30+ cards scroll into view at once
     // they don't block the main thread while decoding. Older browsers fall
-    // back to eager loading — no JS observer needed.
+    // back to eager loading, no JS observer needed.
     var img = imgUrl
       ? '<img src="' + esc(imgUrl) + '" alt="" loading="lazy" decoding="async">'
       : '<div style="height:110px;display:flex;align-items:center;justify-content:center;color:#555;">?</div>';
-    // Duplicate-count badge — only when the student owns 2 or more of this card.
+    // Duplicate-count badge, only when the student owns 2 or more of this card.
     var dupeBadge = c.count > 1
       ? '<div class="sc-dupe">\u00d7' + c.count + '</div>'
       : '';
@@ -8657,7 +8657,7 @@ function _drawShowcase(){
   }).join('') + '</div>';
 
   // Expose the currently-shown subset so showCardDetail can look up by index.
-  // This is the COLLAPSED list — one entry per unique card — which is what the
+  // This is the COLLAPSED list, one entry per unique card, which is what the
   // grid renders, so detail-view indices stay in sync.
   window._scShownCards = uniqueCards;
 }
@@ -9239,7 +9239,7 @@ var _GACHA_ITEMS = [
     { name: 'KoreanLearnin fan',                  key: 'fan',            weight: 13.5, tier: 1 }
 ];
 // Glitter is an INDEPENDENT roll (0.5% chance), not derived from color.
-// Any card — including a common blue — can come back glittering.
+// Any card, including a common blue, can come back glittering.
 var _GACHA_GLITTER = [
     { glitter: true,  weight: 0.5 },
     { glitter: false, weight: 99.5 }
@@ -9248,7 +9248,7 @@ var _GACHA_GLITTER = [
 // Tap-luck config. luck=0 → exact base odds. Higher luck slightly fattens the
 // RARE end of every wheel by raising each weight to the power (1 - luck): low
 // weights (rare options) shrink less in relative terms, so their share grows.
-// A flat multiply on all weights would cancel out — this is the honest "nudge
+// A flat multiply on all weights would cancel out, this is the honest "nudge
 // toward rare" that actually moves the odds. Applied EQUALLY to all four wheels.
 var _GACHA_MIN_TAPS_FOR_BONUS = 4;   // taps that earn ZERO bonus (must crack first)
 var _GACHA_MAX_TAPS_FOR_BONUS = 14;  // taps at/after which luck is maxed
@@ -9315,7 +9315,7 @@ function _gachaFmtPct(p){
 }
 
 /* ═══════════════════════════════════════════════════════ */
-/* POINTS — rarity-weighted across all 4 roll factors      */
+/* POINTS, rarity-weighted across all 4 roll factors      */
 /* ═══════════════════════════════════════════════════════ */
 // Points reward rarity. Each factor (animal / color / item / glitter) is scored
 // by how rare the chosen option is WITHIN ITS OWN TABLE, using -ln(p) as the
@@ -9346,7 +9346,7 @@ function _gachaRarityScores(table, keyFn){
     return out;
 }
 
-// Built once — the tables are static after load.
+// Built once, the tables are static after load.
 var _GACHA_POINT_SCORES = {
     animal:  _gachaRarityScores(_GACHA_ANIMALS,  function(e){ return e.key; }),
     color:   _gachaRarityScores(_GACHA_COLORS,   function(e){ return e.key; }),
@@ -9438,7 +9438,7 @@ function _injectGachaStyle(){
         '@keyframes _gHoloScan{0%{background-position:150% 150%;opacity:0}5%{opacity:1}14%{background-position:-50% -50%;opacity:0}100%{background-position:-50% -50%;opacity:0}}',
         '._grc{background:#0e0e0e;border-radius:16px;padding:14px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;transform:scale(.85);transition:transform .4s cubic-bezier(.34,1.56,.64,1);max-width:420px;width:92vw;max-height:650px;overflow:hidden;}',
         '._gctr{display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:2px;color:#ccc;font-size:10px;letter-spacing:.1em;}',
-        // Combined pull chance footer — bumped from 8px to 10px so the meta
+        // Combined pull chance footer, bumped from 8px to 10px so the meta
         // info under the stats table is readable without leaning in.
         '._gcmb{font-size:10px;color:#ccc;letter-spacing:.06em;text-align:center;border-top:1px solid #333;padding-top:8px;margin-top:2px;width:100%;}',
         '._gcmb span{color:#f5c842;}',
@@ -9579,7 +9579,7 @@ function _createEggOverlay(){
     })();
     // Always stop menu BGM when entering the egg overlay.
     // Both single-roll AND batch mode now play the dramatic Apex Signal track
-    // (welcomeBgmPlay) — Mining by Moonlight is reserved for "ambient" gacha
+    // (welcomeBgmPlay), Mining by Moonlight is reserved for "ambient" gacha
     // areas (point shop, showcase, daily picker) per design.
     menuBgmStop();
     gachaBgmStop();
@@ -9742,7 +9742,7 @@ function _gTriggerEffects(opts){
         gr = document.getElementById('_ggrip');
     function pop(el, cls){ if (!el) return; el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
     pop(ew, 'shake');
-    // Flashy elements — skip when effects are turned off
+    // Flashy elements, skip when effects are turned off
     if (_gEffectsOn !== false){
         pop(bs, 'pop');
         [sw1, sw2, sw3].forEach(function(s){ pop(s, 'pop'); });
@@ -9812,7 +9812,7 @@ function _startEggFor(roll, queueInfo){
     var tapwarn = document.getElementById('_gtapwarn');
     if (img){
         // Bulletproof reset: explicitly restore visibility and reload the uncracked image.
-        // Set alt to empty string (decorative — better than the literal word "egg" appearing
+        // Set alt to empty string (decorative, better than the literal word "egg" appearing
         // next to a broken-image icon if the URL ever fails to load).
         img.style.display = '';
         img.style.opacity = '';
@@ -9832,7 +9832,7 @@ function _startEggFor(roll, queueInfo){
     var gew = document.getElementById('_gew');
     if (gew){ gew.style.display = ''; gew.classList.remove('wiggle','shake','fade-out'); gew.style.opacity = ''; gew.style.transition = ''; gew.style.pointerEvents = ''; }
     _gUpdateDots();
-    // Ensure popup is visible for this roll — but only if epilepsy choice has been made
+    // Ensure popup is visible for this roll, but only if epilepsy choice has been made
     var pop = document.getElementById('_gwpop');
     if (pop){
         if (_gEffectsOn === null){
@@ -9927,7 +9927,7 @@ function _gStartCountdown(){
             clearInterval(_gCountdownTimer); _gCountdownTimer = null;
             // Effects-OFF SUCCESS path only: timer + egg hold for 0.2s after timer hits 0,
             // then fade over 0.5s. Reveal lands at +1600ms.
-            // Effects-ON does NOT use the timer-zero-keyed fade — its fade is tied to the
+            // Effects-ON does NOT use the timer-zero-keyed fade, its fade is tied to the
             // explosion start (see _gForceReveal effects-on success branch) so the fade
             // always completes before the explosion ends regardless of how fast the user
             // tapped through the crack stages. Lose path untouched.
@@ -9954,7 +9954,7 @@ function _gStartCountdown(){
         _gTapWarnTimers.push(tw);
     });
     // At 4.55s: check tap count → reveal or lose.
-    // Pass `false` so the countdown interval is NOT cleared — it self-clears at 0,
+    // Pass `false` so the countdown interval is NOT cleared, it self-clears at 0,
     // letting the timer tick "1" (full second) → "0" naturally instead of freezing at 1.
     _gAutoTimer = setTimeout(function(){
         _gClearTimers(false);
@@ -10029,7 +10029,7 @@ function _gForceReveal(){
         }
         if (fm) fm.classList.remove('show');
         // Countdown timing: ~0.9s until _gTimeLeft hits 0, then 0.2s hold, then 0.5s fade.
-        // Reveal arrives at 1600ms (matches effects-on pacing — during what would be
+        // Reveal arrives at 1600ms (matches effects-on pacing, during what would be
         // the explosion's last 0.3s in effects-on mode).
         setTimeout(function(){
             if (!_eggState || _eggState.finished) return;
@@ -10063,7 +10063,7 @@ function _gForceReveal(){
             }
             if (fm) fm.classList.remove('show');
             // Trigger explosion (1.75s) and concurrent egg+timer fade (0.5s) at +150ms.
-            // Fade ends at +650ms — well before the explosion (which ends at +1900ms),
+            // Fade ends at +650ms, well before the explosion (which ends at +1900ms),
             // so the egg + timer are fully gone while the light is still at peak.
             // Anchoring the fade to explode start (rather than to the timer hitting 0)
             // guarantees the fade always completes before the explosion ends, regardless
@@ -10130,7 +10130,7 @@ function _revealCharacter(roll){
         roll = _gachaRollOne(_earnedLuck);
         if (_eggState) _eggState.roll = roll;
     } else if (roll && roll.tapMult === undefined){
-        // Older pre-rolled card with no tap fields — normalize so display code is safe.
+        // Older pre-rolled card with no tap fields, normalize so display code is safe.
         roll.tapMult = 1; roll.basePct = roll.pct; roll.luck = 0;
     }
     // Note: _gfl (white flash) is intentionally NOT re-triggered here. The explosion (_glb)
@@ -10143,13 +10143,13 @@ function _revealCharacter(roll){
     var effectsOff = (_gEffectsOn === false);
     // By the time _revealCharacter is called, the countdown-keyed fade has already
     // completed (egg + timer at opacity 0). Snap display:none on the egg + queue info
-    // (matches pre-existing behavior). Hint and timerbox are left alone — they're
+    // (matches pre-existing behavior). Hint and timerbox are left alone, they're
     // hidden under the reveal overlay (z-index 9999999) and reset by _startEggFor
     // before the next egg.
     if (gew) gew.style.display = 'none';
     if (info) info.style.display = 'none';
 
-    // Play rarity-tiered sound (skipped during welcome batch — the win sound was already played at crack)
+    // Play rarity-tiered sound (skipped during welcome batch, the win sound was already played at crack)
     if (!_eggBatchMode){
         var rar = roll.color.rarity;
         if (rar === 'holo' || rar === 'pink' || rar === 'red'){
@@ -10245,7 +10245,7 @@ function _buildRollCounter(){
 }
 
 function _buildRevealButton(){
-    // Style matches the login/signup btn-lg buttons — solid red, full-width, Press Start 2P,
+    // Style matches the login/signup btn-lg buttons, solid red, full-width, Press Start 2P,
     // 3px black offset shadow, hover/active transforms, plus a sparkle-shine sweep on hover.
     var baseStyle = 'display:block;width:100%;background:#ff4444;color:#fff;border:2px solid #cc2222;font-family:\'Press Start 2P\',\'Courier New\',monospace !important;font-size:12px;letter-spacing:.08em;padding:16px 36px;border-radius:2px;cursor:pointer;margin-top:8px;box-shadow:3px 3px 0 rgba(0,0,0,0.7);text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;transition:transform 0.1s ease, filter 0.1s ease, box-shadow 0.1s ease;';
     if (_eggBatchMode && _eggQueue.length > 0){
@@ -10374,7 +10374,7 @@ function _showPointsPop(pts){
     setTimeout(function(){ if (p.parentNode) p.remove(); }, 1800);
 }
 
-// Sparkles for glitter cards — rich multi-layer system
+// Sparkles for glitter cards, rich multi-layer system
 var _GSTAR_COLORS=[
   ['#aaddff','#4499ff'],['#ffaae8','#ff44aa'],['#aaffcc','#44ffaa'],
   ['#ffffaa','#ffdd33'],['#ddaaff','#aa44ff'],['#ffddaa','#ff9933']
@@ -10461,9 +10461,9 @@ async function _saveBatchResults(results){
         // Run as a transaction so we can read the persisted balance and floor
         // the decrement at 0 atomically. This matters because rollOne now
         // pre-decrements the in-memory balance synchronously to prevent fast
-        // double-taps from over-spending — so in-memory `user.gachaRolls` no
+        // double-taps from over-spending, so in-memory `user.gachaRolls` no
         // longer reflects the persisted balance at the moment we save.
-        // numRolls includes lost rolls — they still consume one roll each.
+        // numRolls includes lost rolls, they still consume one roll each.
         //
         // We also write each won card as its own doc in the gachaCollection
         // subcollection (instead of arrayUnion onto the parent doc) so the
@@ -10524,7 +10524,7 @@ async function _saveBatchResults(results){
         }
     } catch(e){
         console.error('Batch save failed:', e);
-        toast('Save error — refresh please', 'var(--pink)');
+        toast('Save error, refresh please', 'var(--pink)');
     }
 }
 
@@ -10569,7 +10569,7 @@ window.startFreeEggs = startFreeEggs;
  * constituent labels (S, O, PP, PPN, V, VAV) and an expected answer key;
  * student types each permutation in a textarea, one per line. Submitting
  * any non-empty answer for all 5 sentences awards +1 egg (lenient grading
- * — teacher reviews submissions admin-side).
+ *, teacher reviews submissions admin-side).
  */
 
 /* ─── ADMIN MANAGER ─── */
@@ -10685,7 +10685,7 @@ async function _yodaGenerate(){
     'valid permutation. The drill trains the *concept* of word-order freedom; the student practices in\n' +
     'English first, then transfers the intuition to Korean.\n' +
     '\n' +
-    'CONSTITUENT LABELS — use these exact label keys:\n' +
+    'CONSTITUENT LABELS, use these exact label keys:\n' +
     '  • S   = subject (e.g. "My mom", "I", "Tom")\n' +
     '  • O   = object (e.g. "the book", "her homework", "kimchi")\n' +
     '  • PP  = prepositional phrase, TEMPORAL (e.g. "in the morning", "on Tuesday")\n' +
@@ -10693,7 +10693,7 @@ async function _yodaGenerate(){
     '  • V   = action verb, single word (e.g. "went", "ate", "studied")\n' +
     '  • VAV = verb + auxiliary verb (e.g. "is going", "has eaten")\n' +
     '\n' +
-    'TASK — Generate exactly ' + YODA_SENTENCE_COUNT + ' English sentences at beginner-to-intermediate level (6–14 words each).\n' +
+    'TASK, Generate exactly ' + YODA_SENTENCE_COUNT + ' English sentences at beginner-to-intermediate level (6–14 words each).\n' +
     '\n' +
     'For each sentence:\n' +
     '  1. Write the sentence in natural English ("english" field).\n' +
@@ -10701,21 +10701,21 @@ async function _yodaGenerate(){
     '       - "label": one of S / O / PP / PPN / V / VAV\n' +
     '       - "text":  the exact words that make up that span (verbatim from the sentence)\n' +
     '     List constituents in ORIGINAL English word order, in the "constituents" array.\n' +
-    '  3. Produce the FULL labeled answer key in "answerKey" — every valid permutation. Each entry is an OBJECT with:\n' +
+    '  3. Produce the FULL labeled answer key in "answerKey", every valid permutation. Each entry is an OBJECT with:\n' +
     '       - "labels":  array of labels in the order they appear in this permutation (always include every non-verb label, then the verb label at the end)\n' +
     '       - "english": the sentence rewritten with those constituents in that order, in natural English with proper commas\n' +
     '\n' +
     'PERMUTATION RULES\n' +
     '  • The verb (V or VAV) is fixed at the end of every permutation.\n' +
-    '  • If S is moved away from the verb, prepend "(she/he/they)" before the verb so it has a clear referent. The pronoun is only in the english text — it does NOT get its own label entry.\n' +
+    '  • If S is moved away from the verb, prepend "(she/he/they)" before the verb so it has a clear referent. The pronoun is only in the english text, it does NOT get its own label entry.\n' +
     '  • Generate every distinct ordering of the non-verb constituents. With N non-verb constituents, that\'s N! permutations (3 → 6, 4 → 24).\n' +
     '  • CAP at 12 permutations per sentence. If N! exceeds 12, return the first 12 in a varied selection.\n' +
     '  • Include the ORIGINAL English ordering as one of the entries.\n' +
     '  • Natural punctuation. Fronted constituents are separated by commas. Always end with a period.\n' +
     '\n' +
-    'VARIETY — Mix subjects, verbs, and constituent counts across the 5 sentences. Don\'t repeat sentence shapes.\n' +
+    'VARIETY, Mix subjects, verbs, and constituent counts across the 5 sentences. Don\'t repeat sentence shapes.\n' +
     '\n' +
-    'OUTPUT — STRICT JSON ONLY. No markdown, no code fences, no preamble. Exactly this shape:\n' +
+    'OUTPUT, STRICT JSON ONLY. No markdown, no code fences, no preamble. Exactly this shape:\n' +
     '{\n' +
     '  "title": "<2-5 word English label, e.g. \\"Daily Routines\\">",\n' +
     '  "sentences": [\n' +
@@ -10744,7 +10744,7 @@ async function _yodaGenerate(){
     '• Exactly ' + YODA_SENTENCE_COUNT + ' sentences in "sentences".\n' +
     '• Every answerKey entry has both "labels" and "english" fields.\n' +
     '• Every constituent\'s "text" must appear verbatim in the sentence\'s "english".\n' +
-    '• Answer keys are for ADMIN REVIEW ONLY — they will not be shown to students. Write them as a useful reference for the teacher.';
+    '• Answer keys are for ADMIN REVIEW ONLY, they will not be shown to students. Write them as a useful reference for the teacher.';
 
   try {
     var resp = await fetch(YODA_WEBHOOK, {
@@ -11038,7 +11038,7 @@ async function _yodaRender(){
   } catch(e){}
 
   // Find a live yodafication that isn't expired by NY-3am rollover. Matches
-  // the pattern used by Reading/Listening/Advanced — DB doc stays in 'live'
+  // the pattern used by Reading/Listening/Advanced, DB doc stays in 'live'
   // until admin archives, but it's visually treated as expired the next day.
   var liveSnap = await db.collection(YODA_COLLECTION).where('status','==','live').get().catch(function(){ return null; });
   var doc = null;
@@ -11072,7 +11072,7 @@ async function _yodaRender(){
   var alreadyDone = (user.dailyYodaDoneFor === todayKey);
   if (alreadyDone){
     // Fetch the student's saved submission so we can render the same
-    // post-submit view they saw originally — with their own answers under
+    // post-submit view they saw originally, with their own answers under
     // each sentence. Falls back to a simple "done" banner if no submission
     // doc is found (shouldn't happen but safety net).
     try {
@@ -11109,7 +11109,7 @@ async function _yodaRender(){
 window._yodaRender = _yodaRender;
 
 /* ═══════════════════════════════════════════════════════════════════
-   ACTIVE RECALL — daily flashcard activity
+   ACTIVE RECALL, daily flashcard activity
    Self-graded, Quizlet-style: see Korean → flip → "Got it" / "Missed it".
    Missed cards re-queue to the back of the deck and resurface. When every
    card has been cleared as "Got it", award +1 egg (once per NY day).
@@ -11144,13 +11144,13 @@ var _recallState = {
 /* ─── STEP 1 COMPLETION CHECK ───
  * Step 1 is the matching game. It's "done" for the day once the student has
  * played it (any score). dailyRecallStep1DoneFor stores that NY-day key.
- * Completing Step 1 — at any score — unlocks STEP 2 (flashcards). */
+ * Completing Step 1, at any score, unlocks STEP 2 (flashcards). */
 function _recallStep1Done(){
   return !!(user && user.dailyRecallStep1DoneFor === _drTodayNYKey());
 }
 
-/* ─── ACTIVE RECALL — LANDING SCREEN (two steps) ───
- * STEP 1: Game (placeholder for now). STEP 2: Flashcards Quick Review — the
+/* ─── ACTIVE RECALL, LANDING SCREEN (two steps) ───
+ * STEP 1: Game (placeholder for now). STEP 2: Flashcards Quick Review, the
  * existing flashcard activity, locked until Step 1 is complete. Entry point
  * for the whole activity; _dailyOpen('recall') calls this. */
 async function _recallRender(){
@@ -11165,7 +11165,7 @@ async function _recallRender(){
   // Check for a fresh (non-expired) live card set before offering the steps.
   // Without this, a student could tap into Step 1 only to dead-end on a
   // "no set is live" screen. If both steps are already done we skip the
-  // lookup — there's nothing left to play anyway.
+  // lookup, there's nothing left to play anyway.
   if (!step1Done || !step2Done){
     host.innerHTML = '<div class="dr-empty">Loading…</div>';
     var liveSnap = await db.collection(RECALL_COLLECTION).where('status','==','live').get().catch(function(){ return null; });
@@ -11179,33 +11179,33 @@ async function _recallRender(){
       host.innerHTML =
         '<div class="dr-empty">' +
           '<div class="big">No card set is live right now.</div>' +
-          '<div class="sub">Check back soon — your teacher hasn\'t posted today\'s cards yet.</div>' +
+          '<div class="sub">Check back soon, your teacher hasn\'t posted today\'s cards yet.</div>' +
         '</div>';
       return;
     }
   }
 
-  // STEP 1 — Match-Up Game. Always available; greys out once played today.
+  // STEP 1, Match-Up Game. Always available; greys out once played today.
   var step1;
   if (step1Done){
     step1 = '<button class="btn btn-gold btn-lg sparkle-btn recall-step-btn" disabled '
-          + 'style="opacity:0.5;cursor:not-allowed;">✅ STEP 1 — DONE TODAY</button>';
+          + 'style="opacity:0.5;cursor:not-allowed;">✅ STEP 1: DONE TODAY</button>';
   } else {
     step1 = '<button class="btn btn-gold btn-lg sparkle-btn recall-step-btn" '
-          + 'onclick="_recallStartGame()">STEP 1 — MATCH-UP GAME (Up to 5 Eggs)</button>';
+          + 'onclick="_recallStartGame()">STEP 1, MATCH-UP GAME (Up to 5 Eggs)</button>';
   }
 
-  // STEP 2 — Flashcards. Locked until Step 1 is done.
+  // STEP 2, Flashcards. Locked until Step 1 is done.
   var step2;
   if (step2Done){
     step2 = '<button class="btn btn-gold btn-lg sparkle-btn recall-step-btn" disabled '
-          + 'style="opacity:0.5;cursor:not-allowed;">✅ STEP 2 — DONE TODAY</button>';
+          + 'style="opacity:0.5;cursor:not-allowed;">✅ STEP 2: DONE TODAY</button>';
   } else if (step2Unlocked){
     step2 = '<button class="btn btn-gold btn-lg sparkle-btn recall-step-btn" '
-          + 'onclick="_recallStartFlashcards()">STEP 2 — FLASHCARDS (+1 Egg)</button>';
+          + 'onclick="_recallStartFlashcards()">STEP 2, FLASHCARDS (+1 Egg)</button>';
   } else {
     step2 = '<button class="btn btn-gold btn-lg sparkle-btn recall-step-btn" disabled '
-          + 'style="opacity:0.45;cursor:not-allowed;">🔒 STEP 2 — FINISH STEP 1 FIRST</button>';
+          + 'style="opacity:0.45;cursor:not-allowed;">🔒 STEP 2: FINISH STEP 1 FIRST</button>';
   }
 
   host.innerHTML = '<div class="recall-steps">' + step1 + step2 + '</div>';
@@ -11213,7 +11213,7 @@ async function _recallRender(){
 window._recallRender = _recallRender;
 
 /* ═══════════════════════════════════════════════════════════════════
- * STEP 1 — MATCH-UP GAME (Toad House style)
+ * STEP 1, MATCH-UP GAME (Toad House style)
  * ───────────────────────────────────────────────────────────────────
  * Flow: pull 5 random cards from the live recall set → STUDY phase (10s,
  * Korean + English shown paired) → English boxes "close", shuffle, reopen →
@@ -11227,19 +11227,19 @@ var RECALL_GAME_MATCH_SECS = 30;
 var RECALL_GAME_PAIRS = 5;
 
 var _rgState = {
-  pairs: [],        // [{ ko, en }] — the 5 chosen cards, original order
+  pairs: [],        // [{ ko, en }], the 5 chosen cards, original order
   enOrder: [],      // shuffled indices into pairs[] for the English row
   selectedKo: null, // index (into pairs[]) of the currently-picked Korean word
   matched: {},      // koIndex -> enSlot the student locked it to
   done: false,      // match phase finished
-  locked: false,    // true during the shuffle animation — blocks picks
+  locked: false,    // true during the shuffle animation, blocks picks
   busy: false,
   timer: null,
   tickAudio: null,  // looping ticking-clock Audio element for the live timer
   matchLeft: 0      // seconds left in the match timer (survives re-renders)
 };
 
-/* ─── TIMER HELPERS — ticking audio + depleting bar ───
+/* ─── TIMER HELPERS, ticking audio + depleting bar ───
  * The ticking tracks (study = ticking.MP3, match = 30_ticking.MP3) run as a
  * managed, looping Audio element for the life of the timer. _rgStopTick stops
  * and releases it; it's called whenever a timer ends or the game is left. */
@@ -11261,7 +11261,7 @@ function _rgStopTick(){
   }
 }
 /* Kicks off the depleting fill: full width, then transition to 0 over the
- * timer's total seconds. Same bar length for study and match — only `secs`
+ * timer's total seconds. Same bar length for study and match, only `secs`
  * differs, so the match bar drains 3x slower (30s vs 10s). */
 function _rgStartBar(secs){
   var fill = document.getElementById('rgTfill');
@@ -11283,7 +11283,7 @@ async function _recallStartGame(){
 
   // Pull the live recall set (same source as Step 2's flashcards).
   var liveSnap = await db.collection(RECALL_COLLECTION).where('status','==','live').get().catch(function(){ return null; });
-  // Filter out sets that went live on a previous NY-day — they expire at the
+  // Filter out sets that went live on a previous NY-day, they expire at the
   // 3am NY rollover, same as every other daily activity. (_drIsExpired gate.)
   var freshDocs = [];
   if (liveSnap && !liveSnap.empty){
@@ -11295,7 +11295,7 @@ async function _recallStartGame(){
     host.innerHTML =
       '<div class="dr-empty">' +
         '<div class="big">No card set is live right now.</div>' +
-        '<div class="sub">Check back soon — your teacher hasn\'t posted today\'s cards yet.</div>' +
+        '<div class="sub">Check back soon, your teacher hasn\'t posted today\'s cards yet.</div>' +
         '<div style="margin-top:16px;"><button class="btn btn-ghost btn-md" onclick="_recallRender()">← BACK TO STEPS</button></div>' +
       '</div>';
     return;
@@ -11341,11 +11341,11 @@ async function _recallStartGame(){
 }
 window._recallStartGame = _recallStartGame;
 
-/* ─── INTRO — explains the game + phase timings, then a Start button ───
+/* ─── INTRO, explains the game + phase timings, then a Start button ───
  * Shown before the study timer starts so students aren't surprised by the
  * countdown. The Start button carries the same glare + sparkle treatment as
  * the "CRACK YOUR EGGS" CTA (.sparkle-btn). The timer only begins once the
- * student taps Start — which also satisfies the browser's audio-gesture
+ * student taps Start, which also satisfies the browser's audio-gesture
  * requirement for the ticking sound. */
 function _rgRenderIntro(){
   var host = document.getElementById('dailyRecallHost');
@@ -11353,22 +11353,22 @@ function _rgRenderIntro(){
   host.innerHTML =
     '<div class="post-recall-game-room">' +
       '<div class="rg-banner">' +
-        '<div class="big">🧠 ACTIVE RECALL — MATCH-UP</div>' +
+        '<div class="big">🧠 ACTIVE RECALL, MATCH-UP</div>' +
         '<div class="sub">A quick two-phase memory game.</div>' +
       '</div>' +
       '<div class="rg-intro">' +
         '<div class="rg-intro-step">' +
           '<div class="rg-intro-num">1</div>' +
           '<div class="rg-intro-text">' +
-            '<div class="rg-intro-head">📖 STUDY — ' + RECALL_GAME_STUDY_SECS + ' SECONDS</div>' +
+            '<div class="rg-intro-head">📖 STUDY, ' + RECALL_GAME_STUDY_SECS + ' SECONDS</div>' +
             '<div class="rg-intro-body">Five Korean words and their English meanings appear paired up. Memorize them before they get mixed.</div>' +
           '</div>' +
         '</div>' +
         '<div class="rg-intro-step">' +
           '<div class="rg-intro-num">2</div>' +
           '<div class="rg-intro-text">' +
-            '<div class="rg-intro-head">🎯 MATCH — ' + RECALL_GAME_MATCH_SECS + ' SECONDS</div>' +
-            '<div class="rg-intro-body">The English words shuffle. Tap a Korean word, then tap its meaning. Earn 1 egg per correct match — up to ' + RECALL_GAME_PAIRS + '.</div>' +
+            '<div class="rg-intro-head">🎯 MATCH, ' + RECALL_GAME_MATCH_SECS + ' SECONDS</div>' +
+            '<div class="rg-intro-body">The English words shuffle. Tap a Korean word, then tap its meaning. Earn 1 egg per correct match, up to ' + RECALL_GAME_PAIRS + '.</div>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -11385,14 +11385,14 @@ function _rgRenderIntro(){
   if (sb && typeof addSparkles === 'function') addSparkles(sb);
 }
 
-/* Tapping START in the intro — kicks off the study phase for real. */
+/* Tapping START in the intro, kicks off the study phase for real. */
 function _rgStudyBegin(){
   try { playSfx(SOUND_FLIP, 0.7); } catch(e){}
   _rgRenderStudy();
 }
 window._rgStudyBegin = _rgStudyBegin;
 
-/* ─── STUDY PHASE — 10s, Korean + English shown paired ─── */
+/* ─── STUDY PHASE, 10s, Korean + English shown paired ─── */
 function _rgRenderStudy(){
   var host = document.getElementById('dailyRecallHost');
   if (!host) return;
@@ -11411,7 +11411,7 @@ function _rgRenderStudy(){
     '<div class="post-recall-game-room">' +
       '<div class="rg-banner">' +
         '<div class="big">🎮 STUDY THE PAIRS</div>' +
-        '<div class="sub">Memorize each Korean word and its meaning — they get mixed up soon!</div>' +
+        '<div class="sub">Memorize each Korean word and its meaning, they get mixed up soon!</div>' +
       '</div>' +
       '<div class="rg-timer" id="rgTimer">⏳' +
         '<div class="rg-tbar"><div class="rg-tfill" id="rgTfill"></div></div>' +
@@ -11451,7 +11451,7 @@ function _rgRenderStudy(){
   }, 1000);
 }
 
-/* ─── MATCH PHASE — 30s, tap Korean then tap English to pair ───
+/* ─── MATCH PHASE, 30s, tap Korean then tap English to pair ───
  * Duolingo-style: both rows stay visible. The English row is scrambled out of
  * alignment with the Korean row. A short shuffle animation plays first so the
  * student sees the boxes rearrange, then the 30s timer begins. */
@@ -11470,7 +11470,7 @@ function _rgStartMatch(){
   // Render the match screen. The English cells are now in their NEW
   // (scrambled) slots. To make the shuffle legible, we run a FLIP animation:
   // each card jumps back to the slot it occupied in the old ALIGNED order,
-  // then slides — for real, across its true distance — into its new home.
+  // then slides, for real, across its true distance, into its new home.
   // Cards that didn't move (newSlot === oldSlot) get a tiny hop so the whole
   // row still reads as "mixing up." Per-card stagger keeps it lively.
   _rgRenderMatch();
@@ -11493,18 +11493,18 @@ function _rgStartMatch(){
       // pre-shuffle aligned order that card lived at slot `pairIdx`.
       var oldSlot = _rgState.enOrder[newSlot];
       var dx = (oldSlot - newSlot) * step;       // offset back to old home
-      // INVERT — snap each card to its old position with no transition.
+      // INVERT, snap each card to its old position with no transition.
       c.classList.add('rg-shuffle-pre');
       if (dx !== 0){
         c.style.transform = 'translateX(' + dx + 'px)';
       } else {
-        // No move — give it a small lift so it visibly joins the shuffle.
+        // No move, give it a small lift so it visibly joins the shuffle.
         c.style.transform = 'translateY(-14px)';
       }
     });
     // Force a reflow so the inverted transforms are committed before we play.
     void enRow.offsetWidth;
-    // PLAY — stagger each card sliding home.
+    // PLAY, stagger each card sliding home.
     cells.forEach(function(c, newSlot){
       var delay = newSlot * STAGGER_MS;
       lastDelay = Math.max(lastDelay, delay);
@@ -11532,9 +11532,9 @@ function _rgStartMatch(){
     _rgState.matchLeft = left;
     var nEl = document.getElementById('rgTimerNum');
     if (nEl) nEl.textContent = left;
-    _rgState.locked = false; // shuffle done — picks now allowed
+    _rgState.locked = false; // shuffle done, picks now allowed
     // Looping tick + depleting bar for the 30s match phase. Same bar length
-    // as study (10s) — only the duration differs, so this drains 3x slower.
+    // as study (10s), only the duration differs, so this drains 3x slower.
     _rgStartTick(SOUND_TICK_MATCH);
     _rgStartBar(RECALL_GAME_MATCH_SECS);
     if (_rgState.timer){ clearInterval(_rgState.timer); }
@@ -11563,7 +11563,7 @@ function _rgRenderMatch(){
   var st = _rgState;
   var matchedCount = Object.keys(st.matched).length;
 
-  // Korean row — each cell tappable unless already paired.
+  // Korean row, each cell tappable unless already paired.
   var koCells = st.pairs.map(function(p, ki){
     var cls = 'rg-cell rg-ko';
     if (st.matched.hasOwnProperty(ki)) cls += ' paired';
@@ -11572,7 +11572,7 @@ function _rgRenderMatch(){
     return '<div class="' + cls + '"' + click + '>' + _esc(p.ko) + '</div>';
   }).join('');
 
-  // English row — scrambled but fully VISIBLE (Duolingo-style). Tappable when
+  // English row, scrambled but fully VISIBLE (Duolingo-style). Tappable when
   // a Korean word is selected and this slot isn't already used.
   var usedSlots = {};
   Object.keys(st.matched).forEach(function(k){ usedSlots[st.matched[k]] = true; });
@@ -11688,8 +11688,8 @@ async function _rgFinish(){
   if (host) host.innerHTML = '<div class="dr-empty">Saving…</div>';
 
   var todayKey = _drTodayNYKey();
-  // Commit the "Step 1 done" flag to Firestore as the FIRST thing on finish —
-  // before rendering the result — so the play is locked in immediately and a
+  // Commit the "Step 1 done" flag to Firestore as the FIRST thing on finish ,
+  // before rendering the result, so the play is locked in immediately and a
   // refresh on the result screen can't let the student replay Step 1. The
   // transaction is idempotent (it no-ops if the day is already credited).
   try {
@@ -11713,12 +11713,12 @@ async function _rgFinish(){
       user.dailyRecallStep1DoneFor = todayKey;
       if (typeof updateCounts === 'function') updateCounts();
     }
-    // Results screen — same congrats sound as the gacha reveal moment when
+    // Results screen, same congrats sound as the gacha reveal moment when
     // the student earned eggs; the lesser cue on a no-egg result.
     try { playSfx(eggs > 0 ? SOUND_WIN : SOUND_CORRECT, 0.95); } catch(e){}
   } catch(e){
     console.error('recall game save:', e);
-    toast('Couldn\'t save your eggs — try again.', 'var(--pink)');
+    toast('Couldn\'t save your eggs. Try again.', 'var(--pink)');
   } finally {
     st.busy = false;
   }
@@ -11731,7 +11731,7 @@ function _rgRenderResult(correct, eggs){
   var st = _rgState;
 
   // Reveal the board. Every English card shows its outcome: green if the
-  // student matched it to the right Korean word, red otherwise — whether they
+  // student matched it to the right Korean word, red otherwise, whether they
   // mismatched it or never got to it. No card stays neutral gold here.
   var koCells = st.pairs.map(function(p){
     return '<div class="rg-cell rg-ko paired">' + _esc(p.ko) + '</div>';
@@ -11776,7 +11776,7 @@ function _rgRenderResult(correct, eggs){
         '<div class="room-prop room-prop-right">🎁</div>' +
       '</div>' +
     '</div>';
-  // Sparkle SVGs on the continue button — same treatment as CRACK YOUR EGGS.
+  // Sparkle SVGs on the continue button, same treatment as CRACK YOUR EGGS.
   var _rgContBtn = host.querySelector('.recall-continue-btn');
   if (_rgContBtn && typeof addSparkles === 'function') addSparkles(_rgContBtn);
 }
@@ -11787,7 +11787,7 @@ function _rgRenderResult(correct, eggs){
 async function _recallStartFlashcards(){
   var host = document.getElementById('dailyRecallHost');
   if (!host) return;
-  // Guard: never run if Step 1 isn't done (defense in depth — the box is also
+  // Guard: never run if Step 1 isn't done (defense in depth, the box is also
   // non-clickable when locked).
   if (!_recallStep1Done()) return;
   host.innerHTML = '<div class="dr-empty">Loading…</div>';
@@ -11803,7 +11803,7 @@ async function _recallStartFlashcards(){
 
   // Find the live activity (most recent if multiple somehow live).
   var liveSnap = await db.collection(RECALL_COLLECTION).where('status','==','live').get().catch(function(){ return null; });
-  // Filter out sets that went live on a previous NY-day — they expire at the
+  // Filter out sets that went live on a previous NY-day, they expire at the
   // 3am NY rollover, same as every other daily activity. (_drIsExpired gate.)
   var freshDocs = [];
   if (liveSnap && !liveSnap.empty){
@@ -11815,7 +11815,7 @@ async function _recallStartFlashcards(){
     host.innerHTML =
       '<div class="dr-empty">' +
         '<div class="big">No Active Recall set is live right now.</div>' +
-        '<div class="sub">Check back soon — your teacher hasn\'t posted today\'s cards yet.</div>' +
+        '<div class="sub">Check back soon, your teacher hasn\'t posted today\'s cards yet.</div>' +
       '</div>';
     return;
   }
@@ -11916,7 +11916,7 @@ function _recallFlip(){
   _recallState.flipped = !_recallState.flipped;
   card.classList.toggle('flipped', _recallState.flipped);
   try { playSfx(SOUND_FLIP, 0.8); } catch(e){}
-  // Arcade screen-flicker — a brief brightness pulse on the word, applied to
+  // Arcade screen-flicker, a brief brightness pulse on the word, applied to
   // the face content (not the rotating card) so it doesn't fight the rotateY.
   card.querySelectorAll('.recall-main').forEach(function(el){
     el.classList.remove('recall-flicker');
@@ -11952,7 +11952,7 @@ function _recallGrade(gotIt){
       st.cleared = st.clearedSet.size;
     }
   } else {
-    // Missed — re-queue to the back so it resurfaces this round (Quizlet-style).
+    // Missed, re-queue to the back so it resurfaces this round (Quizlet-style).
     // If it was previously cleared, un-clear it: it must be re-earned.
     if (st.clearedSet.has(cardIdx)){
       st.clearedSet.delete(cardIdx);
@@ -11995,7 +11995,7 @@ async function _recallComplete(){
         forKey: todayKey
       }, { merge: true }).catch(function(){});
 
-      // Award the egg atomically — only if not already credited today.
+      // Award the egg atomically, only if not already credited today.
       var acctRef = db.collection(TC).doc(user.id);
       var awarded = false;
       await db.runTransaction(async function(tx){
@@ -12019,7 +12019,7 @@ async function _recallComplete(){
     _recallRenderDone(false);
   } catch(e){
     console.error('recall complete:', e);
-    toast('Couldn\'t save your egg — try again.', 'var(--pink)');
+    toast('Couldn\'t save your egg. Try again.', 'var(--pink)');
   } finally {
     st.busy = false;
   }
@@ -12042,9 +12042,9 @@ function _recallRenderDone(alreadyDone){
     '</div>';
 }
 
-/* ─── ACTIVE RECALL — ADMIN MANAGER ───
+/* ─── ACTIVE RECALL, ADMIN MANAGER ───
    Mirrors the Yodafication manager's draft/live/archive lifecycle, minus the
-   AI generation — admin types Korean/English card pairs by hand. */
+   AI generation, admin types Korean/English card pairs by hand. */
 function _recallToggleSection(headEl){
   var section = headEl.closest('.drm-section');
   if (!section) return;
@@ -12073,7 +12073,7 @@ async function _recallRenderManager(){
     function renderRow(d){
       // A 'live' set whose live-day has rolled past 3 AM NY is functionally
       // expired (students see "no set is live"). Surface that in the admin
-      // badge — same visual-only treatment as the Teamwork Reading panel.
+      // badge, same visual-only treatment as the Teamwork Reading panel.
       var expired = (d.status === 'live') && _drIsExpired(d);
       var statusLabel = expired ? 'Expired'
                       : d.status === 'live' ? 'Live'
@@ -12145,7 +12145,7 @@ async function _recallNewSet(){
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       createdBy: (user && user.username) || ''
     });
-    toast('Draft created — edit it to add cards.', 'var(--green)');
+    toast('Draft created, edit it to add cards.', 'var(--green)');
     _recallRenderManager();
   } catch(e){
     toast('Couldn\'t create set: ' + (e.message || e), 'var(--pink)');
@@ -12216,7 +12216,7 @@ window._recallAddCardRow = _recallAddCardRow;
 /* AI flashcard generator. Admin gives a TOPIC and a count; the Cloud Function
  * (RECALL_AI_FN) asks ChatGPT to pick that many Korean vocab words for the
  * topic and return each in DICTIONARY FORM with an English meaning. Each
- * returned pair is APPENDED as a new card row — existing rows are never wiped.
+ * returned pair is APPENDED as a new card row, existing rows are never wiped.
  * Same call style as the generatekeywords Cloud Function: plain JSON in, plain
  * JSON out, no markdown-fence handling needed. */
 async function _recallGenerateCards(id){
@@ -12270,7 +12270,7 @@ async function _recallGenerateCards(id){
       added++;
     });
     if (!added) throw new Error('No usable cards in the response.');
-    toast('Added ' + added + ' card' + (added === 1 ? '' : 's') + ' — review, then SAVE.', 'var(--green)');
+    toast('Added ' + added + ' card' + (added === 1 ? '' : 's') + ', review, then SAVE.', 'var(--green)');
   } catch(e){
     console.error('recall AI generate:', e);
     toast('Generation failed: ' + (e.message || 'unknown error'), 'var(--pink)');
@@ -12332,7 +12332,7 @@ async function _recallPublish(id){
   var d = snap.exists ? (snap.data() || {}) : {};
   var cards = (d.cards || []).filter(function(c){ return c && c.korean && c.english; });
   if (!cards.length){
-    toast('This set has no complete cards — edit it first.', 'var(--pink)');
+    toast('This set has no complete cards, edit it first.', 'var(--pink)');
     return;
   }
   if (!confirm('Publish this Active Recall set live to all students now? Any currently live set will be archived.')) return;
@@ -12388,7 +12388,7 @@ async function _recallDelete(id){
 window._recallDelete = _recallDelete;
 
 /* ═══════════════════════════════════════════════════════════════════
-   WEEKLY ACTIVITIES — bonus tier
+   WEEKLY ACTIVITIES, bonus tier
    Reached via the gold "Special Bonus" banner on the Daily screen. For now
    the only weekly activity is Diary. Weekly activities reset every Monday
    at 3 AM NY time.
@@ -12447,7 +12447,7 @@ function _renderWeeklyPicker(){
     '<div class="menu-card daily" onclick="_openDiary()">' +
       '<span class="menu-emoji">📔</span>' +
       '<div class="grad-wrap"><div class="menu-name grad-text grad-gold">DIARY</div></div>' +
-      '<div class="menu-desc">Write about your day in Korean — add a voice recording, then read everyone\'s entries.</div>' +
+      '<div class="menu-desc">Write about your day in Korean, add a voice recording, then read everyone\'s entries.</div>' +
       diaryBadge +
     '</div>';
 }
@@ -12489,7 +12489,7 @@ async function _diaryRender(){
     composerHtml =
       '<div class="dr-feed-banner done" style="margin-bottom:18px;">' +
         '<div class="big">✅ +' + DIARY_EGG_REWARD + ' EGGS EARNED</div>' +
-        '<div class="sub">You\'ve submitted this week\'s diary. Read everyone\'s entries below — a new week starts Monday at 3 AM NY.</div>' +
+        '<div class="sub">You\'ve submitted this week\'s diary. Read everyone\'s entries below, a new week starts Monday at 3 AM NY.</div>' +
       '</div>';
   } else {
     composerHtml =
@@ -12497,7 +12497,7 @@ async function _diaryRender(){
         '<div class="diary-field-label">✍️ YOUR DIARY ENTRY (KOREAN)</div>' +
         '<textarea class="diary-textarea" id="diaryText" placeholder="오늘 무엇을 했어요? Write a few sentences about your day…"></textarea>' +
         '<div class="diary-rec-host">' +
-          '<div class="diary-rec-label">🎙 OPTIONAL — RECORD YOURSELF READING IT</div>' +
+          '<div class="diary-rec-label">🎙 OPTIONAL: RECORD YOURSELF READING IT</div>' +
           '<div class="diary-rec-controls">' +
             '<button class="diary-rec-btn" id="diaryRecBtn" onclick="_diaryToggleRec()">🎤</button>' +
             '<audio id="diaryRecPlayer" controls style="display:none;width:100%;max-width:320px;"></audio>' +
@@ -12508,7 +12508,7 @@ async function _diaryRender(){
           '</div>' +
         '</div>' +
         '<div class="diary-actions">' +
-          '<button class="btn btn-gold btn-lg sparkle-btn" id="diarySubmitBtn" onclick="_diarySubmit()">📔 SUBMIT — EARN +' + DIARY_EGG_REWARD + ' EGGS</button>' +
+          '<button class="btn btn-gold btn-lg sparkle-btn" id="diarySubmitBtn" onclick="_diarySubmit()">📔 SUBMIT, EARN +' + DIARY_EGG_REWARD + ' EGGS</button>' +
         '</div>' +
       '</div>';
   }
@@ -12610,7 +12610,7 @@ async function _diarySubmit(){
 
   var weekKey = _weekNYKey();
   if (user.weeklyDiaryDoneFor === weekKey){
-    // Already submitted this week — just refresh to the done state.
+    // Already submitted this week, just refresh to the done state.
     _diaryRender();
     return;
   }
@@ -12649,7 +12649,7 @@ async function _diarySubmit(){
       submittedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // Award the eggs atomically — only if not already credited this week.
+    // Award the eggs atomically, only if not already credited this week.
     var acctRef = db.collection(TC).doc(user.id);
     var awarded = false;
     await db.runTransaction(async function(tx){
@@ -12675,7 +12675,7 @@ async function _diarySubmit(){
   } catch(e){
     console.error('diary submit:', e);
     toast('Submit failed. Try again.', 'var(--pink)');
-    if (btn){ btn.disabled = false; btn.textContent = '📔 SUBMIT — EARN +' + DIARY_EGG_REWARD + ' EGGS'; }
+    if (btn){ btn.disabled = false; btn.textContent = '📔 SUBMIT, EARN +' + DIARY_EGG_REWARD + ' EGGS'; }
   } finally {
     _diaryState.busy = false;
   }
@@ -12698,7 +12698,7 @@ async function _diaryRenderFeed(){
   }
 
   if (!entries.length){
-    host.innerHTML = '<div class="dr-feed-hidden-note">No entries yet this week — be the first to submit!</div>';
+    host.innerHTML = '<div class="dr-feed-hidden-note">No entries yet this week, be the first to submit!</div>';
     return;
   }
 
@@ -12756,7 +12756,7 @@ function _yodaRenderForm(){
   var introHtml =
     '<div class="dr-feed-banner active" style="margin-bottom:20px;">' +
       '<div class="big">🔀 ' + _esc(_yodaState.activity.title || 'YODAFICATION') + '</div>' +
-      '<div class="sub">Write each sentence in as many different orders as you can — one per line. Keep the verb at the end. Earn +2 eggs when you submit!</div>' +
+      '<div class="sub">Write each sentence in as many different orders as you can, one per line. Keep the verb at the end. Earn +2 eggs when you submit!</div>' +
     '</div>';
 
   var cardsHtml = sentences.map(function(s, i){
@@ -12768,14 +12768,14 @@ function _yodaRenderForm(){
         '<div class="yoda-card-num">SENTENCE ' + (i + 1) + ' / ' + sentences.length + '</div>' +
       '</div>' +
       '<div class="yoda-card-sentence">' + _esc(s.english || '') + '</div>' +
-      '<div class="yoda-help">Try writing this sentence in different orders — one per line. The verb always stays at the end.</div>' +
+      '<div class="yoda-help">Try writing this sentence in different orders, one per line. The verb always stays at the end.</div>' +
       '<textarea class="yoda-textarea" data-i="' + i + '" placeholder="One per line…" oninput="_yodaOnAnswerInput(' + i + ', this.value)">' + _esc(_yodaState.answers[i] || '') + '</textarea>' +
     '</div>';
   }).join('');
 
   var submitHtml =
     '<div class="yoda-actions">' +
-      '<button class="btn btn-green btn-lg sparkle-btn" id="yodaSubmitBtn" onclick="_yodaSubmit()">✅ SUBMIT ALL — EARN +2 EGGS</button>' +
+      '<button class="btn btn-green btn-lg sparkle-btn" id="yodaSubmitBtn" onclick="_yodaSubmit()">✅ SUBMIT ALL, EARN +2 EGGS</button>' +
     '</div>';
 
   host.innerHTML = gradHtml + introHtml + cardsHtml + submitHtml;
@@ -12848,7 +12848,7 @@ async function _yodaSubmit(){
     if (typeof updateCounts === 'function') updateCounts();
     playSfx(SOUND_WIN, 0.9);
 
-    // Fire the auto-grade webhook in the background. We don't await it —
+    // Fire the auto-grade webhook in the background. We don't await it ,
     // student gets the egg + sees the done screen immediately. When the
     // webhook returns we write the result as an inbox message and show a
     // toast nudging the student to check their inbox.
@@ -12858,7 +12858,7 @@ async function _yodaSubmit(){
   } catch(e){
     console.error('yoda submit:', e);
     toast('Save failed. Try again.', 'var(--pink)');
-    if (btn){ btn.disabled = false; btn.textContent = '✅ SUBMIT ALL — EARN +2 EGGS'; }
+    if (btn){ btn.disabled = false; btn.textContent = '✅ SUBMIT ALL, EARN +2 EGGS'; }
   } finally {
     _yodaState.busy = false;
   }
@@ -12874,7 +12874,7 @@ function _yodaRenderDone(){
       '<div class="big">✅ +1 EGG EARNED</div>' +
       '<div class="sub">Nice work! Your submission has been sent to your teacher for review. Come back tomorrow for a new yodafication activity.</div>' +
     '</div>';
-  // Show the student their own answers as a confirmation — but NOT the answer
+  // Show the student their own answers as a confirmation, but NOT the answer
   // key. The answer key is saved on the activity doc for admin review only.
   var keysHtml = sentences.map(function(s, i){
     var mineLines = (_yodaState.answers[i] || '').split('\n').map(function(t){ return t.trim(); }).filter(Boolean);
@@ -12928,7 +12928,7 @@ function _inboxStartUnreadListener(){
         _inboxUnreadCount = snap.size;
         _inboxUpdateBadge();
       }, function(err){
-        // Silent — if rules deny or network's flaky, just leave badge hidden
+        // Silent, if rules deny or network's flaky, just leave badge hidden
         console.warn('inbox listener:', err && err.message);
       });
   } catch(e){
@@ -13072,7 +13072,7 @@ function _inboxFormatBody(text){
   html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
   html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
   html = html.replace(/^# (.+)$/gm, '<h2>$1</h2>');
-  // Bullet lists — group consecutive lines starting with "- " or "* "
+  // Bullet lists, group consecutive lines starting with "- " or "* "
   html = html.replace(/(^|\n)((?:[-*] .+(?:\n|$))+)/g, function(m, lead, block){
     var items = block.trim().split('\n').map(function(line){
       return '<li>' + line.replace(/^[-*] /, '') + '</li>';
@@ -13101,7 +13101,7 @@ async function _yodaFireAutoGrade(answerPayload){
   if (!user || !_yodaState.activity) return;
   // We only send the student's typed lines per sentence. The function
   // re-reads `english` and `answerKey` from Firestore using `activityId`
-  // — bypassing any tampering with what the answer key looks like.
+  //, bypassing any tampering with what the answer key looks like.
   var sentences = (answerPayload || []).map(function(a){
     return { studentAnswers: (a && a.lines) || [] };
   });
@@ -13116,7 +13116,7 @@ async function _yodaFireAutoGrade(answerPayload){
       toast('📬 Feedback ready in inbox!', 'var(--green)');
     }
   } catch(e){
-    // Silent — autograde is best-effort. Student already got their egg.
+    // Silent, autograde is best-effort. Student already got their egg.
     // (Common harmless cases: function cold-start timeout, Make slow, ChatGPT slow.)
     console.warn('yoda auto-grade:', e && e.message);
   }
@@ -13163,7 +13163,7 @@ async function _istcRender(){
     '</div>' +
     (_istc.mode === 'text'
       ? '<div class="istc-row">' +
-          '<label>Message (markdown supported — **bold**, `code`, lists, headers):</label>' +
+          '<label>Message (markdown supported, **bold**, `code`, lists, headers):</label>' +
           '<textarea id="istcBody" placeholder="Type your message…"></textarea>' +
         '</div>'
       : '<div class="istc-row">' +
@@ -13506,7 +13506,7 @@ async function _subRevSendFeedback(uid, activityLabel){
     var payload = {
       type: score ? 'grade' : 'admin',
       title: activityLabel ? ('Feedback: ' + activityLabel) : 'Feedback from Mr. Calvin',
-      body: body || '(no message — see score)',
+      body: body || '(no message, see score)',
       read: false,
       fromAdmin: true,
       fromName: (user && user.displayName) || 'KoreanLearnin',
@@ -13667,7 +13667,7 @@ async function _subRevSolo(passageId, passageTitle){
     body.innerHTML = recs.map(function(r){
       var name = r.userName || 'Student';
       var levels = Array.isArray(r.levelsCompleted) ? r.levelsCompleted.slice() : [];
-      // Render L1-3 audio (L4 has no audio — just a sentence-index pick).
+      // Render L1-3 audio (L4 has no audio, just a sentence-index pick).
       var levelHtml = '';
       ['l1', 'l2', 'l3'].forEach(function(k){
         var audioField = r[k + 'Audio'];
@@ -13683,7 +13683,7 @@ async function _subRevSolo(passageId, passageTitle){
       if (levels.indexOf('l4') !== -1){
         levelHtml +=
           '<div class="subrev-level">' +
-            '<div class="subrev-level-label">L4 — sentence-pick</div>' +
+            '<div class="subrev-level-label">L4, sentence-pick</div>' +
             '<div style="color:#22c55e;font-size:13px;">✓ Completed (text-based, no audio)</div>' +
           '</div>';
       }
