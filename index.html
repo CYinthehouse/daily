@@ -50,7 +50,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .btn-sm{padding:10px 18px;font-size:11px;}.btn-xs{padding:6px 12px;font-size:11px;}
 
 /* ── INPUTS ── */
-.inp{width:100%;padding:14px 16px;background:#0a0a1a;border:2px solid rgba(255,255,255,0.25);border-radius:2px;color:#fff;font-family:var(--vt);font-size:18px;outline:none;transition:border-color 0.1s;box-shadow:2px 2px 0 rgba(0,0,0,0.8);}
+.inp{width:100%;padding:14px 16px;background:#0a0a1a;border:2px solid rgba(255,255,255,0.25);border-radius:2px;color:#fff;font-family:var(--vt);font-size:15px;outline:none;transition:border-color 0.1s;box-shadow:2px 2px 0 rgba(0,0,0,0.8);}
 .inp:focus{border-color:var(--cyan);box-shadow:2px 2px 0 rgba(0,0,0,0.8);}
 .inp::placeholder{color:#666;}
 
@@ -88,11 +88,11 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .login-field label{display:block;font-family:var(--ps);font-size:11px;color:#fff;margin-bottom:8px;font-weight:600;}
 .login-err{color:#ff4444;font-size:14px;min-height:20px;margin-bottom:14px;text-align:center;}
 
-.disclaimer{background:rgba(255,215,0,0.08);border:2px solid rgba(255,215,0,0.35);border-radius:2px;padding:12px 14px;margin-bottom:20px;font-size:14px;color:#e8e0c8;line-height:1.55;box-shadow:2px 2px 0 rgba(0,0,0,0.8);}
+.disclaimer{background:rgba(255,215,0,0.08);border:2px solid rgba(255,215,0,0.35);border-radius:2px;padding:12px 14px;margin-bottom:20px;font-family:var(--vt);font-size:13px;color:#e8e0c8;line-height:1.55;box-shadow:2px 2px 0 rgba(0,0,0,0.8);}
 .disclaimer strong{color:var(--gold);font-family:var(--ps);font-size:9px;display:inline-block;margin-right:4px;text-shadow:var(--ps-outline-sm);}
 
 .tab-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;}
-.tab-toggle-btn{background:#0a0a15;border:2px solid;padding:12px;border-radius:2px;font-family:var(--ps);font-size:10px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,0.8);transition:all 0.1s;text-shadow:var(--ps-outline-sm);}
+.tab-toggle-btn{background:#0a0a15;border:2px solid;padding:12px;border-radius:2px;font-family:var(--ps);font-size:12px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,0.8);transition:all 0.1s;text-shadow:var(--ps-outline-sm);}
 .tab-toggle-btn:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 rgba(0,0,0,0.8);filter:brightness(1.15);}
 #tabLoginBtn{background:var(--cyan);color:#000;border-color:#2da8e8;text-shadow:none;}
 #tabSignupBtn{background:var(--green);color:#000;border-color:#22aa00;text-shadow:none;}
@@ -2002,7 +2002,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 }
 @keyframes wePop{from{opacity:0;transform:scale(0.85) translateY(10px);}to{opacity:1;transform:scale(1) translateY(0);}}
 .welcome-title-top{font-family:var(--ps);font-size:clamp(11px,2.2vw,15px);line-height:1.75;margin-bottom:18px;}
-.welcome-body-sub{font-family:var(--ps);font-size:clamp(9px,1.6vw,11px);color:#fff;line-height:1.9;letter-spacing:0.5px;text-shadow:var(--ps-outline-sm);margin-bottom:0;}
+.welcome-body-sub{font-family:var(--vt);font-size:clamp(14px,2.4vw,17px);color:#fff;line-height:1.7;letter-spacing:0.5px;margin-bottom:0;}
 .welcome-egg-wrap{display:block;cursor:pointer;margin:0 -24px -30px -24px;transition:transform 0.2s ease-out, filter 0.2s ease-out;outline:none;line-height:0;overflow:hidden;}
 .welcome-egg-wrap:hover{filter:brightness(1.12);}
 .welcome-egg-wrap:active{transform:scale(0.98);}
@@ -9432,7 +9432,7 @@ function _injectGachaStyle(){
         '._gew.shake{animation:_gShk .45s cubic-bezier(.36,.07,.19,.97) forwards;}',
         '@keyframes _gShk{0%{transform:translate(0,0) rotate(0)}10%{transform:translate(-8px,-4px) rotate(-3deg)}20%{transform:translate(8px,2px) rotate(3deg)}30%{transform:translate(-10px,0) rotate(-4deg)}40%{transform:translate(10px,-3px) rotate(4deg)}50%{transform:translate(-6px,4px) rotate(-2deg)}60%{transform:translate(6px,-2px) rotate(2deg)}70%{transform:translate(-4px,2px) rotate(-1deg)}80%{transform:translate(4px,1px) rotate(1deg)}90%{transform:translate(-2px,0) rotate(0)}100%{transform:translate(0,0) rotate(0)}}',
         '._gei{width:280px;height:280px;object-fit:contain;display:block;filter:drop-shadow(0 20px 40px rgba(0,0,0,.8));user-select:none;-webkit-user-drag:none;}',
-        '._ghint{margin-top:20px;color:#fff;font-size:19px;letter-spacing:.15em;text-transform:uppercase;transition:opacity .5s;text-shadow:-1px -1px 0 #000024,1px -1px 0 #000024,-1px 1px 0 #000024,1px 1px 0 #000024;}',
+        '._ghint{margin-top:20px;color:#fff;font-size:15px;letter-spacing:.15em;text-transform:uppercase;transition:opacity .5s;text-shadow:-1px -1px 0 #000024,1px -1px 0 #000024,-1px 1px 0 #000024,1px 1px 0 #000024;}',
         '._ghint.hidden{opacity:0;}',
         '._gov .fade-out{opacity:0 !important;transition:opacity .35s ease-out !important;pointer-events:none;}',
         '._grov{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:9999999;opacity:0;pointer-events:none;transition:opacity .4s;background:rgba(0,0,0,.82);font-family:"Press Start 2P","Courier New",monospace;}',
@@ -9552,7 +9552,7 @@ function _injectGachaStyle(){
         '._gnxtb:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(0,0,0,0.7);filter:brightness(1.1);}',
         '._gnxtb:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,0.7);}',
         '._gptsg{font-family:"Press Start 2P",monospace;font-size:11px;color:#FFD700;text-shadow:-1px -1px 0 #000024,1px -1px 0 #000024,-1px 1px 0 #000024,1px 1px 0 #000024,0 0 10px rgba(255,215,0,0.7);margin:4px 0 2px;letter-spacing:1px;}',
-        '._gqinfo{font-family:"Press Start 2P",monospace;font-size:18px;color:#FFD700;margin-bottom:14px;letter-spacing:0.1em;text-shadow:-1px -1px 0 #000024,1px -1px 0 #000024,-1px 1px 0 #000024,1px 1px 0 #000024;}',
+        '._gqinfo{font-family:"Press Start 2P",monospace;font-size:15px;margin-bottom:14px;letter-spacing:0.1em;background-image:linear-gradient(180deg,#fff0a0 0%,#FFD700 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent;filter:drop-shadow(2px 2px 0 #00001a) drop-shadow(-1px -1px 0 #00001a) drop-shadow(1px -1px 0 #00001a) drop-shadow(-1px 1px 0 #00001a);}',
 
         /* ── Countdown timer ── */
         '._gtimerbox{display:none;align-items:center;gap:12px;margin-bottom:14px;background:rgba(0,0,0,0.5);border-radius:10px;padding:8px 16px;}',
@@ -9583,7 +9583,7 @@ function _injectGachaStyle(){
         '._gshineBtn:hover::after{background-position:-200% 0;transition:background-position 1.2s 0.2s ease-out;}',
 
         /* ── "Something is hatching" reveal message ── */
-        '._gfmsg{position:absolute;top:calc(50% + 170px);left:50%;transform:translateX(-50%);color:#f5c842;font-size:13px;letter-spacing:.2em;text-transform:uppercase;opacity:0;transition:opacity .6s;text-shadow:0 0 12px #f5c842;white-space:nowrap;pointer-events:none;z-index:2;}',
+        '._gfmsg{position:absolute;top:calc(50% + 170px);left:50%;transform:translateX(-50%);color:#f5c842;font-size:15px;letter-spacing:.2em;text-transform:uppercase;opacity:0;transition:opacity .6s;text-shadow:0 0 12px #f5c842;white-space:nowrap;pointer-events:none;z-index:2;}',
         '._gfmsg.show{opacity:1;}',
 
         /* ── Burst / swoosh rings / particles / grip pulse ── */
@@ -9634,14 +9634,13 @@ var _eggBatchMode = false;
 var _eggPreOverlayScreen = 'menuScreen';
 // Epilepsy/effects preference. null = not yet chosen, true = on, false = off.
 var _gEffectsOn = null;
-try {
-  var _stored = sessionStorage.getItem('klGachaEffects');
-  if (_stored === 'on') _gEffectsOn = true;
-  else if (_stored === 'off') _gEffectsOn = false;
-} catch(e){}
+// Effects choice is intentionally NOT persisted: the warning prompt should appear
+// every time an egg overlay opens. _createEggOverlay resets this to null on open.
 
 function _createEggOverlay(){
     _injectGachaStyle();
+    // Always re-ask the effects/epilepsy choice for each new egg overlay.
+    _gEffectsOn = null;
     // Remember which screen we're coming from so the right BGM resumes on close.
     _eggPreOverlayScreen = (function(){
       var ids = ['menuScreen','shopScreen','showcaseScreen','dailyScreen','adminScreen'];
@@ -9684,8 +9683,8 @@ function _createEggOverlay(){
             '<div class="_gprog" id="_gprog"></div>' +
         '</div>' +
         '<div class="_gwpop" id="_gwpop">' + (_gEffectsOn !== false ? '<div class="_gwrainbow"></div>' : '') + '<div class="_gwbox">' +
-            '<div style="font-family:\'Press Start 2P\',monospace;font-size:13px;color:#ff4444;line-height:1.7;margin-bottom:18px;">CRACK THE EGG FAST<br>OR LOSE YOUR CHANCE!</div>' +
-            '<button id="_gwclose" class="_gpixelBtn" style="background:linear-gradient(135deg,#ff4444,#cc0000);border:none;color:#fff;font-family:\'Press Start 2P\',monospace;font-size:10px;padding:14px 30px;border-radius:2px;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,0.7),0 0 20px rgba(255,68,68,0.67);">I\'M READY!</button>' +
+            '<div style="font-family:\'Press Start 2P\',monospace;font-size:15px;color:#ff4444;line-height:1.7;margin-bottom:18px;">CRACK THE EGG FAST<br>OR LOSE YOUR CHANCE!</div>' +
+            '<button id="_gwclose" class="_gpixelBtn" style="background:linear-gradient(135deg,#ff4444,#cc0000);border:none;color:#fff;font-family:\'Press Start 2P\',monospace;font-size:15px;padding:14px 30px;border-radius:2px;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,0.7),0 0 20px rgba(255,68,68,0.67);">I\'M READY!</button>' +
         '</div></div>' +
         '<div class="_gepipop" id="_gepipop" style="position:fixed;inset:0;z-index:99999999;display:' + (_gEffectsOn === null ? 'flex' : 'none') + ';align-items:center;justify-content:center;padding:20px;box-sizing:border-box;background:rgba(0,0,0,0.85);">' +
             '<div style="background:#0a0a15;border:3px solid #FFD700;border-radius:2px;padding:28px 24px;max-width:360px;width:100%;text-align:center;box-shadow:0 0 40px rgba(255,215,0,0.45),4px 4px 0 rgba(0,0,0,0.8);">' +
@@ -9923,7 +9922,6 @@ function _startEggFor(roll, queueInfo){
     var epiOff = document.getElementById('_gepiOff');
     function _gEpiChoose(on){
         _gEffectsOn = on;
-        try { sessionStorage.setItem('klGachaEffects', on ? 'on' : 'off'); } catch(e){}
         if (epiPop) epiPop.style.display = 'none';
         // If user turned off effects, strip the rainbow strobe from the warning popup
         if (!on){
