@@ -31,6 +31,10 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 
 /* ── BUTTONS ── */
 .btn{font-family:var(--ps);border:none;border-radius:2px;cursor:pointer;transition:all 0.1s;position:relative;overflow:hidden;box-shadow:3px 3px 0 rgba(0,0,0,0.7);}
+/* Login / Create Account buttons: flex-center the ▶ / ★ icon with the label and
+ * nudge the glyph up (Method 3) so it isn't sitting low on the text baseline. */
+.btn._authbtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;line-height:1;}
+.btn._authbtn ._authic{display:inline-flex;align-items:center;line-height:1;position:relative;top:-3px;}
 .btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(0,0,0,0.7);filter:brightness(1.1);}
 .btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,0.7);}
 .btn-pressing{transform:translate(2px,2px)!important;box-shadow:1px 1px 0 rgba(0,0,0,0.7)!important;filter:brightness(0.88)!important;transition:transform 0.07s,filter 0.07s!important;}
@@ -115,15 +119,15 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
  * align-items:center. line-height:1 keeps the glyph box tight. */
 .chip .chip-emoji{display:inline-flex;align-items:center;justify-content:center;line-height:1;}
 /* EGGS chip becomes a clickable crack button when rolls are available. */
-.chip.eggs-ready{cursor:pointer;position:relative;overflow:visible;border-color:#ff4444;}
+.chip.eggs-ready{cursor:pointer;position:relative;overflow:visible;border-color:#c9a8ff;}
 .chip.eggs-ready:hover{filter:brightness(1.15);}
 .chip.eggs-ready:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(0,0,0,0.8);}
-/* Red blink on the FILL: a red layer covers the chip face and blinks its opacity
- * (ported from the pasted blink keyframes — the fill blinks, not an outer halo).
- * Sits above the dark chip bg but below the text/emoji (which are positioned). */
+/* Light-purple blink on the FILL: a purple layer covers the chip face and blinks
+ * its opacity (the fill blinks, not an outer halo). Sits above the dark chip bg
+ * but below the text/emoji (which are positioned). */
 .chip.eggs-ready::before{
   content:'';position:absolute;top:0;left:0;right:0;bottom:0;
-  background:#ff4444;border-radius:inherit;z-index:0;
+  background:#c9a8ff;border-radius:inherit;z-index:0;
   animation:eggsBlink 1.33s ease-out infinite;
 }
 .chip.eggs-ready > *{position:relative;z-index:1;}
@@ -2520,7 +2524,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
         <input class="inp" type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
       </div>
       <div class="login-err" id="loginErr"></div>
-      <button class="btn btn-gold btn-lg sparkle-btn" style="width:100%;" onclick="doLogin()">▶ LOG IN</button>
+      <button class="btn btn-gold btn-lg sparkle-btn _authbtn" style="width:100%;" onclick="doLogin()"><span class="_authic">▶</span><span>LOG IN</span></button>
     </div>
     <!-- Signup form -->
     <div id="signupForm" style="display:none;">
@@ -2537,7 +2541,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
         <input class="inp" type="password" id="signupConfirm" placeholder="retype password" autocomplete="new-password" onkeydown="if(event.key==='Enter')doSignup()">
       </div>
       <div class="login-err" id="signupErr"></div>
-      <button class="btn btn-gold btn-lg sparkle-btn" style="width:100%;" onclick="doSignup()">★ CREATE ACCOUNT</button>
+      <button class="btn btn-gold btn-lg sparkle-btn _authbtn" style="width:100%;" onclick="doSignup()"><span class="_authic">★</span><span>CREATE ACCOUNT</span></button>
     </div>
   </div>
 </div>
@@ -3094,7 +3098,7 @@ function _nyMidnightToISO(ymd){
 
 /* ═══ AUDIO ASSETS (reused from Lesson Portal) ═══ */
 const SOUND_CORRECT      = 'https://cdn.shopify.com/s/files/1/0674/6747/7282/files/mario_coin_sound_1.mp3?v=1773019671';
-const SOUND_WIN          = 'https://cdn.shopify.com/s/files/1/0674/6747/7282/files/win-soundd.mp3?v=1773019671';
+const SOUND_WIN          = 'https://cdn.shopify.com/s/files/1/0674/6747/7282/files/win-soundd.mp3?v=1773019672';
 const SOUND_FLIP         = 'https://cdn.shopify.com/s/files/1/0674/6747/7282/files/freesound_community-page-flip-47177.mp3?v=1773020591';
 const SOUND_LEVEL_SELECT = 'https://cdn.shopify.com/s/files/1/0674/6747/7282/files/benkirb-shine-7-268909.mp3?v=1773078474';
 const SOUND_LEVEL_BGM    = 'https://cdn.shopify.com/s/files/1/0674/6747/7282/files/ES_A_Lil_BIT_-_Rocket_Jr.mp3?v=1773078414';
@@ -6421,6 +6425,13 @@ function _getZoom(){
 }
 function _applyZoom(v){
   document.body.style.setProperty('--app-zoom', String(v));
+  // Reveal card scales with the A-/A/A+ text setting too, but normalized so the
+  // DEFAULT zoom (1.2) renders the card at its native size (scale 1.0). The card
+  // grows/shrinks proportionally from there. Clamped to a gentle range so the
+  // pixel art never softens too hard or overflows on small screens.
+  var rs = v / APP_ZOOM_DEFAULT;
+  rs = Math.max(0.82, Math.min(1.12, rs));
+  document.body.style.setProperty('--reveal-scale', String(rs));
   try { localStorage.setItem('appZoom', String(v)); } catch(e){}
 }
 function _fontDelta(steps){
@@ -9426,30 +9437,39 @@ function _injectGachaStyle(){
         '._gov .fade-out{opacity:0 !important;transition:opacity .35s ease-out !important;pointer-events:none;}',
         '._grov{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:9999999;opacity:0;pointer-events:none;transition:opacity .4s;background:rgba(0,0,0,.82);font-family:"Press Start 2P","Courier New",monospace;}',
         '._grov.show{opacity:1;pointer-events:all;}',
-        '._grov.show ._grc{transform:scale(1);}',
-        '._grc[data-rarity="holo"]{border:2px solid #dde;box-shadow:0 0 50px rgba(200,200,255,.55),0 0 90px rgba(200,200,255,.18);}',
-        '._grc[data-rarity="pink"]{border:2px solid #d4537e;box-shadow:0 0 45px rgba(212,83,126,.5);}',
-        '._grc[data-rarity="red"]{border:2px solid #e24b4a;box-shadow:0 0 45px rgba(226,75,74,.45);}',
-        '._grc[data-rarity="yellow"]{border:2px solid #f5c842;box-shadow:0 0 45px rgba(245,200,66,.45);}',
-        '._grc[data-rarity="green"]{border:2px solid #639922;box-shadow:0 0 35px rgba(99,153,34,.4);}',
-        '._grc[data-rarity="blue"]{border:2px solid #378add;box-shadow:0 0 35px rgba(55,138,221,.4);}',
-        '._grb{font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:20px;font-weight:bold;}',
+        '._grov.show ._grc{transform:scale(var(--reveal-scale, 1));}',
+        '._grc[data-rarity="holo"]{border:2px solid #dde;box-shadow:8px 8px 0 #6a6a99;}',
+        '._gran{font-size:18px;font-weight:bold;color:#fff;letter-spacing:.04em;text-align:center;}',
+        '._grc[data-rarity="blue"]   ._gran{text-shadow:3px 3px 0 #1f6fc0;}',
+        '._grc[data-rarity="red"]    ._gran{text-shadow:3px 3px 0 #c0322f;}',
+        '._grc[data-rarity="green"]  ._gran{text-shadow:3px 3px 0 #4a7a1a;}',
+        '._grc[data-rarity="yellow"] ._gran{text-shadow:3px 3px 0 #c98a18;}',
+        '._grc[data-rarity="pink"]   ._gran{text-shadow:3px 3px 0 #b84368;}',
+        '._grc[data-rarity="holo"]   ._gran{text-shadow:3px 3px 0 #9a9ac5;}',
+        '._gtitlewrap{display:flex;flex-direction:column;align-items:center;gap:2px;}',
+        '._gglit{display:inline-flex;align-items:center;gap:5px;font-family:"Press Start 2P",monospace;font-size:9px;letter-spacing:.1em;color:#1a1205;background:linear-gradient(135deg,#fff3b0,#f5c842,#e0a020);border:1px solid #b8860b;border-radius:20px;padding:4px 10px;margin-top:4px;text-shadow:none;box-shadow:0 0 10px rgba(245,200,66,.6);}',
+        '._grc[data-rarity="pink"]{border:2px solid #d4537e;box-shadow:8px 8px 0 #72243e;}',
+        '._grc[data-rarity="red"]{border:2px solid #e24b4a;box-shadow:8px 8px 0 #791f1f;}',
+        '._grc[data-rarity="yellow"]{border:2px solid #f5c842;box-shadow:8px 8px 0 #854f0b;}',
+        '._grc[data-rarity="green"]{border:2px solid #639922;box-shadow:8px 8px 0 #27500a;}',
+        '._grc[data-rarity="blue"]{border:2px solid #378add;box-shadow:8px 8px 0 #0c447c;}',
+        '._grb{font-size:9px;letter-spacing:.1em;text-transform:uppercase;padding:3px 10px;border-radius:20px;font-weight:bold;display:inline-flex;align-items:center;justify-content:center;gap:5px;line-height:1;}',
         '.badge-holo{background:linear-gradient(90deg,#b0b0ff,#e0e0ff,#ffb0ff,#b0b0ff);background-size:200% 100%;animation:_gHoloBdg 2s linear infinite;color:#222;}',
         '@keyframes _gHoloBdg{0%{background-position:0% 50%}100%{background-position:200% 50%}}',
         '.badge-pink{background:#d4537e;color:#fff;}.badge-red{background:#e24b4a;color:#fff;}.badge-yellow{background:#f5c842;color:#111;}.badge-green{background:#639922;color:#fff;}.badge-blue{background:#378add;color:#fff;}',
-        '._griw{width:140px;border-radius:10px;border:1px solid #222;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}',
-        '._griw img{width:100%;height:auto;display:block;margin-top:-25px;margin-bottom:-25px;pointer-events:none;-webkit-user-drag:none;user-select:none;}',
-        '._griw._detail{width:250px;}',
-        '._griw._detail img{width:100%;height:auto;margin-top:-25px;margin-bottom:-25px;}',
+        '._griw{width:280px;border-radius:10px;border:1px solid #222;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}',
+        '._griw img{width:100%;height:auto;display:block;margin-top:-50px;margin-bottom:-50px;pointer-events:none;-webkit-user-drag:none;user-select:none;}',
+        '._griw._detail{width:340px;}',
+        '._griw._detail img{width:100%;height:auto;margin-top:-50px;margin-bottom:-50px;}',
         // Per-character crop overrides. Each pair tightens an extra 5px on
         // top and bottom vs. the original baseline so the character's body
         // fills more of the frame in both the egg-crack reveal and the
         // showcase card detail popup. Wombatman uses the -25/-25 default.
-        '._griw._anim-captain_corea img{margin-top:-20px;margin-bottom:-20px;}',
-        '._griw._anim-fox img{margin-top:-20px;margin-bottom:-30px;}',
-        '._griw._anim-sloth img{margin-top:-35px;margin-bottom:-20px;}',
-        '._griw._anim-pola_cola img{margin-top:-10px;margin-bottom:-10px;}',
-        '._griw._anim-turtle img{margin-top:-20px;margin-bottom:-30px;}',
+        '._griw._anim-captain_corea img{margin-top:-40px;margin-bottom:-40px;}',
+        '._griw._anim-fox img{margin-top:-40px;margin-bottom:-60px;}',
+        '._griw._anim-sloth img{margin-top:-70px;margin-bottom:-40px;}',
+        '._griw._anim-pola_cola img{margin-top:-20px;margin-bottom:-20px;}',
+        '._griw._anim-turtle img{margin-top:-40px;margin-bottom:-60px;}',
         '._gholoS{position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0) 0%,rgba(180,180,255,.38) 45%,rgba(255,180,255,.32) 55%,rgba(255,255,255,0) 100%);background-size:200% 200%;animation:_gHoloShift 2s ease-in-out infinite alternate;pointer-events:none;border-radius:12px;display:none;}',
         '._griw.holo ._gholoS{display:block;}',
         '@keyframes _gHoloShift{0%{background-position:0% 0%}100%{background-position:100% 100%}}',
@@ -9468,45 +9488,67 @@ function _injectGachaStyle(){
         '._gholosc{position:absolute;inset:0;border-radius:12px;pointer-events:none;opacity:0;background:linear-gradient(115deg,transparent 0%,rgba(255,100,200,0) 30%,rgba(150,220,255,.3) 42%,rgba(255,255,255,.5) 50%,rgba(180,255,150,.3) 58%,rgba(255,180,100,0) 70%,transparent 100%);background-size:300% 300%;mix-blend-mode:screen;animation:_gHoloScan 5s ease-in-out infinite;}',
         '._griw.holo ._gholosc{display:block;}',
         '@keyframes _gHoloScan{0%{background-position:150% 150%;opacity:0}5%{opacity:1}14%{background-position:-50% -50%;opacity:0}100%{background-position:-50% -50%;opacity:0}}',
-        '._grc{background:#0e0e0e;border-radius:16px;padding:14px 12px;display:flex;flex-direction:column;align-items:center;gap:10px;transform:scale(.85);transition:transform .4s cubic-bezier(.34,1.56,.64,1);max-width:420px;width:92vw;max-height:650px;overflow:hidden;}',
-        '._gctr{display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:2px;color:#ccc;font-size:10px;letter-spacing:.1em;}',
-        // Combined pull chance footer, bumped from 8px to 10px so the meta
-        // info under the stats table is readable without leaning in.
-        '._gcmb{font-size:10px;color:#ccc;letter-spacing:.06em;text-align:center;border-top:1px solid #333;padding-top:8px;margin-top:2px;width:100%;}',
+        '._grc{background:#0e0e0e;border-radius:0;padding:22px;display:flex;flex-direction:column;align-items:center;gap:10px;transform:scale(calc(var(--reveal-scale, 1) * 0.85));transition:transform .4s cubic-bezier(.34,1.56,.64,1);max-width:520px;width:94vw;max-height:820px;overflow:hidden;}',
+        '._gctr{display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:2px;color:#ccc;font-size:11px;letter-spacing:.1em;}',
+        '._gmetawrap{display:flex;flex-direction:column;align-items:center;width:100%;margin:10px 0;padding:20px 0;border-top:1px solid #2a2a2a;border-bottom:1px solid #2a2a2a;}',
+        // Combined pull chance footer (Option A): white label text, gold values
+        // for both the percentage and the Tap Multiplier.
+        '._gsblk{display:flex;flex-direction:column;align-items:center;gap:11px;margin-bottom:14px;}',
+        '._gsblk._last{margin-bottom:0;}',
+        '._gslabel{font-size:9px;color:#fff;letter-spacing:.12em;}',
+        '._gsbig{font-size:22px;position:relative;display:inline-block;color:#f5c842;background:linear-gradient(100deg,#f5c842 0%,#f5c842 38%,#fff6c8 50%,#f5c842 62%,#f5c842 100%);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(1px 1px 0 #000) drop-shadow(-1px -1px 0 #000) drop-shadow(1px -1px 0 #000) drop-shadow(-1px 1px 0 #000);animation:gsbigGlare 3.2s linear infinite;}',
+        '@keyframes gsbigGlare{0%{background-position:150% 0;}100%{background-position:-150% 0;}}',
+        '._gmlabel{font-size:9px;color:#b88cff;letter-spacing:.12em;}',
+        '._gmbig{font-size:16px;color:#f5c842;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;}',
+        // Legacy combined-chance line still used by the showcase re-view.
+        '._gcmb{font-size:11px;color:#fff;letter-spacing:.06em;text-align:center;border-top:1px solid #2a2a2a;padding-top:12px;margin-top:6px;width:100%;}',
         '._gcmb span{color:#f5c842;}',
         '._grrws{display:flex;flex-direction:column;gap:6px;width:100%;}',
         // Stats rows: every text size bumped ~2px for legibility. The wider
         // modal (420px) makes this comfortable. Label flex-basis bumped to
         // 80px (was 72px) and percentage min-width to 50px (was 42px) so
         // the bigger text doesn\'t crowd the value column.
-        '._grrw{display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:.05em;text-transform:uppercase;padding:9px 11px;border-radius:6px;background:#141414;border:1px solid #2a2a2a;}',
-        '._grrw ._grrl{flex:0 0 80px;color:#aaa;white-space:nowrap;border-right:1px solid #444;padding-right:8px;font-size:9px;}',
+        '._grrw{display:flex;align-items:center;gap:14px;font-size:10px;letter-spacing:.05em;text-transform:uppercase;padding:9px 13px;border-radius:6px;background:#171717;border:1px solid #2a2a2a;}',
+        '._grrw ._grrl{flex:0 0 96px;width:96px;color:#888;white-space:nowrap;border-right:1px solid #333;padding-right:8px;font-size:10px;box-sizing:border-box;}',
         // word-break:normal + overflow-wrap:break-word ensures the value text
         // wraps ONLY at whitespace, never mid-word. Previously break-word was
         // letting things like "CALICO CAT KIGURUMI" shatter into 4 lines
         // ("CALICO / CAT / KIGURU / MI") when squeezed into a narrow column.
-        '._grrw ._grrn{flex:1;color:#fff;font-size:10px;line-height:1.4;word-break:normal;overflow-wrap:break-word;hyphens:none;}',
-        '._grrw ._grrt{font-size:9px;padding:4px 7px;border-radius:4px;white-space:nowrap;text-align:center;flex-shrink:0;}',
-        '._grrw ._grrp{color:#f5c842;font-size:10px;white-space:nowrap;text-align:right;flex-shrink:0;min-width:50px;}',
-        '.tier-3{background:#1a0808;color:#e24b4a;border:1px solid #e24b4a55;}.tier-2{background:#081208;color:#639922;border:1px solid #63992255;}.tier-1{background:#08080e;color:#378add;border:1px solid #378add55;}',
+        '._grrw ._grrn{flex:1;color:#fff;font-size:11px;line-height:1.4;word-break:normal;overflow-wrap:break-word;hyphens:none;}',
+        '._grrw ._grrt{font-size:10px;padding:4px 7px;border-radius:4px;white-space:nowrap;text-align:center;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;gap:4px;line-height:1;}',
+        '._grrw ._grrp{color:#f4c542;font-size:12px;white-space:nowrap;text-align:right;flex-shrink:0;min-width:64px;}',
+        '.tier-3{background:#e24b4a;color:#fff;border:1px solid #a32d2d;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;}.tier-2{background:#639922;color:#fff;border:1px solid #3b6d11;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;}.tier-1{background:#1f5a8f;color:#fff;border:1px solid #2f6fa8;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;}',
+        '._grrw ._grrt ._gic{display:inline-flex;align-items:center;line-height:1;position:relative;top:-5px;font-size:1.7em;}',
         /* See All Rarities button + popup */
-        '._gsrb{background:#1a1a2e;border:1px solid #378add;color:#378add;font-family:"Press Start 2P",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:8px 16px;border-radius:6px;cursor:pointer;transition:background .2s,color .2s;margin-top:2px;}',
-        '._gsrb:hover{background:#378add;color:#fff;}',
+        '._gsrb{background:#378add;border:2px solid #185fa5;color:#fff;font-family:"Press Start 2P",monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:9px 16px;border-radius:6px;cursor:pointer;transition:transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;margin-top:2px;display:inline-flex;align-items:center;justify-content:center;gap:7px;line-height:1;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;box-shadow:0 0 0 rgba(0,0,0,0);}',
+        '._gsrb span._gic{display:inline-flex;align-items:center;line-height:1;position:relative;top:-2px;}',
+        '._gsrb:hover{filter:brightness(1.12);}',
+        // Hover lift: button moves up-left by the shadow size and a hard medium-dark
+        // gray offset shadow is revealed down-right (matches the flat pixel-shadow look).
+        '._grevbtn:hover, ._gsrb:hover{transform:translate(-6px,-6px);box-shadow:6px 6px 0 #4a4a4a;}',
+        '._grevbtn:active, ._gsrb:active{transform:translate(-2px,-2px);box-shadow:2px 2px 0 #4a4a4a;}',
         '._grarov{position:fixed;inset:0;z-index:10000000;background:rgba(0,0,0,.9);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;padding:20px;box-sizing:border-box;}',
         '._grarov.show{opacity:1;pointer-events:all;}',
-        '._grarpop{background:#0e0e0e;border:1px solid #333;border-radius:16px;padding:24px;max-width:440px;width:100%;max-height:85vh;overflow-y:auto;display:flex;flex-direction:column;gap:16px;}',
-        '._grarpop h2{font-family:"Press Start 2P",monospace;font-size:9px;color:#f5c842;letter-spacing:.15em;text-transform:uppercase;text-align:center;text-shadow:0 0 8px #f5c842;margin:0;}',
-        '._grarsect{font-family:"Press Start 2P",monospace;font-size:7px;color:#f5c842;letter-spacing:.12em;text-transform:uppercase;margin-top:4px;}',
+        '._grarpop{background:#0e0e0e;border:1px solid #333;border-radius:16px;padding:24px;max-width:520px;width:100%;max-height:85vh;overflow-y:auto;display:flex;flex-direction:column;gap:16px;}',
+        '._grarpop h2{font-family:"Press Start 2P",monospace;font-size:12px;color:#f5c842;letter-spacing:.15em;text-transform:uppercase;text-align:center;text-shadow:0 0 8px #f5c842;margin:0;}',
+        '._grarsect{font-family:"Press Start 2P",monospace;font-size:10px;color:#f5c842;letter-spacing:.12em;text-transform:uppercase;margin-top:4px;}',
         '._grartbl{width:100%;border-collapse:collapse;}',
-        '._grartbl th{font-family:"Press Start 2P",monospace;font-size:6px;color:#888;letter-spacing:.1em;text-transform:uppercase;padding:4px 8px;border-bottom:1px solid #222;text-align:left;font-weight:normal;}',
+        '._grartbl th{font-family:"Press Start 2P",monospace;font-size:9px;color:#888;letter-spacing:.1em;text-transform:uppercase;padding:5px 8px;border-bottom:1px solid #222;text-align:left;font-weight:normal;}',
         '._grartbl th.pct{text-align:right;}',
-        '._grartbl td{font-family:"Press Start 2P",monospace;font-size:6px;color:#fff;padding:6px 8px;border-bottom:1px solid #1a1a1a;letter-spacing:.05em;line-height:1.5;}',
+        '._grartbl td{font-family:"Press Start 2P",monospace;font-size:9px;color:#fff;padding:7px 8px;border-bottom:1px solid #1a1a1a;letter-spacing:.05em;line-height:1.5;}',
         '._grartbl td.pct{color:#f5c842;text-align:right;}',
         '._grartbl td.t3{color:#e24b4a;}._grartbl td.t2{color:#639922;}._grartbl td.t1{color:#378add;}',
         '._grartbl td.glit{color:#f5c842;}',
-        '._grarcls{background:#1a0e00;border:1px solid #f5c842;color:#f5c842;font-family:"Press Start 2P",monospace;font-size:7px;letter-spacing:.1em;text-transform:uppercase;padding:8px 18px;border-radius:6px;cursor:pointer;align-self:center;}',
+        '._grarcls{background:#1a0e00;border:1px solid #f5c842;color:#f5c842;font-family:"Press Start 2P",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:10px 22px;border-radius:6px;cursor:pointer;align-self:center;}',
         '._grarcls:hover{background:#f5c842;color:#000;}',
         '._gnxtb{font-family:"Press Start 2P",monospace;border-radius:2px;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,0.7);transition:all 0.1s;background:#a855f7;color:#fff;border:2px solid #7722cc;padding:12px 22px;font-size:10px;margin-top:10px;text-shadow:-1px -1px 0 #000024,1px -1px 0 #000024,-1px 1px 0 #000024,1px 1px 0 #000024;letter-spacing:1px;}',
+        // Two-button reveal row (post-signup): NEXT ROLL (green, left) + CLOSE (red, right).
+        '._grbtnrow{display:flex;gap:10px;width:100%;margin-top:0;}',
+        '._grbtnrow ._grevbtn{flex:1;margin-top:0;}',
+        '._grevbtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;line-height:1;}',
+        '._grevbtn ._gic{display:inline-flex;align-items:center;line-height:1;position:relative;top:-2px;}',
+        '._grevbtn ._gtx{display:inline-flex;align-items:center;line-height:1;}',
+        '._grevbtn._next{background:#39c24a !important;border-color:#228a30 !important;}',
         '._gnxtb:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(0,0,0,0.7);filter:brightness(1.1);}',
         '._gnxtb:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,0.7);}',
         '._gptsg{font-family:"Press Start 2P",monospace;font-size:11px;color:#FFD700;text-shadow:-1px -1px 0 #000024,1px -1px 0 #000024,-1px 1px 0 #000024,1px 1px 0 #000024,0 0 10px rgba(255,215,0,0.7);margin:4px 0 2px;letter-spacing:1px;}',
@@ -9610,14 +9652,13 @@ function _createEggOverlay(){
       return 'menuScreen';
     })();
     // Always stop menu BGM when entering the egg overlay.
-    // Both single-roll AND batch mode now play the dramatic Apex Signal track
+    // Both single-roll AND batch mode play the dramatic Apex Signal track
     // (welcomeBgmPlay), Mining by Moonlight is reserved for "ambient" gacha
-    // areas (point shop, showcase, daily picker) per design.
+    // areas (point shop, showcase, daily picker) per design. Started here for
+    // BOTH modes so signup-batch and EGGS-chip eggs behave identically.
     menuBgmStop();
     gachaBgmStop();
-    if (!_eggBatchMode){
-      welcomeBgmPlay();
-    }
+    welcomeBgmPlay();
     var ov = document.createElement('div');
     ov.id = '_gachaOverlay';
     ov.className = '_gov';
@@ -10181,14 +10222,13 @@ function _revealCharacter(roll){
     if (gew) gew.style.display = 'none';
     if (info) info.style.display = 'none';
 
-    // Play rarity-tiered sound (skipped during welcome batch, the win sound was already played at crack)
+    // Egg-OPEN sound: plays the win sound at the moment the gacha is revealed, for
+    // every non-batch egg (common and rare alike). The reveal lands ~1-1.6s after the
+    // timer hits 0, so this naturally fires about a second after timer-zero. Batch/
+    // welcome eggs play their own win fanfare (paired with the BGM fade) at crack, so
+    // they're excluded here to avoid a double-play.
     if (!_eggBatchMode){
-        var rar = roll.color.rarity;
-        if (rar === 'holo' || rar === 'pink' || rar === 'red'){
-            playSfx(SOUND_WIN, 0.95);
-        } else {
-            playSfx(SOUND_CORRECT, 0.9);
-        }
+        playSfx(SOUND_WIN, 0.95);
     }
 
     setTimeout(function(){
@@ -10206,6 +10246,8 @@ function _revealCharacter(roll){
 
         // Tier labels (match ref terminology)
         var TIER_LABELS = { 3: '\u2605\u2605\u2605 Legendary', 2: '\u2605\u2605 Rare', 1: '\u2605 Common' };
+        var TIER_STARS = { 3: '\u2605\u2605\u2605', 2: '\u2605\u2605', 1: '\u2605' };
+        var TIER_WORDS = { 3: 'Legendary', 2: 'Rare', 1: 'Common' };
         var TIER_CLASSES = { 3: 'tier-3', 2: 'tier-2', 1: 'tier-1' };
         var tA = _GACHA_ANIMALS.reduce(function(s,e){return s+e.weight;},0);
         var tC = _GACHA_COLORS.reduce(function(s,e){return s+e.weight;},0);
@@ -10229,18 +10271,26 @@ function _revealCharacter(roll){
                     (imgUrl ? '<img src="' + imgUrl + '" alt="">' : '<div style="height:220px;display:flex;align-items:center;justify-content:center;color:#555;">No image</div>') +
                     '<div class="_ggsc"></div>' +
                 '</div>' +
-                '<div style="font-size:17px;font-weight:bold;color:#fff;letter-spacing:.04em;text-align:center" id="_gran">' + esc(roll.animal.name) + '</div>' +
+                '<div class="_gtitlewrap">' +
+                    '<div class="_gran" id="_gran">' + esc(roll.animal.name) + '</div>' +
+                    (roll.glitter ? '<div class="_gglit">\u2756 GLITTER \u2756</div>' : '') +
+                '</div>' +
                 '<div class="_grrws">' +
-                    '<div class="_grrw"><span class="_grrl">Character</span><span class="_grrn">' + esc(roll.animal.name) + '</span><span class="_grrt ' + TIER_CLASSES[aTier] + '">' + TIER_LABELS[aTier] + '</span><span class="_grrp">' + _gachaFmtPct(aPct) + '</span></div>' +
-                    '<div class="_grrw"><span class="_grrl">Color</span><span class="_grrn">' + esc(roll.color.name) + '</span><span class="_grrt ' + TIER_CLASSES[cTier] + '">' + TIER_LABELS[cTier] + '</span><span class="_grrp">' + _gachaFmtPct(cPct) + '</span></div>' +
-                    '<div class="_grrw"><span class="_grrl">Item</span><span class="_grrn">' + esc(roll.item.name) + '</span><span class="_grrt ' + TIER_CLASSES[iTier] + '">' + TIER_LABELS[iTier] + '</span><span class="_grrp">' + _gachaFmtPct(iPct) + '</span></div>' +
+                    '<div class="_grrw"><span class="_grrl">Character</span><span class="_grrn">' + esc(roll.animal.name) + '</span><span class="_grrt ' + TIER_CLASSES[aTier] + '"><span class="_gic">' + TIER_STARS[aTier] + '</span>' + TIER_WORDS[aTier] + '</span><span class="_grrp">' + _gachaFmtPct(aPct) + '</span></div>' +
+                    '<div class="_grrw"><span class="_grrl">Color</span><span class="_grrn">' + esc(roll.color.name) + '</span><span class="_grrt ' + TIER_CLASSES[cTier] + '"><span class="_gic">' + TIER_STARS[cTier] + '</span>' + TIER_WORDS[cTier] + '</span><span class="_grrp">' + _gachaFmtPct(cPct) + '</span></div>' +
+                    '<div class="_grrw"><span class="_grrl">Item</span><span class="_grrn">' + esc(roll.item.name) + '</span><span class="_grrt ' + TIER_CLASSES[iTier] + '"><span class="_gic">' + TIER_STARS[iTier] + '</span>' + TIER_WORDS[iTier] + '</span><span class="_grrp">' + _gachaFmtPct(iPct) + '</span></div>' +
                 '</div>' +
-                '<div class="_gcmb">' + (roll.glitter
-                    ? 'Pull chance: ' + _gachaFmtPct(roll.pct) + ' &nbsp;<span>\u2756 GLITTER \u2756</span>'
-                    : 'Combined pull chance: <span>' + _gachaFmtPct(roll.pct) + '</span>') +
-                    '<div style="font-size:11px;opacity:.85;margin-top:4px;">Tap Multiplier <span style="color:#f5c842;font-weight:bold;">' + (roll.tapMult || 1).toFixed(2) + '\u00d7</span></div>' +
+                '<div class="_gmetawrap">' +
+                    '<div class="_gsblk">' +
+                        '<div class="_gslabel">' + (roll.glitter ? 'PULL CHANCE' : 'COMBINED PULL CHANCE') + '</div>' +
+                        '<div class="_gsbig">' + _gachaFmtPct(roll.pct) + '</div>' +
+                    '</div>' +
+                    '<div class="_gsblk _last">' +
+                        '<div class="_gmlabel">TAP MULTIPLIER</div>' +
+                        '<div class="_gmbig">' + (roll.tapMult || 1).toFixed(2) + '\u00d7</div>' +
+                    '</div>' +
                 '</div>' +
-                '<button class="_gsrb" onclick="showRarityTables()">\u2756 See All Rarities</button>' +
+                '<button class="_gsrb" onclick="showRarityTables()"><span class="_gic">\u2756</span>See All Rarities</button>' +
                 _buildRollCounter() +
                 _buildRevealButton() +
             '</div>';
@@ -10279,12 +10329,46 @@ function _buildRollCounter(){
 function _buildRevealButton(){
     // Style matches the login/signup btn-lg buttons, solid red, full-width, Press Start 2P,
     // 3px black offset shadow, hover/active transforms, plus a sparkle-shine sweep on hover.
-    var baseStyle = 'display:block;width:100%;background:#ff4444;color:#fff;border:2px solid #cc2222;font-family:\'Press Start 2P\',\'Courier New\',monospace !important;font-size:12px;letter-spacing:.08em;padding:16px 36px;border-radius:2px;cursor:pointer;margin-top:8px;box-shadow:3px 3px 0 rgba(0,0,0,0.7);text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;transition:transform 0.1s ease, filter 0.1s ease, box-shadow 0.1s ease;';
+    var baseStyle = 'display:inline-flex;align-items:center;justify-content:center;gap:8px;line-height:1;white-space:nowrap;width:100%;box-sizing:border-box;background:#ff4444;color:#fff;border:2px solid #cc2222;font-family:\'Press Start 2P\',\'Courier New\',monospace !important;font-size:12px;letter-spacing:.06em;padding:16px 14px;border-radius:2px;cursor:pointer;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;transition:transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;';
+    // Signup batch flow: NEXT EGG while the queue has more, CLOSE on the last one.
     if (_eggBatchMode && _eggQueue.length > 0){
-        return '<button id="_grclose" class="_gpixelBtn _gshineBtn" style="' + baseStyle + '" onclick="nextInQueue()">&#x25B6; NEXT EGG</button>';
+        return '<button id="_grclose" class="_gshineBtn _grevbtn" style="' + baseStyle + '" onclick="nextInQueue()"><span class="_gic">&#x25B6;</span><span class="_gtx">NEXT EGG</span></button>';
     }
-    return '<button id="_grclose" class="_gpixelBtn _gshineBtn" style="' + baseStyle + '" onclick="finishBatch()">&#x2715; CLOSE</button>';
+    if (_eggBatchMode){
+        return '<button id="_grclose" class="_gshineBtn _grevbtn" style="' + baseStyle + '" onclick="finishBatch()"><span class="_gic">&#x2715;</span><span class="_gtx">CLOSE</span></button>';
+    }
+    // Post-signup single roll: if the player still has eggs, offer a green NEXT ROLL
+    // (left) beside the red CLOSE (right). With 0 eggs left, just CLOSE.
+    var closeBtn = '<button id="_grclose" class="_gshineBtn _grevbtn" style="' + baseStyle + '" onclick="finishBatch()"><span class="_gic">&#x2715;</span><span class="_gtx">CLOSE</span></button>';
+    if (user && (user.gachaRolls || 0) > 0){
+        var nextBtn = '<button class="_gshineBtn _grevbtn _next" style="' + baseStyle + '" onclick="_revealNextRoll()"><span class="_gic">&#x25B6;</span><span class="_gtx">NEXT ROLL</span></button>';
+        return '<div class="_grbtnrow">' + nextBtn + closeBtn + '</div>';
+    }
+    return closeBtn;
 }
+
+function _revealNextRoll(){
+    // Post-signup "NEXT ROLL": save the current single-egg result, close the reveal,
+    // then immediately crack another egg (rollOne guards gachaRolls > 0).
+    playSelect();
+    _closeEggOverlay();
+    _saveBatchResults(_eggBatchResults.slice()).then(function(){
+        _eggBatchResults = [];
+        _eggBatchMode = false;
+        _eggQueue = [];
+        updateCounts();
+        if (user && (user.gachaRolls || 0) > 0){
+            rollOne();
+        } else {
+            // No eggs left after saving; fall back to showcase like a normal close.
+            hideAllScreens();
+            show('topBar');
+            renderShowcase();
+            showFade('showcaseScreen');
+        }
+    });
+}
+window._revealNextRoll = _revealNextRoll;
 
 /* ═══ RARITY TABLES POPUP ═══ */
 function showRarityTables(){
@@ -10399,6 +10483,8 @@ window.finishBatch = finishBatch;
 
 function _showPointsPop(pts){
     if (pts <= 0) return;
+    // Coin sound when the points amount shows up (kept from the old reveal flow).
+    playSfx(SOUND_CORRECT, 0.9);
     var p = document.createElement('div');
     p.className = 'points-pop';
     p.textContent = '+' + pts + ' ⭐';
