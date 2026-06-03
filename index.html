@@ -10369,12 +10369,11 @@ function _fitRevealCard(shown){
   var shownNow = (shown === true) || card.closest('._grov').classList.contains('show');
   var availH = window.innerHeight - 24;
   var availW = window.innerWidth - 24;
-  // _grc has no max-height anymore (scroll lives on the inner ._gcbody), so
-  // offsetHeight is the true natural height again — original behavior restored.
-  // Clear any body cap first so the body contributes its full natural height to
-  // the measurement (otherwise a prior cap would clamp it and skew the fit).
-  var bodyEl = card.querySelector('._gcbody');
-  if (bodyEl && bodyEl.style.maxHeight){ bodyEl.style.maxHeight = ''; }
+  // Original behavior: _grc has no cap, the body has no constraining cap at default
+  // font size, so offsetHeight is the card's true natural height. Measure once,
+  // compute fit, cache it, apply the transform. The font-scale body cap is applied
+  // SEPARATELY (only when the user grows fonts) and never feeds back into this
+  // measurement — see _applyBodyCap / _gcAdjustFont.
   var natH = card.offsetHeight;
   var natW = card.offsetWidth;
   var fit;
@@ -10390,34 +10389,42 @@ function _fitRevealCard(shown){
   var scale = fit * ts * (shownNow ? 1 : 0.85);
   card.style.transform = 'scale(' + scale + ')';
   document.body.style.setProperty('--reveal-fit', String(fit));
-  _applyBodyCap(card, fit, ts);
 }
 
-// Cap the inner ._gcbody so that, AT THE CARD'S FIT SCALE, the whole card fits the
-// viewport. Above the cap the body scrolls; the outer card + image never rescale.
-// Worked in the card's own pre-transform units (the transform scales it after).
-function _applyBodyCap(card, fit, ts){
+// Apply a max-height to the inner ._gcbody ONLY when its content would exceed the
+// room available at the card's (already-cached) fit scale — i.e. when the user has
+// grown the fonts enough to overflow. At default font size the body fits and we set
+// NO cap, so this never touches the card's natural height or the fit measurement.
+// This is called from _gcAdjustFont (font changes) and once after reveal settles.
+function _applyBodyCap(card){
   if (!card) card = document.querySelector('._grov ._grc');
   if (!card) return;
   var body = card.querySelector('._gcbody');
   if (!body) return;
-  if (fit == null) fit = _revealFitCache != null ? _revealFitCache : 1;
-  if (ts == null) ts = parseFloat(getComputedStyle(document.body).getPropertyValue('--reveal-scale')) || 1;
+  var fit = _revealFitCache != null ? _revealFitCache : 1;
+  var ts = parseFloat(getComputedStyle(document.body).getPropertyValue('--reveal-scale')) || 1;
   var denom = fit * ts;
   if (!isFinite(denom) || denom <= 0) denom = 1;
-  // Total vertical room for the whole card, in pre-transform units.
+  // Room for the whole card in its own pre-transform units (transform scales after).
   var roomH = (window.innerHeight - 28) / denom;
-  // Everything in _grc that is NOT the scrollable body: padding + image + the
-  // gap between image and body. Measured live so it tracks the real layout.
+  // Non-body chrome: card padding + image + the gap above the body.
   var cs = getComputedStyle(card);
   var padTop = parseFloat(cs.paddingTop) || 0;
   var padBot = parseFloat(cs.paddingBottom) || 0;
   var gap = parseFloat(cs.rowGap || cs.gap) || 0;
   var img = card.querySelector('._griw');
   var imgH = img ? img.offsetHeight : 0;
-  var nonBody = padTop + padBot + imgH + gap;
-  var cap = Math.max(120, Math.floor(roomH - nonBody));
-  body.style.maxHeight = cap + 'px';
+  var cap = Math.floor(roomH - (padTop + padBot + imgH + gap));
+  if (cap < 120) cap = 120;
+  // Measure the body's NATURAL height with no cap, then decide.
+  var prev = body.style.maxHeight;
+  body.style.maxHeight = '';
+  var naturalBodyH = body.scrollHeight;
+  if (naturalBodyH > cap){
+    body.style.maxHeight = cap + 'px';   // overflows → constrain + scroll
+  } else {
+    body.style.maxHeight = '';           // fits → no cap, no interference
+  }
 }
 window._applyBodyCap = _applyBodyCap;
 // On resize, drop the cache so the next fit re-measures against the new viewport.
