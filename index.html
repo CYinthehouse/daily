@@ -2002,7 +2002,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 }
 @keyframes wePop{from{opacity:0;transform:scale(0.85) translateY(10px);}to{opacity:1;transform:scale(1) translateY(0);}}
 .welcome-title-top{font-family:var(--ps);font-size:clamp(11px,2.2vw,15px);line-height:1.75;margin-bottom:18px;}
-.welcome-body-sub{font-family:var(--vt);font-size:clamp(14px,2.4vw,17px);color:#fff;line-height:1.7;letter-spacing:0.5px;margin-bottom:0;}
+.welcome-body-sub{font-family:var(--vt);font-size:clamp(11px,1.9vw,14px);color:#fff;line-height:1.7;letter-spacing:0.5px;margin-bottom:0;}
 .welcome-egg-wrap{display:block;cursor:pointer;margin:0 -24px -30px -24px;transition:transform 0.2s ease-out, filter 0.2s ease-out;outline:none;line-height:0;overflow:hidden;}
 .welcome-egg-wrap:hover{filter:brightness(1.12);}
 .welcome-egg-wrap:active{transform:scale(0.98);}
@@ -9570,7 +9570,7 @@ function _injectGachaStyle(){
 
         /* ── Warning popup (shown first) ── */
         '._gwpop{position:fixed;inset:0;z-index:9999999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;}',
-        '._gwbox{background:#0a0a15;border:3px solid #ff4444;border-radius:2px;padding:28px 24px;max-width:320px;width:100%;text-align:center;position:relative;z-index:2;box-shadow:0 0 40px rgba(255,68,68,0.67),4px 4px 0 rgba(0,0,0,0.8);}',
+        '._gwbox{background:#0a0a15;border:3px solid #ff4444;border-radius:2px;padding:42px 36px;max-width:480px;width:100%;text-align:center;position:relative;z-index:2;box-shadow:0 0 40px rgba(255,68,68,0.67),4px 4px 0 rgba(0,0,0,0.8);}',
         '._gwrainbow{position:absolute;inset:0;z-index:1;pointer-events:none;animation:_gwRainbow 0.6s linear infinite;}',
         '@keyframes _gwRainbow{0%{background:rgba(255,0,0,0.07)}14%{background:rgba(255,140,0,0.07)}28%{background:rgba(255,255,0,0.07)}43%{background:rgba(0,255,0,0.07)}57%{background:rgba(0,150,255,0.07)}71%{background:rgba(130,0,255,0.07)}85%{background:rgba(255,0,200,0.07)}100%{background:rgba(255,0,0,0.07)}}',
         '._gwpop.fadeout{animation:_gwFadeOut 0.3s ease-out forwards;}',
@@ -9578,6 +9578,12 @@ function _injectGachaStyle(){
         '._gpixelBtn{transition:transform 0.1s ease, filter 0.1s ease, box-shadow 0.1s ease;}',
         '._gpixelBtn:hover{transform:translate(-1px,-1px);filter:brightness(1.12);}',
         '._gpixelBtn:active{transform:translate(2px,2px);filter:brightness(0.92);box-shadow:1px 1px 0 rgba(0,0,0,0.7)!important;}',
+        // Gacha-style hover: lift up-left and reveal a hard medium-dark-gray offset
+        // shadow (matches the reveal buttons). !important beats the inline box-shadow
+        // and the generic _gpixelBtn:hover transform on these buttons.
+        '._ghoverlift{transition:transform .12s ease, box-shadow .12s ease, filter .12s ease;}',
+        '._ghoverlift:hover{transform:translate(-6px,-6px)!important;box-shadow:6px 6px 0 #4a4a4a!important;filter:brightness(1.12);}',
+        '._ghoverlift:active{transform:translate(-2px,-2px)!important;box-shadow:2px 2px 0 #4a4a4a!important;}',
         '._gshineBtn{position:relative;overflow:hidden;}',
         '._gshineBtn::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(108deg,transparent 0% 40%,rgba(255,255,255,0.4) 40% 45%,transparent 45% 55%,rgba(255,255,255,0.25) 55% 65%,transparent 65%);background-size:200% 100%;background-position:200% 0;transition:background-position 0s;pointer-events:none;z-index:2;}',
         '._gshineBtn:hover::after{background-position:-200% 0;transition:background-position 1.2s 0.2s ease-out;}',
@@ -9683,15 +9689,15 @@ function _createEggOverlay(){
             '<div class="_gprog" id="_gprog"></div>' +
         '</div>' +
         '<div class="_gwpop" id="_gwpop">' + (_gEffectsOn !== false ? '<div class="_gwrainbow"></div>' : '') + '<div class="_gwbox">' +
-            '<div style="font-family:\'Press Start 2P\',monospace;font-size:15px;color:#ff4444;line-height:1.7;margin-bottom:18px;">CRACK THE EGG FAST<br>OR LOSE YOUR CHANCE!</div>' +
-            '<button id="_gwclose" class="_gpixelBtn" style="background:linear-gradient(135deg,#ff4444,#cc0000);border:none;color:#fff;font-family:\'Press Start 2P\',monospace;font-size:15px;padding:14px 30px;border-radius:2px;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,0.7),0 0 20px rgba(255,68,68,0.67);">I\'M READY!</button>' +
+            '<div style="font-family:\'Press Start 2P\',monospace;font-size:22px;color:#ff4444;line-height:1.7;margin-bottom:26px;">CRACK THE EGG FAST<br>OR LOSE YOUR CHANCE!</div>' +
+            '<button id="_gwclose" class="_gpixelBtn _ghoverlift" style="background:linear-gradient(135deg,#ff4444,#cc0000);border:none;color:#fff;font-family:\'Press Start 2P\',monospace;font-size:22px;padding:20px 44px;border-radius:2px;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,0.7),0 0 20px rgba(255,68,68,0.67);">I\'M READY!</button>' +
         '</div></div>' +
         '<div class="_gepipop" id="_gepipop" style="position:fixed;inset:0;z-index:99999999;display:' + (_gEffectsOn === null ? 'flex' : 'none') + ';align-items:center;justify-content:center;padding:20px;box-sizing:border-box;background:rgba(0,0,0,0.85);">' +
-            '<div style="background:#0a0a15;border:3px solid #FFD700;border-radius:2px;padding:28px 24px;max-width:360px;width:100%;text-align:center;box-shadow:0 0 40px rgba(255,215,0,0.45),4px 4px 0 rgba(0,0,0,0.8);">' +
-                '<div style="font-family:\'Press Start 2P\',monospace;font-size:13px;color:#FFD700;line-height:1.7;margin-bottom:18px;">&#9888;&#65039; WARNING</div>' +
-                '<div style="font-family:\'Press Start 2P\',monospace;font-size:10px;color:#fff;line-height:1.8;margin-bottom:22px;">This content includes flashing lights and intense visual effects.</div>' +
-                '<button id="_gepiOff" class="_gpixelBtn" style="display:block;width:100%;background:rgba(255,255,255,0.08);border:2px solid #888;color:#fff;font-family:\'Press Start 2P\',monospace;font-size:10px;padding:14px 18px;border-radius:2px;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,0.7);margin-bottom:10px;">Turn Off Effects</button>' +
-                '<button id="_gepiOn" class="_gpixelBtn" style="display:block;width:100%;background:linear-gradient(135deg,#ff4444,#cc0000);border:none;color:#fff;font-family:\'Press Start 2P\',monospace;font-size:10px;padding:14px 18px;border-radius:2px;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,0.7),0 0 20px rgba(255,68,68,0.67);">Continue with Effects</button>' +
+            '<div style="background:#0a0a15;border:3px solid #FFD700;border-radius:2px;padding:42px 36px;max-width:500px;width:100%;text-align:center;box-shadow:0 0 40px rgba(255,215,0,0.45),4px 4px 0 rgba(0,0,0,0.8);">' +
+                '<div style="font-family:\'Press Start 2P\',monospace;font-size:20px;color:#FFD700;line-height:1.7;margin-bottom:24px;">&#9888;&#65039; WARNING</div>' +
+                '<div style="font-family:\'VCR OSD Mono\',monospace;font-size:18px;color:#fff;line-height:1.6;margin-bottom:30px;">This content includes flashing lights and intense visual effects.</div>' +
+                '<button id="_gepiOff" class="_gpixelBtn _ghoverlift" style="display:block;width:100%;background:rgba(255,255,255,0.08);border:2px solid #888;color:#fff;font-family:\'Press Start 2P\',monospace;font-size:15px;padding:18px 24px;border-radius:2px;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,0.7);margin-bottom:14px;">Turn Off Effects</button>' +
+                '<button id="_gepiOn" class="_gpixelBtn _ghoverlift" style="display:block;width:100%;background:linear-gradient(135deg,#ff4444,#cc0000);border:none;color:#fff;font-family:\'Press Start 2P\',monospace;font-size:15px;padding:18px 24px;border-radius:2px;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,0.7),0 0 20px rgba(255,68,68,0.67);">Continue with Effects</button>' +
             '</div>' +
         '</div>';
     document.body.appendChild(ov);
