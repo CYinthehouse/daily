@@ -9348,7 +9348,15 @@ function _gachaRollOne(luck){
              glitter: isGlitter, tapMult: tapMult, luck: luck };
 }
 function _gachaGetImg(animalKey, colorKey, itemKey){
-    return _GACHA_IMG_LOOKUP[animalKey + '|' + colorKey + '|' + itemKey] || null;
+    var url = _GACHA_IMG_LOOKUP[animalKey + '|' + colorKey + '|' + itemKey] || null;
+    if (!url) return null;
+    // Ask Shopify's CDN to resize on the fly. The frame is only ~280-340px wide,
+    // so a 560px image is plenty sharp (2x for retina) and downloads far faster
+    // than the full-resolution source, which was causing long load waits.
+    if (url.indexOf('width=') === -1){
+        url += (url.indexOf('?') === -1 ? '?' : '&') + 'width=560';
+    }
+    return url;
 }
 function _gachaFmtPct(p){
     if (p < 0.01) return p.toFixed(4) + '%';
@@ -9457,9 +9465,9 @@ function _injectGachaStyle(){
         '.badge-holo{background:linear-gradient(90deg,#b0b0ff,#e0e0ff,#ffb0ff,#b0b0ff);background-size:200% 100%;animation:_gHoloBdg 2s linear infinite;color:#222;}',
         '@keyframes _gHoloBdg{0%{background-position:0% 50%}100%{background-position:200% 50%}}',
         '.badge-pink{background:#d4537e;color:#fff;}.badge-red{background:#e24b4a;color:#fff;}.badge-yellow{background:#f5c842;color:#111;}.badge-green{background:#639922;color:#fff;}.badge-blue{background:#378add;color:#fff;}',
-        '._griw{width:280px;height:230px;border-radius:10px;border:1px solid #222;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}',
+        '._griw{width:280px;border-radius:10px;border:1px solid #222;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}',
         '._griw img{width:100%;height:auto;display:block;margin-top:-50px;margin-bottom:-50px;pointer-events:none;-webkit-user-drag:none;user-select:none;}',
-        '._griw._detail{width:340px;height:280px;}',
+        '._griw._detail{width:340px;}',
         '._griw._detail img{width:100%;height:auto;margin-top:-50px;margin-bottom:-50px;}',
         // Per-character crop overrides. Each pair tightens an extra 5px on
         // top and bottom vs. the original baseline so the character's body
@@ -10334,12 +10342,17 @@ function _revealCharacter(roll){
             '</div>';
         ro.innerHTML = html;
         document.body.appendChild(ro);
-        // Scale the card to fit the viewport (preserves proportions). The image frame
-        // has a fixed height, so the card's full height is known immediately, no need
-        // to wait for the image to download. Measure now and once next frame after
-        // fonts/layout settle.
+        // Scale the whole card to fit the viewport (preserves proportions). The image
+        // frame grows with the image, so its height isn't known until the image loads;
+        // we measure now, next frame, and again on image load. The image itself is
+        // never cropped beyond its original framing.
         _fitRevealCard();
         requestAnimationFrame(_fitRevealCard);
+        var _gImgEl = ro.querySelector('._griw img');
+        if (_gImgEl){
+            if (_gImgEl.complete) _fitRevealCard();
+            else _gImgEl.addEventListener('load', _fitRevealCard);
+        }
         // Defer .show by one frame so the browser registers opacity:0 → opacity:1 as a transition (both modes)
         requestAnimationFrame(function(){
             requestAnimationFrame(function(){ ro.classList.add('show'); });
