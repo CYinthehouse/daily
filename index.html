@@ -2154,6 +2154,13 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .filter-btn.green.active{border-color:#639922 !important;color:#639922 !important;background:rgba(99,153,34,0.18) !important;}
 .filter-btn.blue.active{border-color:#378add !important;color:#378add !important;background:rgba(55,138,221,0.15) !important;}
 
+/* Points sort row: distinct line under the rarity filters. */
+.sc-sort-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-basis:100%;margin-top:10px;}
+.sc-sort-label{font-family:var(--ps);font-size:10px;color:#888;letter-spacing:1px;text-shadow:var(--ps-outline-sm);}
+/* Points-earned pill in the card detail popup. */
+._cdPts{font-family:'Press Start 2P',monospace;font-size:11px;letter-spacing:.06em;color:#1a1205;background:linear-gradient(135deg,#fff3b0,#f5c842,#e0a020);border:1px solid #b8860b;border-radius:20px;padding:7px 14px;text-align:center;box-shadow:2px 2px 0 rgba(0,0,0,0.5);}
+._cdPts ._cdPtsNum{font-size:14px;}
+
 .showcase-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;align-items:stretch;}
 /* Showcase card is a flex column; the .sc-rarity chip uses margin-top:auto
  * to push itself to the bottom of the card regardless of how tall the
@@ -7101,30 +7108,35 @@ async function _drmPublish(id){
 }
 window._drmPublish = _drmPublish;
 
-// Tracks which passage doc we're scheduling (set when modal opens, cleared on close).
+// Tracks which doc we're scheduling and in which collection (set when the modal
+// opens, cleared on close). _genSchedDone is an optional refresh callback so each
+// activity's manager re-renders after a successful schedule.
 var _drmSchedulingId = null;
+var _genSchedCollection = DR_PASSAGES_COLLECTION;
+var _genSchedDone = null;
 
-async function _drmSchedule(id){
-  // Fetch passage to show its title in the modal header
-  var snap = await db.collection(DR_PASSAGES_COLLECTION).doc(id).get();
-  if (!snap.exists){ alert('Passage not found.'); return; }
+// Generic scheduler entry point. Any activity manager calls this with its own
+// collection + refresh callback. The reading manager's _drmSchedule wraps it.
+async function _genScheduleOpen(collection, id, onDone){
+  _genSchedCollection = collection || DR_PASSAGES_COLLECTION;
+  _genSchedDone = (typeof onDone === 'function') ? onDone : null;
+  var snap = await db.collection(_genSchedCollection).doc(id).get();
+  if (!snap.exists){ alert('Activity not found.'); return; }
   var d = snap.data();
   _drmSchedulingId = id;
 
-  // Default to "tomorrow at 9:00 AM" so admin doesn't have to click much in the common case
+  // Default to "tomorrow at 9:00 AM"
   var tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
-  // YYYY-MM-DD in local time (date inputs use local time)
   var iso = tomorrow.getFullYear() + '-' +
     String(tomorrow.getMonth() + 1).padStart(2, '0') + '-' +
     String(tomorrow.getDate()).padStart(2, '0');
 
   var titleEl = document.getElementById('drmSchedTitle');
-  if (titleEl) titleEl.textContent = '「 ' + (d.title || 'Untitled') + ' 」';
+  if (titleEl) titleEl.textContent = '\u300c ' + (d.title || 'Untitled') + ' \u300d';
   var dateEl = document.getElementById('drmSchedDate');
   if (dateEl){
     dateEl.value = iso;
-    // Lock min to today so admin can't pick a past date
     dateEl.min = (new Date()).getFullYear() + '-' +
       String((new Date()).getMonth() + 1).padStart(2, '0') + '-' +
       String((new Date()).getDate()).padStart(2, '0');
@@ -7136,7 +7148,6 @@ async function _drmSchedule(id){
   var ampmEl = document.getElementById('drmSchedAmPm');
   if (ampmEl) ampmEl.value = 'AM';
 
-  // Wire change listeners (idempotent, same handler each time)
   ['drmSchedDate','drmSchedHour','drmSchedMinute','drmSchedAmPm'].forEach(function(eid){
     var el = document.getElementById(eid);
     if (el) el.oninput = el.onchange = _drmUpdateSchedPreview;
@@ -7146,10 +7157,48 @@ async function _drmSchedule(id){
   var modal = document.getElementById('drmScheduleModal');
   if (modal) modal.classList.add('show');
 }
+window._genScheduleOpen = _genScheduleOpen;
+
+// Promote any drafts in `collection` whose scheduledFor has passed to 'live'.
+// Mirrors the inline logic Reading/Advanced already run on the student side, so
+// scheduling works identically for Yodafication and Active Recall.
+async function _autoPromoteScheduled(collection){
+  try {
+    var nowMs = Date.now();
+    var draftSnap = await db.collection(collection).where('status','==','draft').get();
+    var ops = [];
+    draftSnap.forEach(function(doc){
+      var d = doc.data();
+      if (d.scheduledFor){
+        var sched = d.scheduledFor.toMillis ? d.scheduledFor.toMillis() : (typeof d.scheduledFor === 'number' ? d.scheduledFor : null);
+        if (sched && sched <= nowMs){
+          ops.push(doc.ref.update({ status: 'live', livedAt: firebase.firestore.FieldValue.serverTimestamp() }));
+        }
+      }
+    });
+    if (ops.length) await Promise.all(ops);
+  } catch(e){ console.warn('_autoPromoteScheduled(' + collection + '):', e); }
+}
+window._autoPromoteScheduled = _autoPromoteScheduled;
+
+async function _drmSchedule(id){
+  // Reading manager: schedule against the passages collection.
+  return _genScheduleOpen(DR_PASSAGES_COLLECTION, id, _drmRenderManager);
+}
 window._drmSchedule = _drmSchedule;
+
+// Thin wrappers for the other activity managers.
+function _advmSchedule(id){ return _genScheduleOpen(ADV_COLLECTION, id, _advmRenderManager); }
+window._advmSchedule = _advmSchedule;
+function _yodaSchedule(id){ return _genScheduleOpen(YODA_COLLECTION, id, _yodaRenderManager); }
+window._yodaSchedule = _yodaSchedule;
+function _recallSchedule(id){ return _genScheduleOpen(RECALL_COLLECTION, id, _recallRenderManager); }
+window._recallSchedule = _recallSchedule;
 
 function _drmCloseScheduleModal(){
   _drmSchedulingId = null;
+  _genSchedDone = null;
+  _genSchedCollection = DR_PASSAGES_COLLECTION;
   var modal = document.getElementById('drmScheduleModal');
   if (modal) modal.classList.remove('show');
 }
@@ -7224,11 +7273,15 @@ async function _drmSubmitSchedule(){
   var btn = document.getElementById('drmSchedSubmitBtn');
   if (btn){ btn.disabled = true; btn.textContent = '\u23F3 Saving...'; }
   try {
-    await db.collection(DR_PASSAGES_COLLECTION).doc(_drmSchedulingId).update({
+    // Write scheduledFor on whichever collection the modal was opened for.
+    // status stays 'draft'; the student-side auto-promote flips it to 'live'
+    // once the scheduled time passes.
+    await db.collection(_genSchedCollection || DR_PASSAGES_COLLECTION).doc(_drmSchedulingId).update({
       scheduledFor: firebase.firestore.Timestamp.fromMillis(d.getTime())
     });
     _drmCloseScheduleModal();
-    _drmRenderManager();
+    if (typeof _genSchedDone === 'function') _genSchedDone();
+    else _drmRenderManager();
   } catch(e){
     alert('Schedule failed: ' + (e.message || e));
   } finally {
@@ -7325,6 +7378,7 @@ async function _advmRenderManager(){
         actions =
           '<button class="btn btn-cyan" onclick="_advmEdit(\'' + d.id + '\')">✏️ EDIT</button>' +
           '<button class="btn btn-pink" onclick="_advmPublish(\'' + d.id + '\')">🚀 PUBLISH NOW</button>' +
+          '<button class="btn btn-purple" onclick="_advmSchedule(\'' + d.id + '\')">⏰ SCHEDULE</button>' +
           '<button class="btn btn-ghost" onclick="_advmDiscard(\'' + d.id + '\')">🗑 DISCARD</button>';
       } else if (d.status === 'live'){
         actions = viewSubsBtn +
@@ -8546,6 +8600,9 @@ window.adminToggleOverride = adminToggleOverride;
 
 /* ═══ SHOWCASE ═══ */
 var _scFilter = 'all';
+// Showcase sort mode: 'rarity' (default grouping), 'pts-desc' (most points first),
+// 'pts-asc' (least points first).
+var _scSort = 'rarity';
 function renderShowcase(){
   if (!user) return;
   // Show a loading state while we fetch
@@ -8628,7 +8685,15 @@ function _drawShowcase(){
   filters.innerHTML = flt.map(function(f){
     var active = _scFilter === f.k ? ' active' : '';
     return '<button class="filter-btn ' + f.cls + active + '" onclick="setShowcaseFilter(\'' + f.k + '\')">' + f.l + '</button>';
-  }).join('');
+  }).join('') +
+  // Points sort controls. Separate row so they read as a distinct axis from
+  // the rarity filters above.
+  '<div class="sc-sort-row">' +
+    '<span class="sc-sort-label">SORT:</span>' +
+    '<button class="filter-btn' + (_scSort === 'rarity' ? ' active' : '') + '" onclick="setShowcaseSort(\'rarity\')">RARITY</button>' +
+    '<button class="filter-btn' + (_scSort === 'pts-desc' ? ' active' : '') + '" onclick="setShowcaseSort(\'pts-desc\')">POINTS \u2193</button>' +
+    '<button class="filter-btn' + (_scSort === 'pts-asc' ? ' active' : '') + '" onclick="setShowcaseSort(\'pts-asc\')">POINTS \u2191</button>' +
+  '</div>';
 
   var rarityBadge = {
     holo:   'background:linear-gradient(90deg,#b0b0ff,#e0e0ff,#ffb0ff,#b0b0ff);background-size:200% 100%;color:#222;',
@@ -8673,6 +8738,15 @@ function _drawShowcase(){
     }
   });
 
+  // Points sort (most/least first) overrides the rarity grouping when chosen.
+  if (_scSort === 'pts-desc' || _scSort === 'pts-asc'){
+    uniqueCards.sort(function(a, b){
+      var pa = _gachaPointsForCard(a), pb = _gachaPointsForCard(b);
+      if (pa !== pb) return _scSort === 'pts-desc' ? pb - pa : pa - pb;
+      return (a.animal || '').localeCompare(b.animal || '');
+    });
+  }
+
   body.innerHTML = '<div class="showcase-grid">' + uniqueCards.map(function(c, i){
     var badge = rarityBadge[c.rarity] || rarityBadge.blue;
     var label = rarityLabel[c.rarity] || 'BLUE ★';
@@ -8706,6 +8780,8 @@ function _drawShowcase(){
 }
 function setShowcaseFilter(k){ _scFilter = k; _drawShowcase(); }
 window.setShowcaseFilter = setShowcaseFilter;
+function setShowcaseSort(s){ _scSort = s; _drawShowcase(); }
+window.setShowcaseSort = setShowcaseSort;
 
 /* ═══ SHOWCASE CARD DETAIL ═══ */
 /* Click a showcase card to re-view its reveal popup (same layout as the crack reveal),
@@ -8755,6 +8831,7 @@ function showCardDetail(idx){
         '<div class="_ggsc"></div>' +
       '</div>' +
       '<div style="font-size:17px;font-weight:bold;color:#fff;letter-spacing:.04em;text-align:center">' + esc(animal.name) + '</div>' +
+      '<div class="_cdPts">\u2756 EARNS <span class="_cdPtsNum">' + _gachaPointsForCard(c) + '</span> POINTS \u2756</div>' +
       '<div class="_grrws">' +
         '<div class="_grrw"><span class="_grrl">Character</span><span class="_grrn">' + esc(animal.name) + '</span><span class="_grrt ' + TIER_CLASSES[aTier] + '">' + TIER_LABELS[aTier] + '</span><span class="_grrp">' + _gachaFmtPct(aPct) + '</span></div>' +
         '<div class="_grrw"><span class="_grrl">Color</span><span class="_grrn">' + esc(color.name) + '</span><span class="_grrt ' + TIER_CLASSES[cTier] + '">' + TIER_LABELS[cTier] + '</span><span class="_grrp">' + _gachaFmtPct(cPct) + '</span></div>' +
@@ -9411,6 +9488,20 @@ function _gachaPointsForRoll(roll){
     return Math.round(raw * 2) / 2;
 }
 
+// Points for a stored collection card (uses the value saved when it was won,
+// falling back to recomputing from its keys for older/healed cards).
+function _gachaPointsForCard(c){
+    if (!c) return 0;
+    if (typeof c.pointsEarned === 'number') return c.pointsEarned;
+    var rollLike = {
+        animal: { key: c.animalKey },
+        color:  { key: c.colorKey },
+        item:   { key: c.itemKey },
+        glitter: !!c.glitter
+    };
+    return _gachaPointsForRoll(rollLike);
+}
+
 /* ═══════════════════════════════════════════════════════ */
 /* GACHA CSS (injected once)                              */
 /* ═══════════════════════════════════════════════════════ */
@@ -9498,11 +9589,10 @@ function _injectGachaStyle(){
         '._gcbody::-webkit-scrollbar-track{background:rgba(255,255,255,0.04);}',
         '._gcbody::-webkit-scrollbar-thumb{background:#444;border-radius:0;}',
         '._gcbody::-webkit-scrollbar-thumb:hover{background:#666;}',
-        /* Font scaler: sticky to the top of the scrollable card so it stays pinned
-           in the corner while content scrolls. align-self:flex-end pins it right;
-           the negative bottom margin + height:0 wrapper trick keeps it from
-           consuming vertical space (so nothing below is pushed down). */
-        '._gfscale{position:sticky;top:8px;align-self:flex-end;margin-right:-6px;margin-bottom:-34px;z-index:5;display:inline-flex;align-items:center;gap:3px;background:rgba(10,10,21,0.85);border:1px solid #2a2a2a;border-radius:4px;padding:3px;box-shadow:0 2px 6px rgba(0,0,0,0.5);}',
+        /* Font scaler: absolutely pinned to the card's top-right corner. _grc is
+           position:relative, so this overlays the corner without taking layout
+           space (nothing below is pushed down). */
+        '._gfscale{position:absolute;top:10px;right:10px;z-index:6;display:inline-flex;align-items:center;gap:3px;background:rgba(10,10,21,0.85);border:1px solid #2a2a2a;border-radius:4px;padding:3px;box-shadow:0 2px 6px rgba(0,0,0,0.5);}',
         '._gfscale button{background:#1c1c2c;border:1px solid #333;color:#cdd;font-family:"Press Start 2P",monospace;font-size:9px;line-height:1;padding:5px 6px;border-radius:2px;cursor:pointer;transition:filter .12s ease;}',
         '._gfscale button:hover{filter:brightness(1.25);}',
         '._gfscale button:active{filter:brightness(0.9);}',
@@ -11040,6 +11130,7 @@ async function _yodaRenderManager(){
         actions =
           '<button class="btn btn-cyan" onclick="_yodaEdit(\'' + d.id + '\')">✏️ EDIT</button>' +
           '<button class="btn btn-pink" onclick="_yodaPublish(\'' + d.id + '\')">🚀 PUBLISH NOW</button>' +
+          '<button class="btn btn-purple" onclick="_yodaSchedule(\'' + d.id + '\')">⏰ SCHEDULE</button>' +
           '<button class="btn btn-ghost" onclick="_yodaDiscard(\'' + d.id + '\')">🗑 DISCARD</button>';
       } else if (d.status === 'live'){
         actions = '<button class="btn btn-ghost" onclick="_yodaArchive(\'' + d.id + '\')">📦 ARCHIVE</button>';
@@ -11465,6 +11556,8 @@ async function _yodaRender(){
     }
   } catch(e){}
 
+  // Promote any scheduled drafts whose time has passed, then find the live one.
+  await _autoPromoteScheduled(YODA_COLLECTION);
   // Find a live yodafication that isn't expired by NY-3am rollover. Matches
   // the pattern used by Reading/Listening/Advanced, DB doc stays in 'live'
   // until admin archives, but it's visually treated as expired the next day.
@@ -11596,6 +11689,7 @@ async function _recallRender(){
   // lookup, there's nothing left to play anyway.
   if (!step1Done || !step2Done){
     host.innerHTML = '<div class="dr-empty">Loading…</div>';
+    await _autoPromoteScheduled(RECALL_COLLECTION);
     var liveSnap = await db.collection(RECALL_COLLECTION).where('status','==','live').get().catch(function(){ return null; });
     var hasFresh = false;
     if (liveSnap && !liveSnap.empty){
@@ -12507,12 +12601,24 @@ async function _recallRenderManager(){
                       : d.status === 'live' ? 'Live'
                       : d.status === 'archived' ? 'Archived' : 'Draft';
       var statusBadge = '<span class="badge ' + (expired ? 'expired' : d.status) + '">' + statusLabel + '</span>';
+      // Scheduled badge: when a draft has a future scheduledFor, surface it.
+      var sched = '';
+      if (d.scheduledFor){
+        var ms = d.scheduledFor.toMillis ? d.scheduledFor.toMillis() : d.scheduledFor;
+        if (ms){
+          var sd = new Date(ms);
+          var schedStr = sd.toLocaleDateString(undefined, { month:'short', day:'numeric' }) + ' ' +
+            sd.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit', hour12:true });
+          sched = ' <span class="badge scheduled">📅 ' + schedStr + '</span>';
+        }
+      }
       var cardCount = (d.cards || []).length;
       var actions = '';
       if (d.status === 'draft'){
         actions =
           '<button class="btn btn-cyan" onclick="_recallEdit(\'' + d.id + '\')">✏️ EDIT</button>' +
           '<button class="btn btn-pink" onclick="_recallPublish(\'' + d.id + '\')">🚀 PUBLISH NOW</button>' +
+          '<button class="btn btn-purple" onclick="_recallSchedule(\'' + d.id + '\')">⏰ SCHEDULE</button>' +
           '<button class="btn btn-ghost" onclick="_recallDiscard(\'' + d.id + '\')">🗑 DISCARD</button>';
       } else if (d.status === 'live'){
         actions =
@@ -12525,7 +12631,7 @@ async function _recallRenderManager(){
       }
       return '<div class="drm-row" id="recallRow_' + d.id + '">' +
         '<div class="drm-row-title">' + _esc(d.title || 'Active Recall set') + '</div>' +
-        '<div class="drm-row-meta">' + statusBadge +
+        '<div class="drm-row-meta">' + statusBadge + sched +
           '<span>' + cardCount + ' card' + (cardCount === 1 ? '' : 's') + '</span>' +
         '</div>' +
         '<div class="drm-row-actions">' + actions + '</div>' +
