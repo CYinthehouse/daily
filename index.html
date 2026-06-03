@@ -9725,6 +9725,14 @@ function _createEggOverlay(){
     return ov;
 }
 function _closeEggOverlay(){
+    // Tear down any pending countdown / auto-reveal / crack timers from this roll.
+    // Without this, stale timers and a still-true _gEggStarted flag bled into the
+    // NEXT roll: _gStartCountdown bailed early (guarded by _gEggStarted), taps did
+    // nothing, and the egg sat inert until a leftover timer eventually forced it —
+    // the 30-40s "stuck second roll". Reset the flag so the next egg starts fresh.
+    if (typeof _gClearTimers === 'function') _gClearTimers();
+    _gEggStarted = false;
+    _eggState = null;
     var ov = document.getElementById('_gachaOverlay');
     if (ov) ov.remove();
     var r = document.getElementById('_revealOverlay');
@@ -10351,28 +10359,32 @@ function _revealCharacter(roll){
         };
         if (imgUrl){
             // Measure/fit only AFTER the card's own <img> has real dimensions.
-            // The previous code warmed a detached `new Image()` cache, but the card's
-            // height is driven by the in-DOM <img> (width:100%;height:auto). On a 2nd
-            // roll that in-card image often had not decoded at measure time, so natH
-            // was too short and the card never scaled down — then reflowed oversized
-            // when it finally painted. Wait on the real element via decode()/onload.
+            // The card height is driven by the in-DOM <img> (width:100%;height:auto),
+            // so fitting before it has a height leaves the card un-scaled, then it
+            // reflows oversized when the image paints. We listen on the REAL element.
+            // (decode() was avoided: its promise can hang when the same URL is
+            // re-requested mid-swap across consecutive rolls.)
             var _cardImg = ro.querySelector('._griw img');
             var _done = false;
             var _go = function(){
                 if (_done) return; _done = true;
                 _revealNow();
-                // One more fit after the next paint, in case decode reported ready
-                // a hair before the browser applied the intrinsic height.
+                // Extra fit on the next frame in case the height lands a tick late.
                 requestAnimationFrame(function(){ _fitRevealCard(ro.classList.contains('show')); });
             };
             if (_cardImg){
                 if (_cardImg.complete && _cardImg.naturalHeight){
-                    _go();                                  // already decoded
-                } else if (_cardImg.decode){
-                    _cardImg.decode().then(_go).catch(_go); // wait for real decode
+                    _go();                       // already loaded & sized
                 } else {
-                    _cardImg.onload = _go;
-                    _cardImg.onerror = _go;
+                    _cardImg.addEventListener('load', _go, { once: true });
+                    _cardImg.addEventListener('error', _go, { once: true });
+                    // Poll as a backstop: covers cached images that never re-fire
+                    // load on a fresh element across rolls.
+                    var _poll = setInterval(function(){
+                        if (_done){ clearInterval(_poll); return; }
+                        if (_cardImg.complete && _cardImg.naturalHeight){ clearInterval(_poll); _go(); }
+                    }, 50);
+                    setTimeout(function(){ clearInterval(_poll); }, 2600);
                 }
             } else {
                 _go();
