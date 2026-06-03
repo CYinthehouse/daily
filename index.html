@@ -10459,22 +10459,25 @@ function _fitRevealCard(shown){
   var shownNow = (shown === true) || card.closest('._grov').classList.contains('show');
   var availH = window.innerHeight - 24;
   var availW = window.innerWidth - 24;
-  // Original behavior: _grc has no cap, the body has no constraining cap at default
-  // font size, so offsetHeight is the card's true natural height. Measure once,
-  // compute fit, cache it, apply the transform. The font-scale body cap is applied
-  // SEPARATELY (only when the user grows fonts) and never feeds back into this
-  // measurement — see _applyBodyCap / _gcAdjustFont.
-  var natH = card.offsetHeight;
-  var natW = card.offsetWidth;
   var fit;
-  if (natH && natW){
-    fit = Math.min(1, availH / natH, availW / natW);
-    if (!isFinite(fit) || fit <= 0) fit = 1;
-    _revealFitCache = fit;        // remember for subsequent rolls this session
-  } else if (_revealFitCache != null){
-    fit = _revealFitCache;        // card not measurable yet: use the cached fit
+  // OPTION B: measure ONCE (first roll, when the cache is empty) and reuse that
+  // value for every subsequent roll. We never re-measure after the first roll,
+  // because the card geometry is identical roll-to-roll at default font size.
+  // This avoids the roll-2 failure where a cached image hasn't laid out yet at
+  // measure time, producing a too-small height and overwriting the good fit with
+  // fit=1 (= no scaling). The cache is cleared only on window resize.
+  if (_revealFitCache != null){
+    fit = _revealFitCache;
   } else {
-    return;                       // nothing to go on yet
+    var natH = card.offsetHeight;
+    var natW = card.offsetWidth;
+    if (natH && natW){
+      fit = Math.min(1, availH / natH, availW / natW);
+      if (!isFinite(fit) || fit <= 0) fit = 1;
+      _revealFitCache = fit;        // first roll only: lock it in for the session
+    } else {
+      return;                       // not measurable yet; try again next frame
+    }
   }
   var scale = fit * ts * (shownNow ? 1 : 0.85);
   card.style.transform = 'scale(' + scale + ')';
