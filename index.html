@@ -9489,15 +9489,15 @@ function _injectGachaStyle(){
         '._griw.holo ._gholosc{display:block;}',
         '@keyframes _gHoloScan{0%{background-position:150% 150%;opacity:0}5%{opacity:1}14%{background-position:-50% -50%;opacity:0}100%{background-position:-50% -50%;opacity:0}}',
         '._grc{position:relative;background:#0e0e0e;border-radius:0;padding:22px;display:flex;flex-direction:column;align-items:center;gap:10px;transform:scale(calc(var(--reveal-fit, 1) * var(--reveal-scale, 1) * 0.85));transform-origin:center center;transition:transform .4s cubic-bezier(.34,1.56,.64,1);max-width:640px;width:94vw;--gc-fs:1;}',
-        /* When fonts are scaled up past the viewport, the card body scrolls instead
-           of forcing the whole card to shrink. max-height keyed to the viewport,
-           divided back out by the fit/zoom so the cap is in the card\'s own
-           pre-transform units. */
-        '._grc{max-height:calc((100vh - 28px) / (var(--reveal-fit, 1) * var(--reveal-scale, 1)));overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#444 rgba(255,255,255,0.04);}',
-        '._grc::-webkit-scrollbar{width:8px;}',
-        '._grc::-webkit-scrollbar-track{background:rgba(255,255,255,0.04);}',
-        '._grc::-webkit-scrollbar-thumb{background:#444;border-radius:0;}',
-        '._grc::-webkit-scrollbar-thumb:hover{background:#666;}',
+        /* Inner body holds everything below the image. It owns the font scale and,
+           when fonts grow past the cap, scrolls — the outer card (and the image)
+           keep their session fit scale untouched. max-height is set in JS off the
+           cached fit (see _applyBodyCap). */
+        '._gcbody{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#444 rgba(255,255,255,0.04);}',
+        '._gcbody::-webkit-scrollbar{width:8px;}',
+        '._gcbody::-webkit-scrollbar-track{background:rgba(255,255,255,0.04);}',
+        '._gcbody::-webkit-scrollbar-thumb{background:#444;border-radius:0;}',
+        '._gcbody::-webkit-scrollbar-thumb:hover{background:#666;}',
         /* Font scaler: sticky to the top of the scrollable card so it stays pinned
            in the corner while content scrolls. align-self:flex-end pins it right;
            the negative bottom margin + height:0 wrapper trick keeps it from
@@ -9598,11 +9598,17 @@ function _injectGachaStyle(){
 
         /* ── Warning popup (shown first) ── */
         '._gwpop{position:fixed;inset:0;z-index:9999999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;}',
-        '._gwbox{background:#0a0a15;border:3px solid #ff4444;border-radius:2px;padding:42px 36px;max-width:480px;width:100%;text-align:center;position:relative;z-index:2;box-shadow:0 0 40px rgba(255,68,68,0.67),4px 4px 0 rgba(0,0,0,0.8);}',
+        '._gwbox{background:#0a0a15;border:3px solid #ff4444;border-radius:2px;padding:42px 36px;max-width:480px;width:100%;text-align:center;position:relative;z-index:2;box-shadow:6px 6px 0 #7a1515;}',
         '._gwrainbow{position:absolute;inset:0;z-index:1;pointer-events:none;animation:_gwRainbow 0.6s linear infinite;}',
         '@keyframes _gwRainbow{0%{background:rgba(255,0,0,0.07)}14%{background:rgba(255,140,0,0.07)}28%{background:rgba(255,255,0,0.07)}43%{background:rgba(0,255,0,0.07)}57%{background:rgba(0,150,255,0.07)}71%{background:rgba(130,0,255,0.07)}85%{background:rgba(255,0,200,0.07)}100%{background:rgba(255,0,0,0.07)}}',
         '._gwpop.fadeout{animation:_gwFadeOut 0.3s ease-out forwards;}',
         '@keyframes _gwFadeOut{from{opacity:1}to{opacity:0}}',
+        /* CRACK box exit: shrink all the way down to nothing (never zooms in),
+           quick, then the game starts once it finishes. */
+        '._gwbox.zoomout{animation:_gwZoomOut 0.7s cubic-bezier(.55,.06,.68,.19) forwards;pointer-events:none;}',
+        '@keyframes _gwZoomOut{0%{transform:scale(1);opacity:1;}100%{transform:scale(0.02);opacity:0;}}',
+        /* WARNING (epilepsy) popup exit: simple fade. */
+        '._gepipop.fadeout{animation:_gwFadeOut 0.35s ease-out forwards;}',
         '._gpixelBtn{transition:transform 0.1s ease, filter 0.1s ease, box-shadow 0.1s ease;}',
         '._gpixelBtn:hover{transform:translate(-1px,-1px);filter:brightness(1.12);}',
         '._gpixelBtn:active{transform:translate(2px,2px);filter:brightness(0.92);box-shadow:1px 1px 0 rgba(0,0,0,0.7)!important;}',
@@ -9717,7 +9723,7 @@ function _createEggOverlay(){
             '<div class="_gprog" id="_gprog"></div>' +
         '</div>' +
         '<div class="_gwpop" id="_gwpop">' + (_gEffectsOn !== false ? '<div class="_gwrainbow"></div>' : '') + '<div class="_gwbox">' +
-            '<div style="font-family:\'Press Start 2P\',monospace;font-size:23px;color:#ff4444;line-height:1.7;margin-bottom:26px;text-shadow:-2px -2px 0 #7a1515,2px -2px 0 #7a1515,-2px 2px 0 #7a1515,2px 2px 0 #7a1515,0 -2px 0 #7a1515,0 2px 0 #7a1515,-2px 0 0 #7a1515,2px 0 0 #7a1515;">CRACK THE EGG FAST<br>OR LOSE YOUR CHANCE!</div>' +
+            '<div style="font-family:\'Press Start 2P\',monospace;font-size:23px;color:#ff4444;line-height:1.7;margin-bottom:26px;text-shadow:2px 2px 0 #7a1515;">CRACK THE EGG FAST<br>OR LOSE YOUR CHANCE!</div>' +
             '<button id="_gwclose" class="_gpixelBtn _ghoverlift" style="background:linear-gradient(135deg,#ff4444,#cc0000);border:none;color:#fff;font-family:\'Press Start 2P\',monospace;font-size:23px;padding:20px 44px;border-radius:2px;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,0.7),0 0 20px rgba(255,68,68,0.67);text-shadow:-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000,0 -2px 0 #000,0 2px 0 #000,-2px 0 0 #000,2px 0 0 #000;">I\'M READY!</button>' +
         '</div></div>' +
         '<div class="_gepipop" id="_gepipop" style="position:fixed;inset:0;z-index:99999999;display:' + (_gEffectsOn === null ? 'flex' : 'none') + ';align-items:center;justify-content:center;padding:20px;box-sizing:border-box;background:rgba(0,0,0,0.85);">' +
@@ -9914,19 +9920,31 @@ function _gFadeEggAndTimer(riseHint){
         void qinfo.offsetWidth;
         requestAnimationFrame(function(){ qinfo.style.opacity = '0'; });
     }
+    // Fade the ripple/pool rings under the egg out together with everything else.
+    var grip = document.getElementById('_ggrip');
+    if (grip){
+        grip.style.transition = 'opacity 0.5s ease-out';
+        grip.style.pointerEvents = 'none';
+        void grip.offsetWidth;
+        requestAnimationFrame(function(){ grip.style.opacity = '0'; });
+    }
     if (riseHint){
-        // Wait for the fade to fully complete, THEN animate the hatching message up
-        // into the now-empty egg area. Travel is keyed off the egg wrapper's height
-        // so it lands roughly where the egg's center was, regardless of layout scale.
+        // Capture the egg's center NOW (it fades via opacity, so it keeps its
+        // layout box and is still measurable). After the fade completes, translate
+        // the hint up by exactly the gap between the hint's center and the egg's
+        // center, so the message lands precisely where the egg was — no guessing.
+        var eggRect = gew ? gew.getBoundingClientRect() : null;
         setTimeout(function(){
             var h = document.getElementById('_ghint');
             if (!h) return;
-            var rise = 220;
-            if (gew){
-                var gh = gew.offsetHeight || 0;
-                // Move up by the egg's height plus the ~20px hint margin so the
-                // message settles into the vacated egg space.
-                if (gh) rise = Math.round(gh * 0.7 + 20);
+            var rise;
+            var hintRect = h.getBoundingClientRect();
+            if (eggRect && hintRect.height){
+                var eggCenterY = eggRect.top + eggRect.height / 2;
+                var hintCenterY = hintRect.top + hintRect.height / 2;
+                rise = Math.max(0, Math.round(hintCenterY - eggCenterY));
+            } else {
+                rise = 220;  // fallback if measurement unavailable
             }
             h.style.transform = 'translateY(-' + rise + 'px)';
         }, FADE_MS + 30);
@@ -9973,9 +9991,14 @@ function _startEggFor(roll, queueInfo){
     if (tapwarn){ tapwarn.style.opacity = '0'; tapwarn.classList.remove('show'); }
     var gew = document.getElementById('_gew');
     if (gew){ gew.style.display = ''; gew.classList.remove('wiggle','shake','fade-out'); gew.style.opacity = ''; gew.style.transition = ''; gew.style.pointerEvents = ''; }
+    var grip = document.getElementById('_ggrip');
+    if (grip){ grip.classList.remove('stomp'); grip.style.opacity = ''; grip.style.transition = ''; grip.style.pointerEvents = ''; }
     _gUpdateDots();
     // Ensure popup is visible for this roll, but only if epilepsy choice has been made
     var pop = document.getElementById('_gwpop');
+    var popBox = pop ? pop.querySelector('._gwbox') : null;
+    if (popBox) popBox.classList.remove('zoomout');
+    if (pop) pop.style.pointerEvents = '';
     if (pop){
         if (_gEffectsOn === null){
             // Epilepsy popup is up; hide the warning popup until user chooses
@@ -9992,14 +10015,23 @@ function _startEggFor(roll, queueInfo){
     var epiOff = document.getElementById('_gepiOff');
     function _gEpiChoose(on){
         _gEffectsOn = on;
-        if (epiPop) epiPop.style.display = 'none';
         // If user turned off effects, strip the rainbow strobe from the warning popup
         if (!on){
             var rb = pop ? pop.querySelector('._gwrainbow') : null;
             if (rb && rb.parentNode) rb.parentNode.removeChild(rb);
         }
-        // Now show the warning popup
-        if (pop){
+        // Fade the WARNING popup out, then hide it and reveal the CRACK popup.
+        if (epiPop){
+            epiPop.classList.add('fadeout');
+            setTimeout(function(){
+                if (epiPop){ epiPop.style.display = 'none'; epiPop.classList.remove('fadeout'); }
+                if (pop){
+                    pop.style.display = 'flex';
+                    pop.style.opacity = '1';
+                    pop.classList.remove('fadeout');
+                }
+            }, 350);
+        } else if (pop){
             pop.style.display = 'flex';
             pop.style.opacity = '1';
             pop.classList.remove('fadeout');
@@ -10013,11 +10045,23 @@ function _startEggFor(roll, queueInfo){
         closeBtn.onclick = function(e){
             e.stopPropagation();
             var p = document.getElementById('_gwpop');
-            if (p){
-                p.classList.add('fadeout');
-                setTimeout(function(){ if (p.parentNode) p.style.display = 'none'; }, 300);
+            var box = p ? p.querySelector('._gwbox') : null;
+            if (box){
+                // Zoom the box down to nothing (700ms). Start the game partway
+                // through (at ~450ms) so the timer + egg appear behind the last bit
+                // of the shrink instead of after an empty pause. Remove the popup
+                // once the shrink fully completes.
+                box.classList.add('zoomout');
+                if (p) p.style.pointerEvents = 'none';
+                setTimeout(function(){ _gStartCountdown(); }, 450);
+                setTimeout(function(){
+                    if (p){ p.style.display = 'none'; p.style.pointerEvents = ''; }
+                    if (box){ box.classList.remove('zoomout'); }
+                }, 700);
+            } else {
+                if (p) p.style.display = 'none';
+                _gStartCountdown();
             }
-            _gStartCountdown();
         };
     }
     // Bind overlay-wide tap handler (ignore reveal screen clicks)
@@ -10042,7 +10086,32 @@ function _gStartCountdown(){
     var timerBox = document.getElementById('_gtimerbox');
     var fill = document.getElementById('_gtfill');
     var cd = document.getElementById('_gcdown');
+    // FLIP: the timer box is display:none before the game starts. Showing it pushes
+    // the egg + "Click to crack" hint down. Capture the hint's position first, show
+    // the timer, measure the new position, then animate the hint from old->new so it
+    // glides down to where it lands instead of snapping.
+    var hintEl = document.getElementById('_ghint');
+    var hintTopBefore = hintEl ? hintEl.getBoundingClientRect().top : null;
     if (timerBox) timerBox.style.display = 'flex';
+    if (hintEl && hintTopBefore != null){
+        var hintTopAfter = hintEl.getBoundingClientRect().top;
+        var delta = hintTopBefore - hintTopAfter;   // negative: it moved down
+        if (delta){
+            // Start the hint at its OLD position (inverted), then release to 0.
+            hintEl.style.transition = 'none';
+            hintEl.style.transform = 'translateY(' + delta + 'px)';
+            void hintEl.offsetWidth;
+            requestAnimationFrame(function(){
+                hintEl.style.transition = 'transform .45s cubic-bezier(.34,1.56,.64,1)';
+                hintEl.style.transform = 'translateY(0)';
+                setTimeout(function(){
+                    var h = document.getElementById('_ghint');
+                    // Only clear if nothing else has since set a transform (the rise).
+                    if (h && h.style.transform === 'translateY(0px)'){ h.style.transition = ''; }
+                }, 480);
+            });
+        }
+    }
     if (cd){ cd.textContent = '5'; cd.classList.remove('urgent'); }
     if (fill){
         fill.classList.remove('urgent');
@@ -10110,6 +10179,8 @@ function _gStartCountdown(){
 function _handleEggTap(){
     if (!_eggState || _eggState.finished) return;
     if (!_gEggStarted) return;
+    // Once the countdown hits 0, the egg is locked — no more taps register.
+    if (_gTimeLeft <= 0) return;
     var reveal = document.getElementById('_revealOverlay');
     if (reveal && reveal.classList.contains('show')) return;
     _gTapCount++;
@@ -10281,7 +10352,13 @@ function _gcAdjustFont(dir){
     _gcFontScale = Math.max(_GC_FS_MIN, Math.min(_GC_FS_MAX,
         Math.round((_gcFontScale + dir * _GC_FS_STEP) * 10) / 10));
     var card = document.querySelector('._grov ._grc');
-    if (card) card.style.setProperty('--gc-fs', String(_gcFontScale));
+    if (card){
+        card.style.setProperty('--gc-fs', String(_gcFontScale));
+        // Re-apply the inner body cap so larger fonts overflow into scroll.
+        // Crucially we do NOT call _fitRevealCard here: the card + image keep
+        // their session fit scale; only the text grows and the body scrolls.
+        _applyBodyCap(card);
+    }
 }
 window._gcAdjustFont = _gcAdjustFont;
 
@@ -10292,11 +10369,13 @@ function _fitRevealCard(shown){
   var shownNow = (shown === true) || card.closest('._grov').classList.contains('show');
   var availH = window.innerHeight - 24;
   var availW = window.innerWidth - 24;
-  // Use scrollHeight, NOT offsetHeight: the card now has a max-height + overflow,
-  // so offsetHeight would be CLAMPED to the cap and the fit could never see the
-  // card's true natural height (which made the card render oversized/cut off).
-  // scrollHeight reports the full content height regardless of the cap.
-  var natH = Math.max(card.scrollHeight, card.offsetHeight);
+  // _grc has no max-height anymore (scroll lives on the inner ._gcbody), so
+  // offsetHeight is the true natural height again — original behavior restored.
+  // Clear any body cap first so the body contributes its full natural height to
+  // the measurement (otherwise a prior cap would clamp it and skew the fit).
+  var bodyEl = card.querySelector('._gcbody');
+  if (bodyEl && bodyEl.style.maxHeight){ bodyEl.style.maxHeight = ''; }
+  var natH = card.offsetHeight;
   var natW = card.offsetWidth;
   var fit;
   if (natH && natW){
@@ -10311,7 +10390,36 @@ function _fitRevealCard(shown){
   var scale = fit * ts * (shownNow ? 1 : 0.85);
   card.style.transform = 'scale(' + scale + ')';
   document.body.style.setProperty('--reveal-fit', String(fit));
+  _applyBodyCap(card, fit, ts);
 }
+
+// Cap the inner ._gcbody so that, AT THE CARD'S FIT SCALE, the whole card fits the
+// viewport. Above the cap the body scrolls; the outer card + image never rescale.
+// Worked in the card's own pre-transform units (the transform scales it after).
+function _applyBodyCap(card, fit, ts){
+  if (!card) card = document.querySelector('._grov ._grc');
+  if (!card) return;
+  var body = card.querySelector('._gcbody');
+  if (!body) return;
+  if (fit == null) fit = _revealFitCache != null ? _revealFitCache : 1;
+  if (ts == null) ts = parseFloat(getComputedStyle(document.body).getPropertyValue('--reveal-scale')) || 1;
+  var denom = fit * ts;
+  if (!isFinite(denom) || denom <= 0) denom = 1;
+  // Total vertical room for the whole card, in pre-transform units.
+  var roomH = (window.innerHeight - 28) / denom;
+  // Everything in _grc that is NOT the scrollable body: padding + image + the
+  // gap between image and body. Measured live so it tracks the real layout.
+  var cs = getComputedStyle(card);
+  var padTop = parseFloat(cs.paddingTop) || 0;
+  var padBot = parseFloat(cs.paddingBottom) || 0;
+  var gap = parseFloat(cs.rowGap || cs.gap) || 0;
+  var img = card.querySelector('._griw');
+  var imgH = img ? img.offsetHeight : 0;
+  var nonBody = padTop + padBot + imgH + gap;
+  var cap = Math.max(120, Math.floor(roomH - nonBody));
+  body.style.maxHeight = cap + 'px';
+}
+window._applyBodyCap = _applyBodyCap;
 // On resize, drop the cache so the next fit re-measures against the new viewport.
 window.addEventListener('resize', function(){ _revealFitCache = null; _fitRevealCard(); });
 
@@ -10397,6 +10505,7 @@ function _revealCharacter(roll){
                     (imgUrl ? '<img src="' + imgUrl + '" alt="">' : '<div style="height:220px;display:flex;align-items:center;justify-content:center;color:#555;">No image</div>') +
                     '<div class="_ggsc"></div>' +
                 '</div>' +
+                '<div class="_gcbody">' +
                 '<div class="_gtitlewrap">' +
                     '<div class="_gran" id="_gran">' + esc(roll.animal.name) + '</div>' +
                     (roll.glitter ? '<div class="_gglit">\u2756 GLITTER \u2756</div>' : '') +
@@ -10419,6 +10528,7 @@ function _revealCharacter(roll){
                 '<button class="_gsrb" onclick="showRarityTables()"><span class="_gic">\u2756</span>See All Rarities</button>' +
                 _buildRollCounter() +
                 _buildRevealButton() +
+                '</div>' +
             '</div>';
         ro.innerHTML = html;
         document.body.appendChild(ro);
