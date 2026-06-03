@@ -9348,15 +9348,7 @@ function _gachaRollOne(luck){
              glitter: isGlitter, tapMult: tapMult, luck: luck };
 }
 function _gachaGetImg(animalKey, colorKey, itemKey){
-    var url = _GACHA_IMG_LOOKUP[animalKey + '|' + colorKey + '|' + itemKey] || null;
-    if (!url) return null;
-    // Ask Shopify's CDN to resize on the fly. The frame is only ~280-340px wide,
-    // so a 560px image is plenty sharp (2x for retina) and downloads far faster
-    // than the full-resolution source, which was causing long load waits.
-    if (url.indexOf('width=') === -1){
-        url += (url.indexOf('?') === -1 ? '?' : '&') + 'width=560';
-    }
-    return url;
+    return _GACHA_IMG_LOOKUP[animalKey + '|' + colorKey + '|' + itemKey] || null;
 }
 function _gachaFmtPct(p){
     if (p < 0.01) return p.toFixed(4) + '%';
@@ -9555,7 +9547,7 @@ function _injectGachaStyle(){
         '._grartbl td{font-family:"VCR OSD Mono",monospace;font-size:calc(14px * var(--rar-scale));color:#fff;padding:7px 8px;border-bottom:1px solid #1a1a1a;letter-spacing:.05em;line-height:1.5;}',
         '._grartbl td.pct{color:#f5c842;text-align:right;}',
         '._grartbl td.t3{color:#e24b4a;}._grartbl td.t2{color:#639922;}._grartbl td.t1{color:#378add;}',
-        '._grartbl td ._gartstar{display:inline-block;font-size:1.5em;position:relative;top:-4px;margin-right:5px;}',
+        '._grartbl td ._gartstar{display:inline-block;font-size:1.5em;position:relative;top:0;margin-right:5px;vertical-align:middle;}',
         '._grartbl td.glit{color:#f5c842;}',
         '._grarcls{background:#1a0e00;border:1px solid #f5c842;color:#f5c842;font-family:"Press Start 2P",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:10px 22px;border-radius:6px;cursor:pointer;align-self:center;display:inline-flex;align-items:center;justify-content:center;gap:7px;line-height:1;}',
         '._grarcls ._gic{display:inline-flex;align-items:center;line-height:1;position:relative;top:-2px;}',
@@ -10216,25 +10208,30 @@ function _gLoseRoll(){
     };
 }
 
-// Scale the reveal card down so it fits within the viewport, preserving all
-// proportions. offsetHeight/offsetWidth give the LAYOUT (pre-transform) size, so
-// we can compute how much to shrink regardless of the current transform. The
-// result feeds --reveal-fit, which multiplies with --reveal-scale (text size).
+// All monster images share the same dimensions, so once we've measured the framed
+// image height a single time we cache it and reserve that space on every later roll.
+// That makes the card's layout height known instantly (no waiting on image load),
+// so the whole card scales to fit the viewport immediately and identically each roll.
+var _gImgFrameH = 0; // cached natural framed image height (px), 0 until first measure
+
 function _fitRevealCard(){
   var card = document.querySelector('._grov ._grc');
   if (!card) return;
-  // Available space, leaving a small margin so it never kisses the edges.
+  var frame = card.querySelector('._griw');
+  // If we already know the framed image height, reserve it so layout is correct
+  // even before this roll's image finishes loading.
+  if (frame && _gImgFrameH){ frame.style.minHeight = _gImgFrameH + 'px'; }
+  // If we don't yet know it but this frame has a laid-out image, cache it now.
+  if (frame && !_gImgFrameH){
+    var h = frame.offsetHeight;
+    if (h > 40){ _gImgFrameH = h; }
+  }
   var availH = window.innerHeight - 24;
   var availW = window.innerWidth - 24;
-  // Natural layout size (unaffected by the scale transform).
-  var natH = card.offsetHeight;
+  var natH = card.offsetHeight;   // layout height, unaffected by the scale transform
   var natW = card.offsetWidth;
   if (!natH || !natW) return;
-  // Divide out the text-size scale so we measure the true unscaled box: offsetHeight
-  // already excludes transforms, so natH/natW ARE the unscaled box. Good.
-  var fitH = availH / natH;
-  var fitW = availW / natW;
-  var fit = Math.min(1, fitH, fitW); // only ever shrink, never enlarge past native
+  var fit = Math.min(1, availH / natH, availW / natW); // only ever shrink
   document.body.style.setProperty('--reveal-fit', String(fit));
 }
 window.addEventListener('resize', _fitRevealCard);
