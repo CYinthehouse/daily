@@ -9432,14 +9432,14 @@ function _injectGachaStyle(){
         '._gew.shake{animation:_gShk .45s cubic-bezier(.36,.07,.19,.97) forwards;}',
         '@keyframes _gShk{0%{transform:translate(0,0) rotate(0)}10%{transform:translate(-8px,-4px) rotate(-3deg)}20%{transform:translate(8px,2px) rotate(3deg)}30%{transform:translate(-10px,0) rotate(-4deg)}40%{transform:translate(10px,-3px) rotate(4deg)}50%{transform:translate(-6px,4px) rotate(-2deg)}60%{transform:translate(6px,-2px) rotate(2deg)}70%{transform:translate(-4px,2px) rotate(-1deg)}80%{transform:translate(4px,1px) rotate(1deg)}90%{transform:translate(-2px,0) rotate(0)}100%{transform:translate(0,0) rotate(0)}}',
         '._gei{width:280px;height:280px;object-fit:contain;display:block;filter:drop-shadow(0 20px 40px rgba(0,0,0,.8));user-select:none;-webkit-user-drag:none;}',
-        '._ghint{margin-top:20px;color:#fff;font-size:22px;letter-spacing:.15em;text-transform:uppercase;transition:opacity .5s;text-shadow:-1px -1px 0 #000024,1px -1px 0 #000024,-1px 1px 0 #000024,1px 1px 0 #000024;}',
+        '._ghint{margin-top:20px;color:#fff;font-size:22px;letter-spacing:.15em;text-transform:uppercase;transition:opacity .5s, transform .6s cubic-bezier(.34,1.56,.64,1);text-shadow:-1px -1px 0 #000024,1px -1px 0 #000024,-1px 1px 0 #000024,1px 1px 0 #000024;}',
         '._ghint.hidden{opacity:0;}',
         '._gov .fade-out{opacity:0 !important;transition:opacity .35s ease-out !important;pointer-events:none;}',
         '._grov{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;z-index:9999999;opacity:0;pointer-events:none;transition:opacity .4s;background:rgba(0,0,0,.82);font-family:"Press Start 2P","Courier New",monospace;}',
         '._grov.show{opacity:1;pointer-events:all;}',
         '._grov.show ._grc{transform:scale(calc(var(--reveal-fit, 1) * var(--reveal-scale, 1)));}',
         '._grc[data-rarity="holo"]{border:2px solid #dde;box-shadow:8px 8px 0 #6a6a99;}',
-        '._gran{font-size:22px;font-weight:bold;color:#fff;letter-spacing:.04em;text-align:center;}',
+        '._gran{font-size:calc(22px * var(--gc-fs));font-weight:bold;color:#fff;letter-spacing:.04em;text-align:center;}',
         '._grc[data-rarity="blue"]   ._gran{text-shadow:3px 3px 0 #1f6fc0;}',
         '._grc[data-rarity="red"]    ._gran{text-shadow:3px 3px 0 #c0322f;}',
         '._grc[data-rarity="green"]  ._gran{text-shadow:3px 3px 0 #4a7a1a;}',
@@ -9488,18 +9488,35 @@ function _injectGachaStyle(){
         '._gholosc{position:absolute;inset:0;border-radius:12px;pointer-events:none;opacity:0;background:linear-gradient(115deg,transparent 0%,rgba(255,100,200,0) 30%,rgba(150,220,255,.3) 42%,rgba(255,255,255,.5) 50%,rgba(180,255,150,.3) 58%,rgba(255,180,100,0) 70%,transparent 100%);background-size:300% 300%;mix-blend-mode:screen;animation:_gHoloScan 5s ease-in-out infinite;}',
         '._griw.holo ._gholosc{display:block;}',
         '@keyframes _gHoloScan{0%{background-position:150% 150%;opacity:0}5%{opacity:1}14%{background-position:-50% -50%;opacity:0}100%{background-position:-50% -50%;opacity:0}}',
-        '._grc{background:#0e0e0e;border-radius:0;padding:22px;display:flex;flex-direction:column;align-items:center;gap:10px;transform:scale(calc(var(--reveal-fit, 1) * var(--reveal-scale, 1) * 0.85));transform-origin:center center;transition:transform .4s cubic-bezier(.34,1.56,.64,1);max-width:640px;width:94vw;}',
-        '._gctr{display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:2px;color:#ccc;font-size:15px;letter-spacing:.1em;}',
+        '._grc{position:relative;background:#0e0e0e;border-radius:0;padding:22px;display:flex;flex-direction:column;align-items:center;gap:10px;transform:scale(calc(var(--reveal-fit, 1) * var(--reveal-scale, 1) * 0.85));transform-origin:center center;transition:transform .4s cubic-bezier(.34,1.56,.64,1);max-width:640px;width:94vw;--gc-fs:1;}',
+        /* When fonts are scaled up past the viewport, the card body scrolls instead
+           of forcing the whole card to shrink. max-height keyed to the viewport,
+           divided back out by the fit/zoom so the cap is in the card\'s own
+           pre-transform units. */
+        '._grc{max-height:calc((100vh - 28px) / (var(--reveal-fit, 1) * var(--reveal-scale, 1)));overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:#444 rgba(255,255,255,0.04);}',
+        '._grc::-webkit-scrollbar{width:8px;}',
+        '._grc::-webkit-scrollbar-track{background:rgba(255,255,255,0.04);}',
+        '._grc::-webkit-scrollbar-thumb{background:#444;border-radius:0;}',
+        '._grc::-webkit-scrollbar-thumb:hover{background:#666;}',
+        /* Font scaler: sticky to the top of the scrollable card so it stays pinned
+           in the corner while content scrolls. align-self:flex-end pins it right;
+           the negative bottom margin + height:0 wrapper trick keeps it from
+           consuming vertical space (so nothing below is pushed down). */
+        '._gfscale{position:sticky;top:8px;align-self:flex-end;margin-right:-6px;margin-bottom:-34px;z-index:5;display:inline-flex;align-items:center;gap:3px;background:rgba(10,10,21,0.85);border:1px solid #2a2a2a;border-radius:4px;padding:3px;box-shadow:0 2px 6px rgba(0,0,0,0.5);}',
+        '._gfscale button{background:#1c1c2c;border:1px solid #333;color:#cdd;font-family:"Press Start 2P",monospace;font-size:9px;line-height:1;padding:5px 6px;border-radius:2px;cursor:pointer;transition:filter .12s ease;}',
+        '._gfscale button:hover{filter:brightness(1.25);}',
+        '._gfscale button:active{filter:brightness(0.9);}',
+        '._gctr{display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:2px;color:#ccc;font-size:calc(15px * var(--gc-fs));letter-spacing:.1em;}',
         '._gmetawrap{display:flex;flex-direction:column;align-items:center;width:100%;margin:10px 0;padding:20px 0;border-top:1px solid #2a2a2a;border-bottom:1px solid #2a2a2a;}',
         // Combined pull chance footer (Option A): white label text, gold values
         // for both the percentage and the Tap Multiplier.
         '._gsblk{display:flex;flex-direction:column;align-items:center;gap:11px;margin-bottom:14px;}',
         '._gsblk._last{margin-bottom:0;}',
-        '._gslabel{font-size:15px;color:#fff;letter-spacing:.12em;}',
-        '._gsbig{font-size:26px;position:relative;display:inline-block;color:#f5c842;background:linear-gradient(100deg,#f5c842 0%,#f5c842 38%,#fff6c8 50%,#f5c842 62%,#f5c842 100%);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(1px 1px 0 #000) drop-shadow(-1px -1px 0 #000) drop-shadow(1px -1px 0 #000) drop-shadow(-1px 1px 0 #000);animation:gsbigGlare 3.2s linear infinite;}',
+        '._gslabel{font-size:calc(15px * var(--gc-fs));color:#fff;letter-spacing:.12em;}',
+        '._gsbig{font-size:calc(26px * var(--gc-fs));position:relative;display:inline-block;color:#f5c842;background:linear-gradient(100deg,#f5c842 0%,#f5c842 38%,#fff6c8 50%,#f5c842 62%,#f5c842 100%);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(1px 1px 0 #000) drop-shadow(-1px -1px 0 #000) drop-shadow(1px -1px 0 #000) drop-shadow(-1px 1px 0 #000);animation:gsbigGlare 3.2s linear infinite;}',
         '@keyframes gsbigGlare{0%{background-position:150% 0;}100%{background-position:-150% 0;}}',
-        '._gmlabel{font-size:15px;color:#b88cff;letter-spacing:.12em;}',
-        '._gmbig{font-size:20px;color:#f5c842;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;}',
+        '._gmlabel{font-size:calc(15px * var(--gc-fs));color:#b88cff;letter-spacing:.12em;}',
+        '._gmbig{font-size:calc(20px * var(--gc-fs));color:#f5c842;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;}',
         // Legacy combined-chance line still used by the showcase re-view.
         '._gcmb{font-size:11px;color:#fff;letter-spacing:.06em;text-align:center;border-top:1px solid #2a2a2a;padding-top:12px;margin-top:6px;width:100%;}',
         '._gcmb span{color:#f5c842;}',
@@ -9508,19 +9525,19 @@ function _injectGachaStyle(){
         // modal (420px) makes this comfortable. Label flex-basis bumped to
         // 80px (was 72px) and percentage min-width to 50px (was 42px) so
         // the bigger text doesn\'t crowd the value column.
-        '._grrw{display:flex;align-items:center;gap:14px;width:100%;box-sizing:border-box;font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:9px 13px;border-radius:6px;background:#171717;border:1px solid #2a2a2a;}',
-        '._grrw ._grrl{flex:0 0 116px;width:116px;color:#888;white-space:nowrap;border-right:1px solid #333;padding-right:10px;font-size:12px;box-sizing:border-box;}',
+        '._grrw{display:flex;align-items:center;gap:calc(14px * var(--gc-fs));width:100%;box-sizing:border-box;font-size:calc(12px * var(--gc-fs));letter-spacing:.05em;text-transform:uppercase;padding:9px 13px;border-radius:6px;background:#171717;border:1px solid #2a2a2a;}',
+        '._grrw ._grrl{flex:0 0 calc(116px * var(--gc-fs));width:calc(116px * var(--gc-fs));color:#888;white-space:nowrap;border-right:1px solid #333;padding-right:10px;font-size:calc(12px * var(--gc-fs));box-sizing:border-box;}',
         // word-break:normal + overflow-wrap:break-word ensures the value text
         // wraps ONLY at whitespace, never mid-word. Previously break-word was
         // letting things like "CALICO CAT KIGURUMI" shatter into 4 lines
         // ("CALICO / CAT / KIGURU / MI") when squeezed into a narrow column.
-        '._grrw ._grrn{flex:1;min-width:0;color:#fff;font-size:13px;line-height:1.4;word-break:normal;overflow-wrap:break-word;hyphens:none;}',
-        '._grrw ._grrt{font-size:12px;padding:4px 7px;border-radius:4px;white-space:nowrap;text-align:center;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;gap:4px;line-height:1;}',
-        '._grrw ._grrp{color:#f4c542;font-size:14px;white-space:nowrap;text-align:right;flex-shrink:0;min-width:64px;}',
+        '._grrw ._grrn{flex:1;min-width:0;color:#fff;font-size:calc(13px * var(--gc-fs));line-height:1.4;word-break:normal;overflow-wrap:break-word;hyphens:none;}',
+        '._grrw ._grrt{font-size:calc(12px * var(--gc-fs));padding:4px 7px;border-radius:4px;white-space:nowrap;text-align:center;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;gap:4px;line-height:1;}',
+        '._grrw ._grrp{color:#f4c542;font-size:calc(14px * var(--gc-fs));white-space:nowrap;text-align:right;flex-shrink:0;min-width:calc(64px * var(--gc-fs));}',
         '.tier-3{background:#e24b4a;color:#fff;border:1px solid #a32d2d;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;}.tier-2{background:#639922;color:#fff;border:1px solid #3b6d11;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;}.tier-1{background:#1f5a8f;color:#fff;border:1px solid #2f6fa8;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;}',
         '._grrw ._grrt ._gic{display:inline-flex;align-items:center;line-height:1;position:relative;top:-5px;font-size:1.7em;}',
         /* See All Rarities button + popup */
-        '._gsrb{background:#378add;border:2px solid #185fa5;color:#fff;font-family:"Press Start 2P",monospace;font-size:15px;letter-spacing:.1em;text-transform:uppercase;padding:9px 16px;border-radius:6px;cursor:pointer;transition:transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;margin-top:2px;display:inline-flex;align-items:center;justify-content:center;gap:7px;line-height:1;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;box-shadow:0 0 0 rgba(0,0,0,0);}',
+        '._gsrb{background:#378add;border:2px solid #185fa5;color:#fff;font-family:"Press Start 2P",monospace;font-size:calc(15px * var(--gc-fs));letter-spacing:.1em;text-transform:uppercase;padding:9px 16px;border-radius:6px;cursor:pointer;transition:transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;margin-top:2px;display:inline-flex;align-items:center;justify-content:center;gap:7px;line-height:1;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;box-shadow:0 0 0 rgba(0,0,0,0);}',
         '._gsrb span._gic{display:inline-flex;align-items:center;line-height:1;position:relative;top:-2px;}',
         '._gsrb:hover{filter:brightness(1.12);}',
         // Hover lift: button moves up-left by the shadow size and a hard medium-dark
@@ -9700,8 +9717,8 @@ function _createEggOverlay(){
             '<div class="_gprog" id="_gprog"></div>' +
         '</div>' +
         '<div class="_gwpop" id="_gwpop">' + (_gEffectsOn !== false ? '<div class="_gwrainbow"></div>' : '') + '<div class="_gwbox">' +
-            '<div style="font-family:\'Press Start 2P\',monospace;font-size:22px;color:#ff4444;line-height:1.7;margin-bottom:26px;text-shadow:2px 2px 0 #7a1515;">CRACK THE EGG FAST<br>OR LOSE YOUR CHANCE!</div>' +
-            '<button id="_gwclose" class="_gpixelBtn _ghoverlift" style="background:linear-gradient(135deg,#ff4444,#cc0000);border:none;color:#fff;font-family:\'Press Start 2P\',monospace;font-size:22px;padding:20px 44px;border-radius:2px;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,0.7),0 0 20px rgba(255,68,68,0.67);text-shadow:-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000,0 -2px 0 #000,0 2px 0 #000,-2px 0 0 #000,2px 0 0 #000;">I\'M READY!</button>' +
+            '<div style="font-family:\'Press Start 2P\',monospace;font-size:23px;color:#ff4444;line-height:1.7;margin-bottom:26px;text-shadow:2px 2px 0 #7a1515;">CRACK THE EGG FAST<br>OR LOSE YOUR CHANCE!</div>' +
+            '<button id="_gwclose" class="_gpixelBtn _ghoverlift" style="background:linear-gradient(135deg,#ff4444,#cc0000);border:none;color:#fff;font-family:\'Press Start 2P\',monospace;font-size:23px;padding:20px 44px;border-radius:2px;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,0.7),0 0 20px rgba(255,68,68,0.67);text-shadow:-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000,0 -2px 0 #000,0 2px 0 #000,-2px 0 0 #000,2px 0 0 #000;">I\'M READY!</button>' +
         '</div></div>' +
         '<div class="_gepipop" id="_gepipop" style="position:fixed;inset:0;z-index:99999999;display:' + (_gEffectsOn === null ? 'flex' : 'none') + ';align-items:center;justify-content:center;padding:20px;box-sizing:border-box;background:rgba(0,0,0,0.85);">' +
             '<div style="background:#0a0a15;border:3px solid #FFD700;border-radius:2px;padding:42px 36px;max-width:500px;width:100%;text-align:center;box-shadow:0 0 40px rgba(255,215,0,0.45),4px 4px 0 rgba(0,0,0,0.8);">' +
@@ -9886,6 +9903,14 @@ function _gFadeEggAndTimer(){
         void gew.offsetWidth;
         requestAnimationFrame(function(){ gew.style.opacity = '0'; });
     }
+    // Fade the "EGG N/N" queue label out in lockstep with the egg + timer.
+    var qinfo = document.getElementById('_eggQueueInfo');
+    if (qinfo && qinfo.textContent){
+        qinfo.style.transition = 'opacity 0.5s ease-out';
+        qinfo.style.pointerEvents = 'none';
+        void qinfo.offsetWidth;
+        requestAnimationFrame(function(){ qinfo.style.opacity = '0'; });
+    }
 }
 
 function _startEggFor(roll, queueInfo){
@@ -9919,7 +9944,7 @@ function _startEggFor(roll, queueInfo){
         img.onload  = function(){ this.style.visibility = ''; };
         img.src = EGG_IMGS[0];
     }
-    if (hint){ hint.classList.remove('hidden','fade-out'); hint.textContent = 'Click to crack'; hint.style.color = ''; hint.style.opacity = ''; hint.style.transition = ''; hint.style.pointerEvents = ''; hint.style.display = ''; }
+    if (hint){ hint.classList.remove('hidden','fade-out'); hint.textContent = 'Click to crack'; hint.style.color = ''; hint.style.opacity = ''; hint.style.transition = ''; hint.style.transform = ''; hint.style.pointerEvents = ''; hint.style.display = ''; }
     if (info){ info.textContent = queueInfo || ''; info.classList.remove('fade-out'); info.style.display = ''; info.style.opacity = ''; info.style.transition = ''; info.style.pointerEvents = ''; }
     if (fm){ fm.classList.remove('show'); fm.classList.remove('fade-out'); }
     if (timerBox){ timerBox.style.display = 'none'; timerBox.classList.remove('fade-out'); timerBox.style.opacity = ''; timerBox.style.transition = ''; timerBox.style.pointerEvents = ''; }
@@ -10122,9 +10147,17 @@ function _gForceReveal(){
             hint.classList.remove('hidden');
             hint.textContent = '\u2756 Something is hatching... \u2756';
             hint.style.color = '#f5c842';
+            // Glide the message upward into the space the egg vacates, instead of
+            // having it sit still. Start at rest, then animate up shortly after, timed
+            // to coincide with the egg + timer fade (_gFadeEggAndTimer below).
+            hint.style.transform = 'translateY(0)';
+            void hint.offsetWidth;
+            setTimeout(function(){
+                var h = document.getElementById('_ghint');
+                if (h) h.style.transform = 'translateY(-120px)';
+            }, 200);
         }
         if (fm) fm.classList.remove('show');
-        // Countdown timing: ~0.9s until _gTimeLeft hits 0, then 0.2s hold, then 0.5s fade.
         // Reveal arrives at 1600ms (matches effects-on pacing, during what would be
         // the explosion's last 0.3s in effects-on mode).
         setTimeout(function(){
@@ -10224,6 +10257,20 @@ function _gLoseRoll(){
 // later roll so they never wait on a measurement. Recomputed on window resize.
 var _revealFitCache = null;
 
+// Per-session font scale for the reveal card's inner contents. Applied via the
+// --gc-fs CSS var on ._grc. The +/- control in the card corner adjusts it; it
+// persists across rolls in the session. Larger values overflow the card body
+// into a scroll region rather than rescaling the whole card.
+var _gcFontScale = 1;
+var _GC_FS_MIN = 0.8, _GC_FS_MAX = 1.8, _GC_FS_STEP = 0.1;
+function _gcAdjustFont(dir){
+    _gcFontScale = Math.max(_GC_FS_MIN, Math.min(_GC_FS_MAX,
+        Math.round((_gcFontScale + dir * _GC_FS_STEP) * 10) / 10));
+    var card = document.querySelector('._grov ._grc');
+    if (card) card.style.setProperty('--gc-fs', String(_gcFontScale));
+}
+window._gcAdjustFont = _gcAdjustFont;
+
 function _fitRevealCard(shown){
   var card = document.querySelector('._grov ._grc');
   if (!card) return;
@@ -10320,7 +10367,11 @@ function _revealCharacter(roll){
         var iTier = roll.item.tier;
 
         var html =
-            '<div class="_grc" data-rarity="' + roll.color.rarity + '">' +
+            '<div class="_grc" data-rarity="' + roll.color.rarity + '" style="--gc-fs:' + (_gcFontScale || 1) + ';">' +
+                '<div class="_gfscale" onclick="event.stopPropagation();">' +
+                    '<button type="button" onclick="_gcAdjustFont(-1)" aria-label="Smaller text">A\u2212</button>' +
+                    '<button type="button" onclick="_gcAdjustFont(1)" aria-label="Larger text">A+</button>' +
+                '</div>' +
                 '<div class="_griw _anim-' + roll.animal.key + holoClass + glitterClass + '">' +
                     '<div class="_gholoS"></div>' +
                     '<div class="_gspov" id="_gspov"></div>' +
