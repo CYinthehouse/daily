@@ -9495,10 +9495,10 @@ function _injectGachaStyle(){
         // for both the percentage and the Tap Multiplier.
         '._gsblk{display:flex;flex-direction:column;align-items:center;gap:11px;margin-bottom:14px;}',
         '._gsblk._last{margin-bottom:0;}',
-        '._gslabel{font-size:13px;color:#fff;letter-spacing:.12em;}',
+        '._gslabel{font-size:15px;color:#fff;letter-spacing:.12em;}',
         '._gsbig{font-size:26px;position:relative;display:inline-block;color:#f5c842;background:linear-gradient(100deg,#f5c842 0%,#f5c842 38%,#fff6c8 50%,#f5c842 62%,#f5c842 100%);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(1px 1px 0 #000) drop-shadow(-1px -1px 0 #000) drop-shadow(1px -1px 0 #000) drop-shadow(-1px 1px 0 #000);animation:gsbigGlare 3.2s linear infinite;}',
         '@keyframes gsbigGlare{0%{background-position:150% 0;}100%{background-position:-150% 0;}}',
-        '._gmlabel{font-size:13px;color:#b88cff;letter-spacing:.12em;}',
+        '._gmlabel{font-size:15px;color:#b88cff;letter-spacing:.12em;}',
         '._gmbig{font-size:20px;color:#f5c842;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;}',
         // Legacy combined-chance line still used by the showcase re-view.
         '._gcmb{font-size:11px;color:#fff;letter-spacing:.06em;text-align:center;border-top:1px solid #2a2a2a;padding-top:12px;margin-top:6px;width:100%;}',
@@ -9508,15 +9508,15 @@ function _injectGachaStyle(){
         // modal (420px) makes this comfortable. Label flex-basis bumped to
         // 80px (was 72px) and percentage min-width to 50px (was 42px) so
         // the bigger text doesn\'t crowd the value column.
-        '._grrw{display:flex;align-items:center;gap:14px;width:100%;box-sizing:border-box;font-size:14px;letter-spacing:.05em;text-transform:uppercase;padding:9px 13px;border-radius:6px;background:#171717;border:1px solid #2a2a2a;}',
-        '._grrw ._grrl{flex:0 0 96px;width:96px;color:#888;white-space:nowrap;border-right:1px solid #333;padding-right:8px;font-size:14px;box-sizing:border-box;}',
+        '._grrw{display:flex;align-items:center;gap:14px;width:100%;box-sizing:border-box;font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:9px 13px;border-radius:6px;background:#171717;border:1px solid #2a2a2a;}',
+        '._grrw ._grrl{flex:0 0 96px;width:96px;color:#888;white-space:nowrap;border-right:1px solid #333;padding-right:8px;font-size:12px;box-sizing:border-box;}',
         // word-break:normal + overflow-wrap:break-word ensures the value text
         // wraps ONLY at whitespace, never mid-word. Previously break-word was
         // letting things like "CALICO CAT KIGURUMI" shatter into 4 lines
         // ("CALICO / CAT / KIGURU / MI") when squeezed into a narrow column.
-        '._grrw ._grrn{flex:1;min-width:0;color:#fff;font-size:15px;line-height:1.4;word-break:normal;overflow-wrap:break-word;hyphens:none;}',
-        '._grrw ._grrt{font-size:14px;padding:4px 7px;border-radius:4px;white-space:nowrap;text-align:center;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;gap:4px;line-height:1;}',
-        '._grrw ._grrp{color:#f4c542;font-size:16px;white-space:nowrap;text-align:right;flex-shrink:0;min-width:64px;}',
+        '._grrw ._grrn{flex:1;min-width:0;color:#fff;font-size:13px;line-height:1.4;word-break:normal;overflow-wrap:break-word;hyphens:none;}',
+        '._grrw ._grrt{font-size:12px;padding:4px 7px;border-radius:4px;white-space:nowrap;text-align:center;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;gap:4px;line-height:1;}',
+        '._grrw ._grrp{color:#f4c542;font-size:14px;white-space:nowrap;text-align:right;flex-shrink:0;min-width:64px;}',
         '.tier-3{background:#e24b4a;color:#fff;border:1px solid #a32d2d;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;}.tier-2{background:#639922;color:#fff;border:1px solid #3b6d11;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;}.tier-1{background:#1f5a8f;color:#fff;border:1px solid #2f6fa8;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;}',
         '._grrw ._grrt ._gic{display:inline-flex;align-items:center;line-height:1;position:relative;top:-5px;font-size:1.7em;}',
         /* See All Rarities button + popup */
@@ -9547,7 +9547,7 @@ function _injectGachaStyle(){
         '._grartbl td{font-family:"VCR OSD Mono",monospace;font-size:calc(14px * var(--rar-scale));color:#fff;padding:7px 8px;border-bottom:1px solid #1a1a1a;letter-spacing:.05em;line-height:1.5;}',
         '._grartbl td.pct{color:#f5c842;text-align:right;}',
         '._grartbl td.t3{color:#e24b4a;}._grartbl td.t2{color:#639922;}._grartbl td.t1{color:#378add;}',
-        '._grartbl td ._gartstar{display:inline-block;font-size:1.5em;position:relative;top:0;margin-right:5px;vertical-align:middle;}',
+        '._grartbl td ._gartstar{display:inline-block;font-size:1.5em;position:relative;top:-2px;margin-right:5px;vertical-align:middle;}',
         '._grartbl td.glit{color:#f5c842;}',
         '._grarcls{background:#1a0e00;border:1px solid #f5c842;color:#f5c842;font-family:"Press Start 2P",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:10px 22px;border-radius:6px;cursor:pointer;align-self:center;display:inline-flex;align-items:center;justify-content:center;gap:7px;line-height:1;}',
         '._grarcls ._gic{display:inline-flex;align-items:center;line-height:1;position:relative;top:-2px;}',
@@ -10384,13 +10384,13 @@ function _buildRollCounter(){
     var current = _eggBatchResults.length + 1;
     var totalInBatch = current + _eggQueue.length;
     if (totalInBatch <= 1) return '';
-    return '<div class="_gctr"><span style="color:#ccc">Roll</span> <span style="color:#f5c842;font-size:14px;">' + current + '</span> <span style="color:#ccc">of</span> <span style="color:#f5c842;font-size:14px;">' + totalInBatch + '</span></div>';
+    return '<div class="_gctr"><span style="color:#ccc">Roll</span> <span style="color:#f5c842;font-size:18px;">' + current + '</span> <span style="color:#ccc">of</span> <span style="color:#f5c842;font-size:18px;">' + totalInBatch + '</span></div>';
 }
 
 function _buildRevealButton(){
     // Style matches the login/signup btn-lg buttons, solid red, full-width, Press Start 2P,
     // 3px black offset shadow, hover/active transforms, plus a sparkle-shine sweep on hover.
-    var baseStyle = 'display:inline-flex;align-items:center;justify-content:center;gap:8px;line-height:1;white-space:nowrap;width:100%;box-sizing:border-box;background:#ff4444;color:#fff;border:2px solid #cc2222;font-family:\'Press Start 2P\',\'Courier New\',monospace !important;font-size:12px;letter-spacing:.06em;padding:16px 14px;border-radius:2px;cursor:pointer;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;transition:transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;';
+    var baseStyle = 'display:inline-flex;align-items:center;justify-content:center;gap:8px;line-height:1;white-space:nowrap;width:100%;box-sizing:border-box;background:#ff4444;color:#fff;border:2px solid #cc2222;font-family:\'Press Start 2P\',\'Courier New\',monospace !important;font-size:16px;letter-spacing:.06em;padding:16px 14px;border-radius:2px;cursor:pointer;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;transition:transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;';
     // Signup batch flow: NEXT EGG while the queue has more, CLOSE on the last one.
     if (_eggBatchMode && _eggQueue.length > 0){
         return '<button id="_grclose" class="_gshineBtn _grevbtn" style="' + baseStyle + '" onclick="nextInQueue()"><span class="_gic">&#x25B6;</span><span class="_gtx">NEXT EGG</span></button>';
