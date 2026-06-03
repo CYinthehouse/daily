@@ -10219,24 +10219,36 @@ function _gLoseRoll(){
 // Scale the whole reveal card to fit the viewport, preserving all proportions.
 // Applies the combined (viewport-fit x text-size) scale directly as an inline
 // transform so a bad CSS calc() can never silently drop the transform.
+// Session-cached fit factor for the reveal card. Computed once (first roll, after
+// the image is preloaded and the card has real dimensions) and reused for every
+// later roll so they never wait on a measurement. Recomputed on window resize.
+var _revealFitCache = null;
+
 function _fitRevealCard(shown){
   var card = document.querySelector('._grov ._grc');
   if (!card) return;
+  var ts = parseFloat(getComputedStyle(document.body).getPropertyValue('--reveal-scale')) || 1;
+  var shownNow = (shown === true) || card.closest('._grov').classList.contains('show');
   var availH = window.innerHeight - 24;
   var availW = window.innerWidth - 24;
   var natH = card.offsetHeight;   // layout height, unaffected by the transform
   var natW = card.offsetWidth;
-  if (!natH || !natW) return;
-  var fit = Math.min(1, availH / natH, availW / natW);
-  if (!isFinite(fit) || fit <= 0) fit = 1;
-  var ts = parseFloat(getComputedStyle(document.body).getPropertyValue('--reveal-scale')) || 1;
-  // Before .show: include the 0.85 pop-in start scale. After .show: full size.
-  var shownNow = (shown === true) || card.closest('._grov').classList.contains('show');
+  var fit;
+  if (natH && natW){
+    fit = Math.min(1, availH / natH, availW / natW);
+    if (!isFinite(fit) || fit <= 0) fit = 1;
+    _revealFitCache = fit;        // remember for subsequent rolls this session
+  } else if (_revealFitCache != null){
+    fit = _revealFitCache;        // card not measurable yet: use the cached fit
+  } else {
+    return;                       // nothing to go on yet
+  }
   var scale = fit * ts * (shownNow ? 1 : 0.85);
   card.style.transform = 'scale(' + scale + ')';
   document.body.style.setProperty('--reveal-fit', String(fit));
 }
-window.addEventListener('resize', function(){ _fitRevealCard(); });
+// On resize, drop the cache so the next fit re-measures against the new viewport.
+window.addEventListener('resize', function(){ _revealFitCache = null; _fitRevealCard(); });
 
 function _revealCharacter(roll){
     // Tap bonus: the card is first SEEN here, so apply the luck the player earned by
@@ -10347,7 +10359,9 @@ function _revealCharacter(roll){
         // appended immediately (covers the page), but the card only fades in via
         // .show after the image is ready (or a short safety timeout).
         var _revealNow = function(){
-            // Fit against the card's CURRENT layout (image decoded by now).
+            // Image is preloaded (cached) now, so the card lays out at full size.
+            // On the first roll this measures and caches the fit; later rolls reuse
+            // the cached fit instantly even if this measure happens a frame early.
             _fitRevealCard(false);
             requestAnimationFrame(function(){
                 _fitRevealCard(false);
@@ -10358,37 +10372,19 @@ function _revealCharacter(roll){
             });
         };
         if (imgUrl){
-            // Measure/fit only AFTER the card's own <img> has real dimensions.
-            // The card height is driven by the in-DOM <img> (width:100%;height:auto),
-            // so fitting before it has a height leaves the card un-scaled, then it
-            // reflows oversized when the image paints. We listen on the REAL element.
-            // (decode() was avoided: its promise can hang when the same URL is
-            // re-requested mid-swap across consecutive rolls.)
-            var _cardImg = ro.querySelector('._griw img');
+            // Preload into the browser cache with a DETACHED Image() (the original,
+            // reliable approach). A detached loader's src is never re-pointed, so its
+            // onload/complete always fire — unlike listening on the in-card <img>,
+            // whose events can be missed when the same URL is requested across rolls.
+            // Once cached, the in-card <img> lays out with real height immediately, so
+            // _fitRevealCard measures correctly; the result is cached for later rolls.
+            var _pre = new Image();
             var _done = false;
-            var _go = function(){
-                if (_done) return; _done = true;
-                _revealNow();
-                // Extra fit on the next frame in case the height lands a tick late.
-                requestAnimationFrame(function(){ _fitRevealCard(ro.classList.contains('show')); });
-            };
-            if (_cardImg){
-                if (_cardImg.complete && _cardImg.naturalHeight){
-                    _go();                       // already loaded & sized
-                } else {
-                    _cardImg.addEventListener('load', _go, { once: true });
-                    _cardImg.addEventListener('error', _go, { once: true });
-                    // Poll as a backstop: covers cached images that never re-fire
-                    // load on a fresh element across rolls.
-                    var _poll = setInterval(function(){
-                        if (_done){ clearInterval(_poll); return; }
-                        if (_cardImg.complete && _cardImg.naturalHeight){ clearInterval(_poll); _go(); }
-                    }, 50);
-                    setTimeout(function(){ clearInterval(_poll); }, 2600);
-                }
-            } else {
-                _go();
-            }
+            var _go = function(){ if (_done) return; _done = true; _revealNow(); };
+            _pre.onload = _go;
+            _pre.onerror = _go;          // don't trap the user if the image 404s
+            _pre.src = imgUrl;
+            if (_pre.complete) _go();    // already cached (repeat character, later roll)
             setTimeout(_go, 2500);       // safety net: never wait longer than 2.5s
         } else {
             _revealNow();
