@@ -9488,7 +9488,7 @@ function _injectGachaStyle(){
         '._gholosc{position:absolute;inset:0;border-radius:12px;pointer-events:none;opacity:0;background:linear-gradient(115deg,transparent 0%,rgba(255,100,200,0) 30%,rgba(150,220,255,.3) 42%,rgba(255,255,255,.5) 50%,rgba(180,255,150,.3) 58%,rgba(255,180,100,0) 70%,transparent 100%);background-size:300% 300%;mix-blend-mode:screen;animation:_gHoloScan 5s ease-in-out infinite;}',
         '._griw.holo ._gholosc{display:block;}',
         '@keyframes _gHoloScan{0%{background-position:150% 150%;opacity:0}5%{opacity:1}14%{background-position:-50% -50%;opacity:0}100%{background-position:-50% -50%;opacity:0}}',
-        '._grc{background:#0e0e0e;border-radius:0;padding:22px;display:flex;flex-direction:column;align-items:center;gap:10px;transform:scale(calc(var(--reveal-fit, 1) * var(--reveal-scale, 1) * 0.85));transform-origin:center center;transition:transform .4s cubic-bezier(.34,1.56,.64,1);max-width:520px;width:94vw;}',
+        '._grc{background:#0e0e0e;border-radius:0;padding:22px;display:flex;flex-direction:column;align-items:center;gap:10px;transform:scale(calc(var(--reveal-fit, 1) * var(--reveal-scale, 1) * 0.85));transform-origin:center center;transition:transform .4s cubic-bezier(.34,1.56,.64,1);max-width:640px;width:94vw;}',
         '._gctr{display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:2px;color:#ccc;font-size:15px;letter-spacing:.1em;}',
         '._gmetawrap{display:flex;flex-direction:column;align-items:center;width:100%;margin:10px 0;padding:20px 0;border-top:1px solid #2a2a2a;border-bottom:1px solid #2a2a2a;}',
         // Combined pull chance footer (Option A): white label text, gold values
@@ -9509,7 +9509,7 @@ function _injectGachaStyle(){
         // 80px (was 72px) and percentage min-width to 50px (was 42px) so
         // the bigger text doesn\'t crowd the value column.
         '._grrw{display:flex;align-items:center;gap:14px;width:100%;box-sizing:border-box;font-size:12px;letter-spacing:.05em;text-transform:uppercase;padding:9px 13px;border-radius:6px;background:#171717;border:1px solid #2a2a2a;}',
-        '._grrw ._grrl{flex:0 0 96px;width:96px;color:#888;white-space:nowrap;border-right:1px solid #333;padding-right:8px;font-size:12px;box-sizing:border-box;}',
+        '._grrw ._grrl{flex:0 0 116px;width:116px;color:#888;white-space:nowrap;border-right:1px solid #333;padding-right:10px;font-size:12px;box-sizing:border-box;}',
         // word-break:normal + overflow-wrap:break-word ensures the value text
         // wraps ONLY at whitespace, never mid-word. Previously break-word was
         // letting things like "CALICO CAT KIGURUMI" shatter into 4 lines
@@ -10228,7 +10228,7 @@ function _fitRevealCard(shown){
   card.style.transform = 'scale(' + scale + ')';
   document.body.style.setProperty('--reveal-fit', String(fit));
 }
-window.addEventListener('resize', _fitRevealCard);
+window.addEventListener('resize', function(){ _fitRevealCard(); });
 
 function _revealCharacter(roll){
     // Tap bonus: the card is first SEEN here, so apply the luck the player earned by
@@ -10339,7 +10339,7 @@ function _revealCharacter(roll){
         // appended immediately (covers the page), but the card only fades in via
         // .show after the image is ready (or a short safety timeout).
         var _revealNow = function(){
-            // Image is cached now, so the card lays out at full size immediately.
+            // Fit against the card's CURRENT layout (image decoded by now).
             _fitRevealCard(false);
             requestAnimationFrame(function(){
                 _fitRevealCard(false);
@@ -10350,13 +10350,33 @@ function _revealCharacter(roll){
             });
         };
         if (imgUrl){
-            var _pre = new Image();
+            // Measure/fit only AFTER the card's own <img> has real dimensions.
+            // The previous code warmed a detached `new Image()` cache, but the card's
+            // height is driven by the in-DOM <img> (width:100%;height:auto). On a 2nd
+            // roll that in-card image often had not decoded at measure time, so natH
+            // was too short and the card never scaled down — then reflowed oversized
+            // when it finally painted. Wait on the real element via decode()/onload.
+            var _cardImg = ro.querySelector('._griw img');
             var _done = false;
-            var _go = function(){ if (_done) return; _done = true; _revealNow(); };
-            _pre.onload = _go;
-            _pre.onerror = _go;          // don't trap the user if the image 404s
-            _pre.src = imgUrl;
-            if (_pre.complete) _go();    // already cached (e.g. a repeat character)
+            var _go = function(){
+                if (_done) return; _done = true;
+                _revealNow();
+                // One more fit after the next paint, in case decode reported ready
+                // a hair before the browser applied the intrinsic height.
+                requestAnimationFrame(function(){ _fitRevealCard(ro.classList.contains('show')); });
+            };
+            if (_cardImg){
+                if (_cardImg.complete && _cardImg.naturalHeight){
+                    _go();                                  // already decoded
+                } else if (_cardImg.decode){
+                    _cardImg.decode().then(_go).catch(_go); // wait for real decode
+                } else {
+                    _cardImg.onload = _go;
+                    _cardImg.onerror = _go;
+                }
+            } else {
+                _go();
+            }
             setTimeout(_go, 2500);       // safety net: never wait longer than 2.5s
         } else {
             _revealNow();
