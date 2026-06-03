@@ -9717,7 +9717,7 @@ function _createEggOverlay(){
             '<div class="_gprog" id="_gprog"></div>' +
         '</div>' +
         '<div class="_gwpop" id="_gwpop">' + (_gEffectsOn !== false ? '<div class="_gwrainbow"></div>' : '') + '<div class="_gwbox">' +
-            '<div style="font-family:\'Press Start 2P\',monospace;font-size:23px;color:#ff4444;line-height:1.7;margin-bottom:26px;text-shadow:2px 2px 0 #7a1515;">CRACK THE EGG FAST<br>OR LOSE YOUR CHANCE!</div>' +
+            '<div style="font-family:\'Press Start 2P\',monospace;font-size:23px;color:#ff4444;line-height:1.7;margin-bottom:26px;text-shadow:-2px -2px 0 #7a1515,2px -2px 0 #7a1515,-2px 2px 0 #7a1515,2px 2px 0 #7a1515,0 -2px 0 #7a1515,0 2px 0 #7a1515,-2px 0 0 #7a1515,2px 0 0 #7a1515;">CRACK THE EGG FAST<br>OR LOSE YOUR CHANCE!</div>' +
             '<button id="_gwclose" class="_gpixelBtn _ghoverlift" style="background:linear-gradient(135deg,#ff4444,#cc0000);border:none;color:#fff;font-family:\'Press Start 2P\',monospace;font-size:23px;padding:20px 44px;border-radius:2px;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,0.7),0 0 20px rgba(255,68,68,0.67);text-shadow:-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000,0 -2px 0 #000,0 2px 0 #000,-2px 0 0 #000,2px 0 0 #000;">I\'M READY!</button>' +
         '</div></div>' +
         '<div class="_gepipop" id="_gepipop" style="position:fixed;inset:0;z-index:99999999;display:' + (_gEffectsOn === null ? 'flex' : 'none') + ';align-items:center;justify-content:center;padding:20px;box-sizing:border-box;background:rgba(0,0,0,0.85);">' +
@@ -9886,7 +9886,10 @@ function _gShowTapWarn(){
 // Fades both the timer box and the egg wrapper out together over 0.5s.
 // Used by the success path; called at different anchor points by effects-off
 // (timer hits 0) vs effects-on (explosion start).
-function _gFadeEggAndTimer(){
+// riseHint (effects-off only): after the 0.5s fade FINISHES, glide the
+// "Something is hatching..." hint upward into the space the egg vacated.
+function _gFadeEggAndTimer(riseHint){
+    var FADE_MS = 500;
     var tb = document.getElementById('_gtimerbox');
     if (tb){
         tb.style.transition = 'opacity 0.5s ease-out';
@@ -9910,6 +9913,23 @@ function _gFadeEggAndTimer(){
         qinfo.style.pointerEvents = 'none';
         void qinfo.offsetWidth;
         requestAnimationFrame(function(){ qinfo.style.opacity = '0'; });
+    }
+    if (riseHint){
+        // Wait for the fade to fully complete, THEN animate the hatching message up
+        // into the now-empty egg area. Travel is keyed off the egg wrapper's height
+        // so it lands roughly where the egg's center was, regardless of layout scale.
+        setTimeout(function(){
+            var h = document.getElementById('_ghint');
+            if (!h) return;
+            var rise = 220;
+            if (gew){
+                var gh = gew.offsetHeight || 0;
+                // Move up by the egg's height plus the ~20px hint margin so the
+                // message settles into the vacated egg space.
+                if (gh) rise = Math.round(gh * 0.7 + 20);
+            }
+            h.style.transform = 'translateY(-' + rise + 'px)';
+        }, FADE_MS + 30);
     }
 }
 
@@ -10053,7 +10073,7 @@ function _gStartCountdown(){
             // always completes before the explosion ends regardless of how fast the user
             // tapped through the crack stages. Lose path untouched.
             if (_gEffectsOn === false && _eggState && _eggState.current >= EGG_IMGS.length - 1){
-                setTimeout(_gFadeEggAndTimer, 200);
+                setTimeout(function(){ _gFadeEggAndTimer(true); }, 200);
             }
         }
     }, 1000);
@@ -10147,15 +10167,9 @@ function _gForceReveal(){
             hint.classList.remove('hidden');
             hint.textContent = '\u2756 Something is hatching... \u2756';
             hint.style.color = '#f5c842';
-            // Glide the message upward into the space the egg vacates, instead of
-            // having it sit still. Start at rest, then animate up shortly after, timed
-            // to coincide with the egg + timer fade (_gFadeEggAndTimer below).
+            // Start at rest. The upward glide is triggered by _gFadeEggAndTimer
+            // AFTER the egg + timer have fully finished fading out (see that fn).
             hint.style.transform = 'translateY(0)';
-            void hint.offsetWidth;
-            setTimeout(function(){
-                var h = document.getElementById('_ghint');
-                if (h) h.style.transform = 'translateY(-120px)';
-            }, 200);
         }
         if (fm) fm.classList.remove('show');
         // Reveal arrives at 1600ms (matches effects-on pacing, during what would be
@@ -10278,7 +10292,11 @@ function _fitRevealCard(shown){
   var shownNow = (shown === true) || card.closest('._grov').classList.contains('show');
   var availH = window.innerHeight - 24;
   var availW = window.innerWidth - 24;
-  var natH = card.offsetHeight;   // layout height, unaffected by the transform
+  // Use scrollHeight, NOT offsetHeight: the card now has a max-height + overflow,
+  // so offsetHeight would be CLAMPED to the cap and the fit could never see the
+  // card's true natural height (which made the card render oversized/cut off).
+  // scrollHeight reports the full content height regardless of the cap.
+  var natH = Math.max(card.scrollHeight, card.offsetHeight);
   var natW = card.offsetWidth;
   var fit;
   if (natH && natW){
