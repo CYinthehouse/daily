@@ -9550,6 +9550,16 @@ function _injectGachaStyle(){
         '.badge-pink{background:#d4537e;color:#fff;}.badge-red{background:#e24b4a;color:#fff;}.badge-yellow{background:#f5c842;color:#111;}.badge-green{background:#639922;color:#fff;}.badge-blue{background:#378add;color:#fff;}',
         '._griw{width:280px;border-radius:10px;border:1px solid #222;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}',
         '._griw img{width:100%;height:auto;display:block;margin-top:-50px;margin-bottom:-50px;pointer-events:none;-webkit-user-drag:none;user-select:none;}',
+        /* Loading state: reserve the saved slot height (captured from the first
+           image that loads this session) and fade the image in once it loads, so
+           later rolls show a stable box + spinner instead of popping/waiting. Only
+           applied to images that have not loaded yet. */
+        '._griw.loading{min-height:var(--griw-h, 220px);}',
+        '._griw img.cardimg{opacity:0;transition:opacity .25s ease;}',
+        '._griw img.cardimg.loaded{opacity:1;}',
+        '._griwSpin{position:absolute;top:50%;left:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border:4px solid rgba(65,192,255,0.18);border-top-color:#29c4ff;border-radius:50%;image-rendering:pixelated;animation:_griwSpin .7s steps(8) infinite;pointer-events:none;z-index:2;}',
+        '@keyframes _griwSpin{to{transform:rotate(360deg);}}',
+        '._griw.loaded ._griwSpin{display:none;}',
         '._griw._detail{width:340px;}',
         '._griw._detail img{width:100%;height:auto;margin-top:-50px;margin-bottom:-50px;}',
         // Per-character crop overrides. Each pair tightens an extra 5px on
@@ -10432,6 +10442,32 @@ function _gLoseRoll(){
 // later roll so they never wait on a measurement. Recomputed on window resize.
 var _revealFitCache = null;
 
+// Captured rendered height of the reveal image slot (._griw). Set the first time
+// a card image successfully loads this session; reused to reserve the slot height
+// on later rolls so the card can appear immediately with a spinner instead of
+// waiting on the image. All gacha images share dimensions, so one value fits all.
+var _griwSlotH = null;
+
+// Called from each reveal image's onload. Captures the slot height once, then
+// reveals the image (fade-in) and stops the spinner. Bound globally so the inline
+// onload attribute can reach it.
+function _gachaImgLoaded(img){
+  if (!img) return;
+  var slot = img.closest ? img.closest('._griw') : null;
+  if (slot){
+    if (_griwSlotH == null){
+      var h = slot.offsetHeight;
+      if (h && h > 40){
+        _griwSlotH = h;
+        document.body.style.setProperty('--griw-h', h + 'px');
+      }
+    }
+    slot.classList.add('loaded');
+  }
+  img.classList.add('loaded');
+}
+window._gachaImgLoaded = _gachaImgLoaded;
+
 // Per-session font scale for the reveal card's inner contents. Applied via the
 // --gc-fs CSS var on ._grc. The +/- control in the card corner adjusts it; it
 // persists across rolls in the session. Larger values overflow the card body
@@ -10598,11 +10634,12 @@ function _revealCharacter(roll){
                     '<button type="button" onclick="_gcAdjustFont(-1)" aria-label="Smaller text">A\u2212</button>' +
                     '<button type="button" onclick="_gcAdjustFont(1)" aria-label="Larger text">A+</button>' +
                 '</div>' +
-                '<div class="_griw _anim-' + roll.animal.key + holoClass + glitterClass + '">' +
+                '<div class="_griw loading _anim-' + roll.animal.key + holoClass + glitterClass + '">' +
                     '<div class="_gholoS"></div>' +
                     '<div class="_gspov" id="_gspov"></div>' +
                     '<div class="_gholosc"></div>' +
-                    (imgUrl ? '<img src="' + imgUrl + '" alt="">' : '<div style="height:220px;display:flex;align-items:center;justify-content:center;color:#555;">No image</div>') +
+                    (imgUrl ? '<img class="cardimg" src="' + imgUrl + '" alt="" onload="_gachaImgLoaded(this)" onerror="_gachaImgLoaded(this)">' : '<div style="height:220px;display:flex;align-items:center;justify-content:center;color:#555;">No image</div>') +
+                    (imgUrl ? '<div class="_griwSpin"></div>' : '') +
                     '<div class="_ggsc"></div>' +
                 '</div>' +
                 '<div class="_gcbody">' +
@@ -10632,15 +10669,20 @@ function _revealCharacter(roll){
             '</div>';
         ro.innerHTML = html;
         document.body.appendChild(ro);
+        // If the card image is already cached, its inline onload may have fired
+        // before our handler was reachable (or won't fire again). Mark it loaded
+        // now so the spinner clears and it shows immediately.
+        var _ci = ro.querySelector('._griw img.cardimg');
+        if (_ci && _ci.complete && _ci.naturalWidth) _gachaImgLoaded(_ci);
         // Preload the monster image BEFORE revealing the card, so the container
         // appears once already at its final size with the image in place, instead of
         // popping in empty and reflowing when the image arrives. The dark overlay is
         // appended immediately (covers the page), but the card only fades in via
         // .show after the image is ready (or a short safety timeout).
         var _revealNow = function(){
-            // Image is preloaded (cached) now, so the card lays out at full size.
-            // On the first roll this measures and caches the fit; later rolls reuse
-            // the cached fit instantly even if this measure happens a frame early.
+            // The slot reserves its (saved) height, so the card lays out correctly
+            // even before the image paints. Fit is measured on the first roll and
+            // reused after (Option B). The image fades in via its own onload.
             _fitRevealCard(false);
             requestAnimationFrame(function(){
                 _fitRevealCard(false);
@@ -10650,22 +10692,22 @@ function _revealCharacter(roll){
                 });
             });
         };
-        if (imgUrl){
-            // Preload into the browser cache with a DETACHED Image() (the original,
-            // reliable approach). A detached loader's src is never re-pointed, so its
-            // onload/complete always fire — unlike listening on the in-card <img>,
-            // whose events can be missed when the same URL is requested across rolls.
-            // Once cached, the in-card <img> lays out with real height immediately, so
-            // _fitRevealCard measures correctly; the result is cached for later rolls.
+        if (imgUrl && (_revealFitCache == null || _griwSlotH == null)){
+            // FIRST roll (or before we've ever captured the slot height): wait for
+            // the image so the very first fit measures a real, fully-painted card and
+            // we capture the slot height. Detached Image() warms the cache reliably.
             var _pre = new Image();
             var _done = false;
             var _go = function(){ if (_done) return; _done = true; _revealNow(); };
             _pre.onload = _go;
-            _pre.onerror = _go;          // don't trap the user if the image 404s
+            _pre.onerror = _go;
             _pre.src = imgUrl;
-            if (_pre.complete) _go();    // already cached (repeat character, later roll)
-            setTimeout(_go, 2500);       // safety net: never wait longer than 2.5s
+            if (_pre.complete) _go();
+            setTimeout(_go, 2500);       // safety net
         } else {
+            // LATER rolls: we already know the fit AND the slot height, so reveal
+            // IMMEDIATELY with the reserved-height slot + spinner. If the image is
+            // still loading it fades in when ready; no waiting, no layout shift.
             _revealNow();
         }
 
