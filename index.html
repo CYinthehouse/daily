@@ -10686,11 +10686,8 @@ function _revealCharacter(roll){
             if (slot){ var h = slot.offsetHeight; if (h && h > 40){ _griwSlotH = h; document.body.style.setProperty('--griw-h', h + 'px'); } }
         };
         var _revealNow = function(){
-            // Image is loaded now (we waited on the detached preloader), so the card
-            // lays out at full size. Fit is measured on the first roll and reused for
-            // every later roll (Option B). Clear the spinner + show the image.
-            _clearSpinner();
-            _captureSlotH();
+            // Card lays out at full size (image loaded on roll 1, or reserved-height
+            // slot on later rolls). Fit measured on roll 1, reused after (Option B).
             _fitRevealCard(false);
             requestAnimationFrame(function(){
                 _fitRevealCard(false);
@@ -10700,22 +10697,52 @@ function _revealCharacter(roll){
                 });
             });
         };
-        if (imgUrl){
-            // Preload with a DETACHED Image() — the proven-reliable approach. Its
-            // onload/complete always fire, so the spinner always clears and the card
-            // always reveals. This runs for EVERY roll (first and subsequent), which
-            // is what worked before the spinner was added. The spinner is visible
-            // during this download wait, then cleared by _revealNow.
+
+        var _firstRoll = (_revealFitCache == null || _griwSlotH == null);
+
+        if (!imgUrl){
+            // No image: clear the (empty) slot state and reveal.
+            _clearSpinner();
+            _revealNow();
+        } else if (_firstRoll){
+            // FIRST ROLL: preload the image, THEN reveal the pre-scaled card. This
+            // measures + caches the fit and captures the slot height off a real,
+            // fully-painted card. (Original proven behavior.) Detached Image() is
+            // reliable; its load always fires.
             var _pre = new Image();
             var _done = false;
-            var _go = function(){ if (_done) return; _done = true; _revealNow(); };
+            var _go = function(){
+                if (_done) return; _done = true;
+                _clearSpinner(); _captureSlotH(); _revealNow();
+            };
             _pre.onload = _go;
-            _pre.onerror = _go;          // don't trap the user if the image 404s
+            _pre.onerror = _go;
             _pre.src = imgUrl;
-            if (_pre.complete) _go();    // already cached (repeat character / later roll)
-            setTimeout(_go, 10000);      // safety net: never spin longer than 10s
+            if (_pre.complete) _go();
+            setTimeout(_go, 10000);      // safety net
         } else {
-            _revealNow();
+            // LATER ROLLS: we already know the fit AND the slot height. Reveal the
+            // container IMMEDIATELY (no waiting on the image). The image slot is
+            // reserved at the saved height with a spinner; the image loads in the
+            // background and fades in when ready.
+            var _img = ro.querySelector('._griw img.cardimg');
+            if (_img && _img.complete && _img.naturalWidth){
+                // Already cached (repeat monster): skip the spinner entirely.
+                _clearSpinner();
+                _revealNow();
+            } else {
+                // Show the card + spinner now; load image in the background using a
+                // DETACHED preloader (reliable) to clear the spinner + fade in.
+                _revealNow();   // slot stays .loading (spinner spins) until image ready
+                var _bg = new Image();
+                var _bgDone = false;
+                var _bgGo = function(){ if (_bgDone) return; _bgDone = true; _clearSpinner(); };
+                _bg.onload = _bgGo;
+                _bg.onerror = _bgGo;
+                _bg.src = imgUrl;
+                if (_bg.complete) _bgGo();
+                setTimeout(_bgGo, 10000);   // safety net: never spin forever
+            }
         }
 
         if (roll.glitter) _addSparklesReveal(document.getElementById('_gspov'));
