@@ -10493,6 +10493,23 @@ function _fitRevealCard(shown){
   var scale = fit * ts * (shownNow ? 1 : 0.85);
   card.style.transform = 'scale(' + scale + ')';
   document.body.style.setProperty('--reveal-fit', String(fit));
+  // ── TEMP DEBUG (remove after diagnosis) ──
+  try {
+    var dbg = document.getElementById('_fitDbg');
+    if (!dbg){
+      dbg = document.createElement('div');
+      dbg.id = '_fitDbg';
+      dbg.style.cssText = 'position:fixed;left:6px;bottom:6px;z-index:99999999;background:rgba(0,0,0,0.9);color:#0f0;font:11px monospace;padding:6px 8px;border:1px solid #0f0;max-width:90vw;white-space:pre;pointer-events:none;';
+      document.body.appendChild(dbg);
+    }
+    dbg.textContent =
+      'shown=' + shownNow +
+      ' cacheNull=' + (_revealFitCache == null ? 'Y' : 'N') +
+      '\nnatH=' + card.offsetHeight + ' natW=' + card.offsetWidth +
+      '\navailH=' + availH + ' availW=' + availW +
+      '\nfit=' + fit.toFixed(4) + ' scale=' + scale.toFixed(4) +
+      '\ntransform=' + card.style.transform;
+  } catch(e){}
 }
 
 // Apply a max-height to the inner ._gcbody ONLY when its content would exceed the
