@@ -9556,6 +9556,11 @@ function _injectGachaStyle(){
            (added only after a 1s wait when the image still has not loaded). */
         '._griwSpin{position:absolute;top:50%;left:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border:4px solid rgba(65,192,255,0.18);border-top-color:#29c4ff;border-radius:50%;image-rendering:pixelated;animation:_griwSpinKf .7s steps(8) infinite;pointer-events:none;z-index:3;opacity:0;transition:opacity .15s ease;}',
         '@keyframes _griwSpinKf{to{transform:rotate(360deg);}}',
+        /* While spinning (image not yet loaded), give the slot a temporary height so
+           the centered spinner is visible. This class is added ONLY after the card
+           has already revealed + been measured, and is removed BEFORE any re-fit on
+           load, so it never affects the cached fit. */
+        '._griw.spinning{min-height:240px;}',
         '._griw.spinning ._griwSpin{opacity:1;}',
         '._griw._detail{width:340px;}',
         '._griw._detail img{width:100%;height:auto;margin-top:-50px;margin-bottom:-50px;}',
