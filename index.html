@@ -9371,7 +9371,7 @@ var _GACHA_GLITTER = [
 // A flat multiply on all weights would cancel out, this is the honest "nudge
 // toward rare" that actually moves the odds. Applied EQUALLY to all four wheels.
 var _GACHA_MIN_TAPS_FOR_BONUS = 4;   // taps that earn ZERO bonus (must crack first)
-var _GACHA_MAX_TAPS_FOR_BONUS = 14;  // taps at/after which luck is maxed
+var _GACHA_MAX_TAPS_FOR_BONUS = 25;  // taps at/after which luck is maxed (challenging)
 var _GACHA_MAX_LUCK = 0.05;          // tuned: Holo 2%→2.25%, glitter 0.5%→0.65%
 
 // Map a tap count to a luck value in [0, _GACHA_MAX_LUCK].
@@ -9387,9 +9387,9 @@ function _gachaLuckFromTaps(taps){
 // The "Tap Multiplier" shown to the student. This is the single scalar that the
 // four factors get multiplied by for the displayed rarity. It is derived from
 // luck so the number students see lines up with the bonus that was applied.
-// luck 0 → 1.00x ; full luck → ~1.30x.
+// luck 0 → 1.00x ; full luck → ~1.40x.
 function _gachaTapMultiplier(luck){
-    return 1 + (luck / _GACHA_MAX_LUCK) * 0.30;
+    return 1 + (luck / _GACHA_MAX_LUCK) * 0.40;
 }
 
 function _gachaWeightedRoll(table, luck){
@@ -10488,6 +10488,17 @@ function _gcAdjustFont(dir){
 }
 window._gcAdjustFont = _gcAdjustFont;
 
+// Reset the card font scale back to the default (1).
+function _gcResetFont(){
+    _gcFontScale = 1;
+    var card = document.querySelector('._grov ._grc');
+    if (card){
+        card.style.setProperty('--gc-fs', '1');
+        _applyBodyCap(card);
+    }
+}
+window._gcResetFont = _gcResetFont;
+
 function _fitRevealCard(shown){
   var card = document.querySelector('._grov ._grc');
   if (!card) return;
@@ -10632,6 +10643,7 @@ function _revealCharacter(roll){
             '<div class="_grc" data-rarity="' + roll.color.rarity + '" style="--gc-fs:' + (_gcFontScale || 1) + ';">' +
                 '<div class="_gfscale" onclick="event.stopPropagation();">' +
                     '<button type="button" onclick="_gcAdjustFont(-1)" aria-label="Smaller text">A\u2212</button>' +
+                    '<button type="button" onclick="_gcResetFont()" aria-label="Default text size">A</button>' +
                     '<button type="button" onclick="_gcAdjustFont(1)" aria-label="Larger text">A+</button>' +
                 '</div>' +
                 '<div class="_griw loading _anim-' + roll.animal.key + holoClass + glitterClass + '">' +
