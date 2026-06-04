@@ -9550,6 +9550,13 @@ function _injectGachaStyle(){
         '.badge-pink{background:#d4537e;color:#fff;}.badge-red{background:#e24b4a;color:#fff;}.badge-yellow{background:#f5c842;color:#111;}.badge-green{background:#639922;color:#fff;}.badge-blue{background:#378add;color:#fff;}',
         '._griw{width:280px;border-radius:10px;border:1px solid #222;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;}',
         '._griw img{width:100%;height:auto;display:block;margin-top:-50px;margin-bottom:-50px;pointer-events:none;-webkit-user-drag:none;user-select:none;}',
+        /* Loading spinner: PURELY an overlay. position:absolute so it never affects
+           the slot size, and it does NOT touch the <img> opacity or layout — so it
+           cannot interfere with _fitRevealCard. Hidden unless the slot has .spinning
+           (added only after a 1s wait when the image still has not loaded). */
+        '._griwSpin{position:absolute;top:50%;left:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border:4px solid rgba(65,192,255,0.18);border-top-color:#29c4ff;border-radius:50%;image-rendering:pixelated;animation:_griwSpinKf .7s steps(8) infinite;pointer-events:none;z-index:3;opacity:0;transition:opacity .15s ease;}',
+        '@keyframes _griwSpinKf{to{transform:rotate(360deg);}}',
+        '._griw.spinning ._griwSpin{opacity:1;}',
         '._griw._detail{width:340px;}',
         '._griw._detail img{width:100%;height:auto;margin-top:-50px;margin-bottom:-50px;}',
         // Per-character crop overrides. Each pair tightens an extra 5px on
@@ -9559,7 +9566,7 @@ function _injectGachaStyle(){
         '._griw._anim-captain_corea img{margin-top:-40px;margin-bottom:-40px;}',
         '._griw._anim-fox img{margin-top:-40px;margin-bottom:-60px;}',
         '._griw._anim-sloth img{margin-top:-70px;margin-bottom:-40px;}',
-        '._griw._anim-pola_cola img{margin-top:-20px;margin-bottom:-20px;}',
+        '._griw._anim-pola_cola img{margin-top:-20px;margin-bottom:-20px;transform:scale(0.9);transform-origin:center;}',
         '._griw._anim-turtle img{margin-top:-40px;margin-bottom:-60px;}',
         '._gholoS{position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0) 0%,rgba(180,180,255,.38) 45%,rgba(255,180,255,.32) 55%,rgba(255,255,255,0) 100%);background-size:200% 200%;animation:_gHoloShift 2s ease-in-out infinite alternate;pointer-events:none;border-radius:12px;display:none;}',
         '._griw.holo ._gholoS{display:block;}',
@@ -10634,6 +10641,7 @@ function _revealCharacter(roll){
                     '<div class="_gspov" id="_gspov"></div>' +
                     '<div class="_gholosc"></div>' +
                     (imgUrl ? '<img src="' + imgUrl + '" alt="">' : '<div style="height:220px;display:flex;align-items:center;justify-content:center;color:#555;">No image</div>') +
+                    (imgUrl ? '<div class="_griwSpin"></div>' : '') +
                     '<div class="_ggsc"></div>' +
                 '</div>' +
                 '<div class="_gcbody">' +
@@ -10669,7 +10677,14 @@ function _revealCharacter(roll){
         // fires load (Part 2) — and also keep the detached preloader as the reveal
         // trigger so the card never appears before at least one fit attempt.
         var _cardImg = ro.querySelector('._griw img');
+        var _slot = ro.querySelector('._griw');
+        var _spinTimer = null;
+        var _stopSpin = function(){
+            if (_spinTimer){ clearTimeout(_spinTimer); _spinTimer = null; }
+            if (_slot) _slot.classList.remove('spinning');
+        };
         var _refitOnLoad = function(){
+            _stopSpin();   // image arrived → hide spinner (purely visual)
             // Image is laid out now → measure + lock the real fit, then apply it.
             requestAnimationFrame(function(){
                 _fitRevealCard(ro.classList.contains('show'));
@@ -10677,10 +10692,17 @@ function _revealCharacter(roll){
         };
         if (_cardImg){
             if (_cardImg.complete && _cardImg.naturalHeight){
-                // already loaded — fit will lock immediately in _revealNow
+                // already loaded — fit will lock immediately in _revealNow, no spinner
             } else {
                 _cardImg.addEventListener('load', _refitOnLoad, { once: true });
                 _cardImg.addEventListener('error', _refitOnLoad, { once: true });
+                // Show the spinner ONLY if the image still hasn't loaded after 1s, so
+                // fast loads never flash it. Applies on both effects paths.
+                _spinTimer = setTimeout(function(){
+                    if (_cardImg && (!_cardImg.complete || !_cardImg.naturalHeight)){
+                        if (_slot) _slot.classList.add('spinning');
+                    }
+                }, 1000);
             }
         }
         var _revealNow = function(){
