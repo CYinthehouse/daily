@@ -275,28 +275,39 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 }
 
 /* ─── Diagonal pixel difficulty ribbon, top-left corner of each daily tile ───
- * Clipped by the card's overflow:hidden into a corner-ribbon band. Black text
- * with a 12-direction hard WHITE pixel outline, Press Start 2P at the same
- * size as the tile header (.menu-name). pointer-events:none so the tile stays
- * clickable through the ribbon. */
+ * A confident corner band that passes through the corner and is clipped by the
+ * card's overflow:hidden. Reads as a TAG: text is smaller than the tile title,
+ * uppercase, with a dark outline to match the card border, a hard pixel drop
+ * shadow, an inner top highlight line, and a 12-direction white text outline
+ * plus a dark drop shadow on the glyphs. pointer-events:none keeps the tile
+ * clickable through it. */
 #dailyPickerGrid .menu-card.daily .daily-ribbon{
   position:absolute;
-  top:36px;
-  left:-52px;
-  width:220px;
+  top:30px;
+  left:-70px;
+  width:280px;
+  height:32px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   transform:rotate(-45deg);
-  text-align:center;
+  transform-origin:center;
   font-family:var(--ps);
-  font-size:clamp(9px,1.6vw,12px);
+  font-size:10px;
+  letter-spacing:1px;
   line-height:1;
-  padding:6px 0;
   color:#000;
-  text-shadow:var(--ps-outline-white-12);
+  text-shadow:var(--ps-outline-white-12),2px 3px 0 rgba(5,5,8,0.55);
+  outline:3px solid #080811;
+  box-shadow:0 3px 0 #050508;
   z-index:5;
   pointer-events:none;
-  box-shadow:0 2px 0 rgba(0,0,0,0.5);
 }
-#dailyPickerGrid .menu-card.daily .daily-ribbon.green{background:var(--green);}
+/* Inner top highlight line, makes the band feel like a real UI element. */
+#dailyPickerGrid .menu-card.daily .daily-ribbon::before{
+  content:"";position:absolute;inset:3px 0 auto 0;height:2px;background:rgba(255,255,255,0.35);
+}
+#dailyPickerGrid .menu-card.daily .daily-ribbon.green{background:#46c94a;}
 #dailyPickerGrid .menu-card.daily .daily-ribbon.blue {background:var(--cyan);}
 #dailyPickerGrid .menu-card.daily .daily-ribbon.red  {background:#ff3b3b;}
 
@@ -1246,12 +1257,11 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .wbf-ava .dr-avatar-init,.wbf-ava .dr-avatar-img{width:28px;height:28px;font-size:13px;}
 .wbf-text{font-family:var(--vt);font-size:16px;color:#dfe6f2;}
 .wbf-text.audio{color:#9aa6bd;font-style:italic;}
-/* Back-and-forth scroll: alternate + ease-in-out eases at both ends (the
- * music-player feel). --wbf-shift / --wbf-dur are set per-render by JS once it
- * measures how far the track overflows the viewport. */
-@keyframes wbf-pingpong{from{transform:translateX(0);}to{transform:translateX(var(--wbf-shift,0px));}}
-.wbf-track.scrolling{animation:wbf-pingpong var(--wbf-dur,16s) ease-in-out infinite alternate;}
-@media (prefers-reduced-motion: reduce){.wbf-track.scrolling{animation:none;}}
+/* Back-and-forth scroll with a pause at each end (Spotify/iTunes feel). The
+ * keyframes are generated per-render in JS (_wbfStartMarquee) because the hold
+ * stops depend on how far the row overflows; timing is linear so the glide is
+ * constant-speed and the holds read as true pauses. */
+@media (prefers-reduced-motion: reduce){.wbf-track{animation:none !important;}}
 
 /* ─── DIARY, weekly activity ─── */
 .diary-composer{background:#10172a;border:2px solid #2a3650;border-radius:10px;padding:18px;margin-bottom:18px;}
@@ -4239,21 +4249,21 @@ function _renderDailyPicker(){
       yodaBadge +
     '</div>' +
     '<div class="menu-card daily recall" onclick="_dailyOpen(\'recall\')">' +
-      '<span class="daily-ribbon blue">ALL Levels</span>' +
+      '<span class="daily-ribbon blue">ALL LEVELS</span>' +
       '<span class="menu-emoji">🧠</span>' +
       '<div class="grad-wrap"><div class="menu-name grad-text grad-cyan">ACTIVE<br>RECALL</div></div>' +
       '<div class="menu-desc">Flip through flashcards and test your memory.</div>' +
       recallBadge +
     '</div>' +
     '<div class="menu-card daily" onclick="_dailyOpen(\'reading\')">' +
-      '<span class="daily-ribbon blue">ALL Levels</span>' +
+      '<span class="daily-ribbon blue">ALL LEVELS</span>' +
       '<span class="menu-emoji">📖</span>' +
       '<div class="grad-wrap"><div class="menu-name grad-text grad-cyan">TEAMWORK<br>READING</div></div>' +
       '<div class="menu-desc">Pair up with a classmate and read a passage together.</div>' +
       readingBadge +
     '</div>' +
     '<div class="menu-card daily" onclick="_dailyOpen(\'listening\')">' +
-      '<span class="daily-ribbon blue">ALL Levels</span>' +
+      '<span class="daily-ribbon blue">ALL LEVELS</span>' +
       '<span class="menu-emoji">🎤</span>' +
       '<div class="grad-wrap"><div class="menu-name grad-text grad-pink">SOLO<br>READING</div></div>' +
       '<div class="menu-desc">Read aloud across four levels of difficulty.</div>' +
@@ -13480,28 +13490,51 @@ function _wbfChipHtml(e){
   '</span>';
 }
 
-// Measure overflow and (re)start the ping-pong animation. Safe to call any time
-// the track's contents or the viewport width change.
+// Inject/replace the dedicated <style> that holds the dynamically-built
+// marquee keyframes.
+function _wbfInjectKeyframes(css){
+  var el = document.getElementById('wbfKeyframes');
+  if (!el){ el = document.createElement('style'); el.id = 'wbfKeyframes'; document.head.appendChild(el); }
+  el.textContent = css;
+}
+
+// Measure overflow and (re)start the scroll. Spotify/iTunes-style: hold at the
+// start, glide left at a constant speed, hold at the far end, glide back, hold,
+// repeat. Linear timing + explicit hold stops are what give the paused feel.
+// Safe to call whenever the track contents or viewport width change.
 function _wbfStartMarquee(){
   var track = document.getElementById('wbfTrack');
   if (!track) return;
   var vp = track.parentElement; // .wbf-viewport
   if (!vp) return;
-  track.classList.remove('scrolling');
-  track.style.removeProperty('--wbf-shift');
-  track.style.removeProperty('--wbf-dur');
+  // Reset any prior animation before re-measuring.
+  track.style.animation = 'none';
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   // Wait two frames so layout (and the pixel font) settle before measuring.
   requestAnimationFrame(function(){
     requestAnimationFrame(function(){
       if (!document.getElementById('wbfTrack')) return;
       var overflow = track.scrollWidth - vp.clientWidth;
-      if (overflow > 6){
-        track.style.setProperty('--wbf-shift', (-(overflow) - 10) + 'px');
-        // ~38px/sec, clamped, so longer rows take longer (constant feel).
-        var dur = Math.max(8, Math.min(70, (overflow + 10) / 38));
-        track.style.setProperty('--wbf-dur', dur.toFixed(1) + 's');
-        track.classList.add('scrolling');
-      }
+      if (overflow <= 6){ track.style.animation = ''; return; }
+
+      var shift  = overflow + 10;   // px to travel so the last chip fully clears
+      var SPEED  = 50;              // px per second, constant glide
+      var HOLD   = 1.6;            // seconds paused at each end
+      var travel = shift / SPEED;   // seconds per direction
+      var total  = travel * 2 + HOLD * 2;
+      // Keyframe stops (as % of total): hold @0, glide, hold @end, glide back.
+      var a = (HOLD / total) * 100;                 // end of start hold
+      var b = ((HOLD + travel) / total) * 100;      // reached far end
+      var c = ((HOLD * 2 + travel) / total) * 100;  // end of far-end hold
+
+      _wbfInjectKeyframes(
+        '@keyframes wbf-marquee{' +
+          '0%,' + a.toFixed(2) + '%{transform:translateX(0);}' +
+          b.toFixed(2) + '%,' + c.toFixed(2) + '%{transform:translateX(-' + shift + 'px);}' +
+          '100%{transform:translateX(0);}' +
+        '}'
+      );
+      track.style.animation = 'wbf-marquee ' + total.toFixed(2) + 's linear infinite';
     });
   });
 }
