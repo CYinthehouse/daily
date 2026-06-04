@@ -1209,8 +1209,49 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .weekly-bonus-banner:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 rgba(0,0,0,0.7);}
 .weekly-bonus-banner:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,0.7);}
 .weekly-bonus-banner > span{display:inline-flex;align-items:center;line-height:1;}
-.weekly-bonus-banner .wbb-emoji{font-size:20px;text-shadow:none;line-height:1;display:inline-flex;align-items:center;}
-.weekly-bonus-banner .wbb-chev{font-size:14px;text-shadow:none;line-height:1;display:inline-flex;align-items:center;}
+.weekly-bonus-banner .wbb-emoji{font-size:20px;text-shadow:none;line-height:1;display:inline-flex;align-items:center;transform:translateY(-4px);}
+.weekly-bonus-banner .wbb-chev{font-size:14px;text-shadow:none;line-height:1;display:inline-flex;align-items:center;transform:translateY(-4px);}
+
+/* ─── WEEKLY BONUS CONTAINER: banner is the header, with a short body below
+ * (~1/3 the height of a daily activity card) carrying a back-and-forth
+ * (iTunes-style) marquee of this week's submissions. The body's 3 visible
+ * sides reuse the daily card's #3a3a4a border / #0d0d1f fill. ─── */
+.weekly-bonus-container{
+  margin-bottom:18px;
+  box-shadow:4px 4px 0 rgba(0,0,0,0.8);
+  border-radius:8px 8px 2px 2px;
+  transition:transform 0.1s,box-shadow 0.1s;
+}
+.weekly-bonus-container:hover{transform:translate(-1px,-1px);box-shadow:5px 5px 0 rgba(0,0,0,0.8);}
+.weekly-bonus-container:active{transform:translate(2px,2px);box-shadow:1px 1px 0 rgba(0,0,0,0.8);}
+/* Banner, when it's the header of the container: square off the bottom, drop
+ * its own shadow/margin (the container owns those), and stop the standalone
+ * hover/press transforms so it never detaches from the body. */
+.weekly-bonus-banner.nested{margin-bottom:0;box-shadow:none;border-radius:8px 8px 0 0;border-bottom:none;}
+.weekly-bonus-banner.nested:hover,.weekly-bonus-banner.nested:active{transform:none;box-shadow:none;}
+.weekly-bonus-body{
+  background:#0d0d1f;border:2px solid #3a3a4a;border-top:none;border-radius:0 0 2px 2px;
+  height:80px;padding:0 16px;display:flex;align-items:center;overflow:hidden;position:relative;
+}
+/* Viewport clips the track and fades both edges so chips glide in/out. */
+.wbf-viewport{
+  flex:1;overflow:hidden;position:relative;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 26px,#000 calc(100% - 26px),transparent);
+  mask-image:linear-gradient(90deg,transparent,#000 26px,#000 calc(100% - 26px),transparent);
+}
+.wbf-track{display:inline-flex;align-items:center;gap:22px;white-space:nowrap;will-change:transform;padding:0 4px;}
+.wbf-lead{font-family:var(--vt);font-size:16px;color:#8a93a8;letter-spacing:0.5px;}
+.wbf-chip{display:inline-flex;align-items:center;gap:9px;}
+.wbf-ava{flex:none;display:inline-flex;}
+.wbf-ava .dr-avatar-init,.wbf-ava .dr-avatar-img{width:28px;height:28px;font-size:13px;}
+.wbf-text{font-family:var(--vt);font-size:16px;color:#dfe6f2;}
+.wbf-text.audio{color:#9aa6bd;font-style:italic;}
+/* Back-and-forth scroll: alternate + ease-in-out eases at both ends (the
+ * music-player feel). --wbf-shift / --wbf-dur are set per-render by JS once it
+ * measures how far the track overflows the viewport. */
+@keyframes wbf-pingpong{from{transform:translateX(0);}to{transform:translateX(var(--wbf-shift,0px));}}
+.wbf-track.scrolling{animation:wbf-pingpong var(--wbf-dur,16s) ease-in-out infinite alternate;}
+@media (prefers-reduced-motion: reduce){.wbf-track.scrolling{animation:none;}}
 
 /* ─── DIARY, weekly activity ─── */
 .diary-composer{background:#10172a;border:2px solid #2a3650;border-radius:10px;padding:18px;margin-bottom:18px;}
@@ -2652,10 +2693,17 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
     <div class="sh-sub">Pick an activity. Complete one to earn an egg today. Resets every day at 3 AM NY time.</div>
   </div>
   <div id="drBanner" class="dr-banner"></div>
-  <div class="weekly-bonus-banner sparkle-btn" onclick="_openWeekly()">
-    <span class="wbb-emoji">⭐</span>
-    <span>SPECIAL BONUS: WEEKLY ACTIVITIES</span>
-    <span class="wbb-chev">▸</span>
+  <div class="weekly-bonus-container">
+    <div class="weekly-bonus-banner sparkle-btn nested" onclick="_openWeekly()">
+      <span class="wbb-emoji">⭐</span>
+      <span>SPECIAL BONUS: WEEKLY ACTIVITIES</span>
+      <span class="wbb-chev">▸</span>
+    </div>
+    <div class="weekly-bonus-body">
+      <div class="wbf-viewport">
+        <div class="wbf-track" id="wbfTrack"><span class="wbf-lead">See who submitted it so far…</span></div>
+      </div>
+    </div>
   </div>
   <div id="dailyPickerGrid" class="menu-grid" style="margin-top:18px;"></div>
 </div>
@@ -4089,6 +4137,8 @@ function renderDaily(){
   }
   // Render the picker grid (3 activity tiles)
   _renderDailyPicker();
+  // Populate the weekly-submissions marquee under the bonus banner.
+  if (typeof _wbfRender === 'function') _wbfRender();
 }
 
 /* "How do I earn Points?" modal. Two-phase open so we can transition the
@@ -13398,6 +13448,111 @@ async function _diaryRenderFeed(){
       '<div class="dr-feed-cards">' + cards + '</div>' +
     '</div>';
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+ * WEEKLY BONUS MARQUEE, the back-and-forth "who submitted so far" ticker
+ * under the SPECIAL BONUS banner on the daily screen. Pulls this week's
+ * diary submissions (gacha_diary_entries, current weekKey) and shows each
+ * student's icon + the first 10 words of their entry, or "(Audio submission)"
+ * when there's no text. Auto-scrolls left/right (iTunes-style) only when the
+ * row is wider than the viewport.
+ * ─────────────────────────────────────────────────────────────────── */
+function _wbfFirstWords(text, n){
+  var words = String(text || '').split(/\s+/).filter(Boolean);
+  var first = words.slice(0, n).join(' ');
+  if (words.length > n) first += '…';
+  return first;
+}
+
+function _wbfChipHtml(e){
+  var name = e.userName || 'Student';
+  var text = (e.text || '').trim();
+  var label;
+  if (text){
+    label = '<span class="wbf-text">' + _esc(_wbfFirstWords(text, 10)) + '</span>';
+  } else {
+    // No written text → treat as a voice-only submission.
+    label = '<span class="wbf-text audio">(Audio submission)</span>';
+  }
+  return '<span class="wbf-chip">' +
+    '<span class="wbf-ava">' + _drInitialsAvatar(name, e.photoURL || null) + '</span>' +
+    label +
+  '</span>';
+}
+
+// Measure overflow and (re)start the ping-pong animation. Safe to call any time
+// the track's contents or the viewport width change.
+function _wbfStartMarquee(){
+  var track = document.getElementById('wbfTrack');
+  if (!track) return;
+  var vp = track.parentElement; // .wbf-viewport
+  if (!vp) return;
+  track.classList.remove('scrolling');
+  track.style.removeProperty('--wbf-shift');
+  track.style.removeProperty('--wbf-dur');
+  // Wait two frames so layout (and the pixel font) settle before measuring.
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      if (!document.getElementById('wbfTrack')) return;
+      var overflow = track.scrollWidth - vp.clientWidth;
+      if (overflow > 6){
+        track.style.setProperty('--wbf-shift', (-(overflow) - 10) + 'px');
+        // ~38px/sec, clamped, so longer rows take longer (constant feel).
+        var dur = Math.max(8, Math.min(70, (overflow + 10) / 38));
+        track.style.setProperty('--wbf-dur', dur.toFixed(1) + 's');
+        track.classList.add('scrolling');
+      }
+    });
+  });
+}
+
+async function _wbfRender(){
+  var track = document.getElementById('wbfTrack');
+  if (!track) return;
+  var lead = '<span class="wbf-lead">See who submitted it so far…</span>';
+
+  // No Firestore (e.g. artifact preview) → just show the lead, no scroll.
+  if (typeof db === 'undefined' || !db || typeof db.collection !== 'function'){
+    track.innerHTML = lead;
+    _wbfStartMarquee();
+    return;
+  }
+
+  var entries = [];
+  try {
+    var weekKey = _weekNYKey();
+    var snap = await db.collection(DIARY_COLLECTION).where('weekKey','==',weekKey).get();
+    snap.forEach(function(d){ entries.push(d.data()); });
+  } catch(e){ /* leave entries empty on error */ }
+
+  // Most recent first.
+  entries.sort(function(a, b){
+    var am = (a.submittedAt && a.submittedAt.toMillis) ? a.submittedAt.toMillis() : 0;
+    var bm = (b.submittedAt && b.submittedAt.toMillis) ? b.submittedAt.toMillis() : 0;
+    return bm - am;
+  });
+
+  if (!entries.length){
+    track.innerHTML = lead + '<span class="wbf-text" style="color:#7a8398;font-style:italic;">No submissions yet — be the first!</span>';
+    _wbfStartMarquee();
+    return;
+  }
+
+  track.innerHTML = lead + entries.map(_wbfChipHtml).join('');
+  _wbfStartMarquee();
+}
+window._wbfRender = _wbfRender;
+
+// Recompute the marquee on resize while the daily screen is visible.
+window.addEventListener('resize', function(){
+  clearTimeout(window._wbfResizeT);
+  window._wbfResizeT = setTimeout(function(){
+    var ds = document.getElementById('dailyScreen');
+    if (ds && !ds.classList.contains('hidden') && document.getElementById('wbfTrack')){
+      _wbfStartMarquee();
+    }
+  }, 200);
+});
 
 function _yodaRenderForm(){
   var host = document.getElementById('dailyYodaHost');
