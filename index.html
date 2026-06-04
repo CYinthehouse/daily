@@ -10046,6 +10046,19 @@ function _startEggFor(roll, queueInfo){
     _gTapCount = 0;
     _gEggStarted = false;
     _gClearTimers();
+    // EARLY PRELOAD: start downloading this roll's monster image NOW, the moment the
+    // egg appears — not at reveal time. The crack + countdown + reveal delay give it
+    // several seconds head start, so by the time the card reveals the image is almost
+    // always already cached → instant reveal in BOTH effects paths. This fixes the
+    // first-roll case where the image only began loading at reveal and took ages.
+    try {
+        var _eu = (roll && roll.animal && roll.color && roll.item)
+            ? _gachaGetImg(roll.animal.key, roll.color.key, roll.item.key) : null;
+        if (_eu){
+            _eggPreloadImg = new Image();   // kept on a persistent ref so it isn't GC'd
+            _eggPreloadImg.src = _eu;
+        }
+    } catch(e){}
     var ov = document.getElementById('_gachaOverlay') || _createEggOverlay();
     // Welcome batch: (re)start the epic track at the beginning of every egg.
     // It will fade out + switch to the win sound when the egg cracks open.
@@ -10431,6 +10444,7 @@ function _gLoseRoll(){
 // the image is preloaded and the card has real dimensions) and reused for every
 // later roll so they never wait on a measurement. Recomputed on window resize.
 var _revealFitCache = null;
+var _eggPreloadImg = null;   // persistent ref for the early monster-image preload
 
 // Per-session font scale for the reveal card's inner contents. Applied via the
 // --gc-fs CSS var on ._grc. The +/- control in the card corner adjusts it; it
@@ -10498,23 +10512,6 @@ function _fitRevealCard(shown){
   var scale = fit * ts * (shownNow ? 1 : 0.85);
   card.style.transform = 'scale(' + scale + ')';
   document.body.style.setProperty('--reveal-fit', String(fit));
-  // ── TEMP DEBUG (remove after diagnosis) ──
-  try {
-    var dbg = document.getElementById('_fitDbg');
-    if (!dbg){
-      dbg = document.createElement('div');
-      dbg.id = '_fitDbg';
-      dbg.style.cssText = 'position:fixed;left:6px;bottom:6px;z-index:99999999;background:rgba(0,0,0,0.9);color:#0f0;font:11px monospace;padding:6px 8px;border:1px solid #0f0;max-width:90vw;white-space:pre;pointer-events:none;';
-      document.body.appendChild(dbg);
-    }
-    dbg.textContent =
-      'shown=' + shownNow +
-      ' cacheNull=' + (_revealFitCache == null ? 'Y' : 'N') +
-      '\nnatH=' + card.offsetHeight + ' natW=' + card.offsetWidth +
-      '\navailH=' + availH + ' availW=' + availW +
-      '\nfit=' + fit.toFixed(4) + ' scale=' + scale.toFixed(4) +
-      '\ntransform=' + card.style.transform;
-  } catch(e){}
 }
 
 // Apply a max-height to the inner ._gcbody ONLY when its content would exceed the
