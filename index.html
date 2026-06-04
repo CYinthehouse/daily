@@ -10471,24 +10471,29 @@ function _fitRevealCard(shown){
   var availH = window.innerHeight - 24;
   var availW = window.innerWidth - 24;
   var fit;
-  // OPTION B: measure ONCE (first roll, when the cache is empty) and reuse that
-  // value for every subsequent roll. We never re-measure after the first roll,
-  // because the card geometry is identical roll-to-roll at default font size.
-  // This avoids the roll-2 failure where a cached image hasn't laid out yet at
-  // measure time, producing a too-small height and overwriting the good fit with
-  // fit=1 (= no scaling). The cache is cleared only on window resize.
+  // OPTION B: measure ONCE and reuse for the session. But we ONLY lock the cache
+  // when the card is FULLY laid out — specifically, when the in-card image has
+  // actually loaded (complete && naturalHeight). The effects-on path was revealing
+  // the card before the image laid out, measuring a too-short card (~656-687px vs
+  // the real ~970-999px), getting fit=1 (no scale-down), and caching that garbage
+  // forever. Now: if the image isn't loaded yet, we compute a transient fit for
+  // THIS frame but leave the cache null, so a later call (after the image lays out,
+  // see the onload re-fit in _revealCharacter) measures correctly and locks it in.
   if (_revealFitCache != null){
     fit = _revealFitCache;
   } else {
     var natH = card.offsetHeight;
     var natW = card.offsetWidth;
-    if (natH && natW){
-      fit = Math.min(1, availH / natH, availW / natW);
-      if (!isFinite(fit) || fit <= 0) fit = 1;
-      _revealFitCache = fit;        // first roll only: lock it in for the session
-    } else {
-      return;                       // not measurable yet; try again next frame
+    if (!natH || !natW){ return; }   // not measurable yet; try again next frame
+    fit = Math.min(1, availH / natH, availW / natW);
+    if (!isFinite(fit) || fit <= 0) fit = 1;
+    // Is the card's image actually loaded? Only then is natH trustworthy.
+    var _im = card.querySelector('._griw img');
+    var _imgReady = !_im || (_im.complete && _im.naturalHeight > 0);
+    if (_imgReady){
+      _revealFitCache = fit;         // trustworthy measurement → lock for session
     }
+    // else: use `fit` transiently this frame but DON'T cache it.
   }
   var scale = fit * ts * (shownNow ? 1 : 0.85);
   card.style.transform = 'scale(' + scale + ')';
@@ -10661,13 +10666,27 @@ function _revealCharacter(roll){
             '</div>';
         ro.innerHTML = html;
         document.body.appendChild(ro);
-        // Preload the monster image BEFORE revealing the card, so the container
-        // appears once already at its final size with the image in place, instead of
-        // popping in empty and reflowing when the image arrives. The dark overlay is
-        // appended immediately (covers the page), but the card only fades in via
-        // .show after the image is ready (or a short safety timeout).
+        // Reveal the card PROMPTLY. _fitRevealCard computes a transient scale now and
+        // only LOCKS the session fit once the image has truly laid out (Part 1). To
+        // guarantee a correct measurement lands, we re-fit when the in-card image
+        // fires load (Part 2) — and also keep the detached preloader as the reveal
+        // trigger so the card never appears before at least one fit attempt.
+        var _cardImg = ro.querySelector('._griw img');
+        var _refitOnLoad = function(){
+            // Image is laid out now → measure + lock the real fit, then apply it.
+            requestAnimationFrame(function(){
+                _fitRevealCard(ro.classList.contains('show'));
+            });
+        };
+        if (_cardImg){
+            if (_cardImg.complete && _cardImg.naturalHeight){
+                // already loaded — fit will lock immediately in _revealNow
+            } else {
+                _cardImg.addEventListener('load', _refitOnLoad, { once: true });
+                _cardImg.addEventListener('error', _refitOnLoad, { once: true });
+            }
+        }
         var _revealNow = function(){
-            // Image is cached now, so the card lays out at full size immediately.
             _fitRevealCard(false);
             requestAnimationFrame(function(){
                 _fitRevealCard(false);
