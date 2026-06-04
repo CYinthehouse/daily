@@ -283,7 +283,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
  * clickable through it. */
 #dailyPickerGrid .menu-card.daily .daily-ribbon{
   position:absolute;
-  top:30px;
+  top:54px;
   left:-70px;
   width:280px;
   height:32px;
@@ -297,9 +297,9 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   letter-spacing:1px;
   line-height:1;
   color:#000;
-  text-shadow:var(--ps-outline-white-12),2px 3px 0 rgba(5,5,8,0.55);
+  text-shadow:var(--ps-outline-white-12),3px 5px 0 rgba(5,5,8,0.7);
   outline:3px solid #080811;
-  box-shadow:0 3px 0 #050508;
+  box-shadow:0 5px 0 #050508;
   z-index:5;
   pointer-events:none;
 }
@@ -307,9 +307,9 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 #dailyPickerGrid .menu-card.daily .daily-ribbon::before{
   content:"";position:absolute;inset:3px 0 auto 0;height:2px;background:rgba(255,255,255,0.35);
 }
-#dailyPickerGrid .menu-card.daily .daily-ribbon.green{background:#46c94a;}
-#dailyPickerGrid .menu-card.daily .daily-ribbon.blue {background:var(--cyan);}
-#dailyPickerGrid .menu-card.daily .daily-ribbon.red  {background:#ff3b3b;}
+#dailyPickerGrid .menu-card.daily .daily-ribbon.green{background:linear-gradient(to right,#1f6b22 0%,#1f6b22 10%,#46c94a 22%,#46c94a 78%,#1f6b22 90%,#1f6b22 100%);}
+#dailyPickerGrid .menu-card.daily .daily-ribbon.blue {background:linear-gradient(to right,#1c6a99 0%,#1c6a99 10%,var(--cyan) 22%,var(--cyan) 78%,#1c6a99 90%,#1c6a99 100%);}
+#dailyPickerGrid .menu-card.daily .daily-ribbon.red  {background:linear-gradient(to right,#a81d1d 0%,#a81d1d 10%,#ff3b3b 22%,#ff3b3b 78%,#a81d1d 90%,#a81d1d 100%);}
 
 /* Daily tile in "Work in Progress" mode (admin-toggled, hidden from non-admins) */
 .menu-card.daily.wip{cursor:not-allowed;opacity:0.55;filter:grayscale(0.6);}
@@ -1250,17 +1250,20 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   -webkit-mask-image:linear-gradient(90deg,transparent,#000 26px,#000 calc(100% - 26px),transparent);
   mask-image:linear-gradient(90deg,transparent,#000 26px,#000 calc(100% - 26px),transparent);
 }
-.wbf-track{display:inline-flex;align-items:center;gap:22px;white-space:nowrap;will-change:transform;padding:0 4px;}
-.wbf-lead{font-family:var(--vt);font-size:16px;color:#8a93a8;letter-spacing:0.5px;}
-.wbf-chip{display:inline-flex;align-items:center;gap:9px;}
+.wbf-track{display:inline-flex;align-items:center;white-space:nowrap;will-change:transform;}
+.wbf-lead{font-family:var(--vt);font-size:16px;color:#8a93a8;letter-spacing:0.5px;margin-right:24px;}
+.wbf-chip{display:inline-flex;align-items:center;gap:9px;margin-right:24px;}
 .wbf-ava{flex:none;display:inline-flex;}
 .wbf-ava .dr-avatar-init,.wbf-ava .dr-avatar-img{width:28px;height:28px;font-size:13px;}
 .wbf-text{font-family:var(--vt);font-size:16px;color:#dfe6f2;}
 .wbf-text.audio{color:#9aa6bd;font-style:italic;}
-/* Back-and-forth scroll with a pause at each end (Spotify/iTunes feel). The
- * keyframes are generated per-render in JS (_wbfStartMarquee) because the hold
- * stops depend on how far the row overflows; timing is linear so the glide is
- * constant-speed and the holds read as true pauses. */
+/* Continuous, always-moving ticker. The content is duplicated by JS so the row
+ * is always wider than the viewport; it scrolls left exactly one set width and
+ * loops seamlessly (the second set lands where the first began). Linear timing,
+ * constant speed — moves even with a single submission. --wbf-dur is set per
+ * render once JS measures one set's width. */
+@keyframes wbf-scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.wbf-track.scrolling{animation:wbf-scroll var(--wbf-dur,20s) linear infinite;}
 @media (prefers-reduced-motion: reduce){.wbf-track{animation:none !important;}}
 
 /* ─── DIARY, weekly activity ─── */
@@ -2218,34 +2221,34 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 
 /* Filters: a labelled row of tab/chips (VCR mono, with counts). */
 .showcase-filters{margin-bottom:0;}
-.flt-label{font-family:var(--vt);font-size:14px;color:#8089a8;letter-spacing:1px;margin-bottom:9px;text-transform:uppercase;}
+.flt-label{font-family:var(--vt);font-size:14px;color:#fff;letter-spacing:1px;margin-bottom:9px;text-transform:uppercase;}
 .sc-chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
-.filter-chip{font-family:var(--vt);font-size:15px;padding:9px 16px;border:2px solid #3a3a4f;background:#101020;color:#bfc5e8;border-radius:6px;cursor:pointer;transition:border-color .12s,color .12s,background .12s,box-shadow .12s;}
-.filter-chip:hover:not(.disabled):not(.active):not(.lit){border-color:#55557a;color:#e3e8ff;}
+.filter-chip{font-family:var(--vt);font-size:15px;padding:9px 16px;border:2px solid #3a3a4f;background:#101020;color:#bfc5e8;border-radius:2px;cursor:pointer;transition:border-color .12s,color .12s,background .12s,box-shadow .12s;}
+.filter-chip:hover:not(.disabled):not(.active){border-color:#55557a;color:#e3e8ff;}
 .filter-chip.disabled{opacity:0.4;cursor:not-allowed;}
-/* Active / lit chips take their rarity color (border + text + faint fill). The
- * colored drop shadow is applied inline per-chip from JS so the whole row can
- * light up when the ALL filter is selected. */
+/* The selected chip takes its rarity color (border + text + faint fill); its
+ * rarity-colored drop shadow is applied inline from JS. Only the active chip
+ * lights up — selecting ALL highlights only the ALL chip. */
 .filter-chip.all.active{border-color:#a855f7;background:#2a1244;color:#c084fc;}
-.filter-chip.holo.active,.filter-chip.holo.lit{border-color:#aeb4ff;background:rgba(174,180,255,0.14);color:#e8e8ff;}
-.filter-chip.pink.active,.filter-chip.pink.lit{border-color:#d4537e;background:rgba(212,83,126,0.16);color:#f08bb0;}
-.filter-chip.red.active,.filter-chip.red.lit{border-color:#e24b4a;background:rgba(226,75,74,0.16);color:#ff7b7a;}
-.filter-chip.yellow.active,.filter-chip.yellow.lit{border-color:#f5c842;background:rgba(245,200,66,0.16);color:#ffd766;}
-.filter-chip.green.active,.filter-chip.green.lit{border-color:#639922;background:rgba(99,153,34,0.18);color:#9bd85a;}
-.filter-chip.blue.active,.filter-chip.blue.lit{border-color:#378add;background:rgba(55,138,221,0.16);color:#6cb6ff;}
+.filter-chip.holo.active{border-color:#aeb4ff;background:rgba(174,180,255,0.14);color:#e8e8ff;}
+.filter-chip.pink.active{border-color:#d4537e;background:rgba(212,83,126,0.16);color:#f08bb0;}
+.filter-chip.red.active{border-color:#e24b4a;background:rgba(226,75,74,0.16);color:#ff7b7a;}
+.filter-chip.yellow.active{border-color:#f5c842;background:rgba(245,200,66,0.16);color:#ffd766;}
+.filter-chip.green.active{border-color:#639922;background:rgba(99,153,34,0.18);color:#9bd85a;}
+.filter-chip.blue.active{border-color:#378add;background:rgba(55,138,221,0.16);color:#6cb6ff;}
 
 /* Sort: custom dropdown with open/close animation. */
 .sc-sort{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
-.sc-sort-label{font-family:var(--vt);font-size:15px;color:#8089a8;letter-spacing:1px;text-transform:uppercase;}
+.sc-sort-label{font-family:var(--vt);font-size:15px;color:#fff;letter-spacing:1px;text-transform:uppercase;}
 .sc-dropdown{position:relative;display:inline-block;}
-.sc-dd-trigger{display:inline-flex;align-items:center;justify-content:space-between;gap:10px;min-width:172px;font-family:var(--vt);font-size:15px;padding:9px 14px;border:2px solid #3a3a4f;background:#101020;color:#dfe4ff;border-radius:6px;cursor:pointer;transition:border-color .12s;}
+.sc-dd-trigger{display:inline-flex;align-items:center;justify-content:space-between;gap:10px;min-width:172px;font-family:var(--vt);font-size:15px;padding:9px 14px;border:2px solid #3a3a4f;background:#101020;color:#dfe4ff;border-radius:2px;cursor:pointer;transition:border-color .12s;}
 .sc-dd-trigger:hover{border-color:#55557a;}
 .sc-dropdown.open .sc-dd-trigger{border-color:#a855f7;}
 .sc-dd-caret{font-size:11px;color:#9aa6c4;transition:transform .16s ease;}
 .sc-dropdown.open .sc-dd-caret{transform:rotate(180deg);}
-.sc-dd-menu{position:absolute;top:calc(100% + 6px);left:0;min-width:100%;background:#101020;border:2px solid #3a3a4f;border-radius:6px;box-shadow:4px 4px 0 #050508;z-index:30;padding:5px;opacity:0;visibility:hidden;transform:translateY(-6px) scaleY(0.95);transform-origin:top;transition:opacity .16s ease,transform .16s ease,visibility 0s linear .16s;}
+.sc-dd-menu{position:absolute;top:calc(100% + 6px);left:0;min-width:100%;background:#101020;border:2px solid #3a3a4f;border-radius:2px;box-shadow:4px 4px 0 #050508;z-index:30;padding:5px;opacity:0;visibility:hidden;transform:translateY(-6px) scaleY(0.95);transform-origin:top;transition:opacity .16s ease,transform .16s ease,visibility 0s linear .16s;}
 .sc-dropdown.open .sc-dd-menu{opacity:1;visibility:visible;transform:none;transition:opacity .16s ease,transform .16s ease;}
-.sc-dd-opt{display:block;width:100%;text-align:left;font-family:var(--vt);font-size:15px;padding:9px 12px;background:transparent;border:none;color:#bfc5e8;border-radius:4px;cursor:pointer;white-space:nowrap;}
+.sc-dd-opt{display:block;width:100%;text-align:left;font-family:var(--vt);font-size:15px;padding:9px 12px;background:transparent;border:none;color:#bfc5e8;border-radius:2px;cursor:pointer;white-space:nowrap;}
 .sc-dd-opt:hover{background:rgba(168,85,247,0.16);color:#fff;}
 .sc-dd-opt.active{background:rgba(168,85,247,0.22);color:#c084fc;}
 
@@ -2253,11 +2256,13 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 ._cdPts{font-family:'Press Start 2P',monospace;font-size:11px;letter-spacing:.06em;color:#1a1205;background:linear-gradient(135deg,#fff3b0,#f5c842,#e0a020);border:1px solid #b8860b;border-radius:20px;padding:7px 14px;text-align:center;box-shadow:2px 2px 0 rgba(0,0,0,0.5);}
 ._cdPts ._cdPtsNum{font-size:14px;}
 
-/* Cards: calmer — neutral border with a colored TOP accent, darker fill, a
- * hard dark drop shadow, and names clamped to 2 lines. */
+/* Cards: calmer — neutral border with a colored TOP accent, darker fill, names
+ * clamped to 2 lines. Hover/press lifts the card up-left and brings up a hard
+ * medium-gray offset shadow (same #4a4a4a treatment as the reveal cards). */
 .showcase-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;align-items:stretch;}
-.sc-card{position:relative;background:#0d0d1a;border:2px solid #333348;border-radius:2px;padding:12px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform 0.15s,box-shadow 0.15s;box-shadow:5px 5px 0 #050508;height:100%;}
-.sc-card:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 #050508;}
+.sc-card{position:relative;background:#0d0d1a;border:2px solid #333348;border-radius:2px;padding:12px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform 0.13s ease,box-shadow 0.13s ease;box-shadow:5px 5px 0 #050508;height:100%;}
+.sc-card:hover{transform:translate(-3px,-3px);box-shadow:8px 8px 0 #4a4a4a;}
+.sc-card:active{transform:translate(-1px,-1px);box-shadow:4px 4px 0 #4a4a4a;}
 /* Duplicate-count badge: red circle, upper-right of the thumbnail card. */
 .sc-dupe{position:absolute;top:-9px;right:-9px;z-index:5;min-width:26px;height:26px;padding:0 5px;border-radius:50%;background:#e24b4a;border:2px solid #0d0d1a;box-shadow:2px 2px 0 rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;font-size:9px;color:#000;line-height:1;}
 /* Showcase thumbnails: crop 10px off each end so the character fills the slot. */
@@ -8802,9 +8807,8 @@ function _drawShowcase(){
     var count = tally[f.k] || 0;
     var disabled = count === 0;
     var selected = (_scFilter === f.k);
-    var lit = !disabled && (selected || _scFilter === 'all');
-    var cls = 'filter-chip ' + f.k + (selected ? ' active' : '') + (lit ? ' lit' : '') + (disabled ? ' disabled' : '');
-    var style = lit ? 'box-shadow:4px 4px 0 ' + RARITY_SHADOW[f.k] + ';' : '';
+    var cls = 'filter-chip ' + f.k + (selected ? ' active' : '') + (disabled ? ' disabled' : '');
+    var style = (selected && !disabled) ? 'box-shadow:4px 4px 0 ' + RARITY_SHADOW[f.k] + ';' : '';
     var onclick = disabled ? '' : ' onclick="setShowcaseFilter(\'' + f.k + '\')"';
     return '<button class="' + cls + '" style="' + style + '"' + onclick + '>' + f.l + ' ' + count + '</button>';
   }).join('');
@@ -13522,8 +13526,8 @@ async function _diaryRenderFeed(){
  * under the SPECIAL BONUS banner on the daily screen. Pulls this week's
  * diary submissions (gacha_diary_entries, current weekKey) and shows each
  * student's icon + the first 10 words of their entry, or "(Audio submission)"
- * when there's no text. Auto-scrolls left/right (iTunes-style) only when the
- * row is wider than the viewport.
+ * when there's no text. The content is duplicated and scrolls in a continuous
+ * seamless loop, so it's always moving — even with a single submission.
  * ─────────────────────────────────────────────────────────────────── */
 function _wbfFirstWords(text, n){
   var words = String(text || '').split(/\s+/).filter(Boolean);
@@ -13548,51 +13552,43 @@ function _wbfChipHtml(e){
   '</span>';
 }
 
-// Inject/replace the dedicated <style> that holds the dynamically-built
-// marquee keyframes.
-function _wbfInjectKeyframes(css){
-  var el = document.getElementById('wbfKeyframes');
-  if (!el){ el = document.createElement('style'); el.id = 'wbfKeyframes'; document.head.appendChild(el); }
-  el.textContent = css;
-}
+// One "set" of marquee content (lead + chips). Stored so the resize handler
+// can rebuild the duplicated track without re-querying Firestore.
+var _wbfSetHtml = '';
 
-// Measure overflow and (re)start the scroll. Spotify/iTunes-style: hold at the
-// start, glide left at a constant speed, hold at the far end, glide back, hold,
-// repeat. Linear timing + explicit hold stops are what give the paused feel.
-// Safe to call whenever the track contents or viewport width change.
+// (Re)build the duplicated track and start the continuous loop. Measures one
+// set's width, repeats it enough times to always exceed the viewport, then
+// scrolls left by exactly one half (one repeat block) and loops seamlessly.
 function _wbfStartMarquee(){
   var track = document.getElementById('wbfTrack');
   if (!track) return;
   var vp = track.parentElement; // .wbf-viewport
   if (!vp) return;
-  // Reset any prior animation before re-measuring.
+  track.classList.remove('scrolling');
   track.style.animation = 'none';
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   // Wait two frames so layout (and the pixel font) settle before measuring.
   requestAnimationFrame(function(){
     requestAnimationFrame(function(){
-      if (!document.getElementById('wbfTrack')) return;
-      var overflow = track.scrollWidth - vp.clientWidth;
-      if (overflow <= 6){ track.style.animation = ''; return; }
-
-      var shift  = overflow + 10;   // px to travel so the last chip fully clears
-      var SPEED  = 50;              // px per second, constant glide
-      var HOLD   = 1.6;            // seconds paused at each end
-      var travel = shift / SPEED;   // seconds per direction
-      var total  = travel * 2 + HOLD * 2;
-      // Keyframe stops (as % of total): hold @0, glide, hold @end, glide back.
-      var a = (HOLD / total) * 100;                 // end of start hold
-      var b = ((HOLD + travel) / total) * 100;      // reached far end
-      var c = ((HOLD * 2 + travel) / total) * 100;  // end of far-end hold
-
-      _wbfInjectKeyframes(
-        '@keyframes wbf-marquee{' +
-          '0%,' + a.toFixed(2) + '%{transform:translateX(0);}' +
-          b.toFixed(2) + '%,' + c.toFixed(2) + '%{transform:translateX(-' + shift + 'px);}' +
-          '100%{transform:translateX(0);}' +
-        '}'
-      );
-      track.style.animation = 'wbf-marquee ' + total.toFixed(2) + 's linear infinite';
+      if (!document.getElementById('wbfTrack') || !_wbfSetHtml) return;
+      // Measure a single set.
+      track.innerHTML = _wbfSetHtml;
+      var W = track.scrollWidth;
+      if (W <= 0) return;
+      var vw = vp.clientWidth || 1;
+      // Copies per half so each half is at least as wide as the viewport (no
+      // gaps), then two halves total for the seamless -50% loop.
+      var halfCopies = Math.max(1, Math.ceil(vw / W));
+      var total = halfCopies * 2;
+      var html = '';
+      for (var i = 0; i < total; i++) html += _wbfSetHtml;
+      track.innerHTML = html;
+      var SPEED = 45; // px per second, constant
+      var dur = Math.max(6, (halfCopies * W) / SPEED);
+      // Set the animation inline (beats the earlier reset) and force a reflow
+      // so it (re)starts cleanly from 0 after the content swap.
+      void track.offsetWidth;
+      track.style.animation = 'wbf-scroll ' + dur.toFixed(2) + 's linear infinite';
     });
   });
 }
@@ -13602,9 +13598,10 @@ async function _wbfRender(){
   if (!track) return;
   var lead = '<span class="wbf-lead">See who submitted it so far…</span>';
 
-  // No Firestore (e.g. artifact preview) → just show the lead, no scroll.
+  // No Firestore (e.g. artifact preview) → just show the lead.
   if (typeof db === 'undefined' || !db || typeof db.collection !== 'function'){
-    track.innerHTML = lead;
+    _wbfSetHtml = lead;
+    track.innerHTML = _wbfSetHtml;
     _wbfStartMarquee();
     return;
   }
@@ -13624,12 +13621,11 @@ async function _wbfRender(){
   });
 
   if (!entries.length){
-    track.innerHTML = lead + '<span class="wbf-text" style="color:#7a8398;font-style:italic;">No submissions yet — be the first!</span>';
-    _wbfStartMarquee();
-    return;
+    _wbfSetHtml = lead + '<span class="wbf-text" style="color:#7a8398;font-style:italic;">No submissions yet — be the first!</span>';
+  } else {
+    _wbfSetHtml = lead + entries.map(_wbfChipHtml).join('');
   }
-
-  track.innerHTML = lead + entries.map(_wbfChipHtml).join('');
+  track.innerHTML = _wbfSetHtml;
   _wbfStartMarquee();
 }
 window._wbfRender = _wbfRender;
