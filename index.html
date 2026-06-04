@@ -10513,18 +10513,16 @@ function _fitRevealCard(shown){
     if (!natH || !natW){ return; }   // not measurable yet; try again next frame
     fit = Math.min(1, availH / natH, availW / natW);
     if (!isFinite(fit) || fit <= 0) fit = 1;
-    // Is the card's image actually loaded? Only then is natH trustworthy.
+    // Is the card's image actually laid out? naturalHeight>0 means the browser
+    // knows the image's real dimensions, so natH is trustworthy. We DON'T require
+    // .complete — it proved unreliable (stayed false even with naturalHeight=2528,
+    // which left fit uncached and the card unscaled on slow loads).
     var _im = card.querySelector('._griw img');
-    var _imgReady = !_im || (_im.complete && _im.naturalHeight > 0);
+    var _imgReady = !_im || (_im.naturalHeight > 0);
     if (_imgReady){
       _revealFitCache = fit;         // trustworthy measurement → lock for session
     }
     // else: use `fit` transiently this frame but DON'T cache it.
-    try {
-      var d2 = document.getElementById('_fitDbg2');
-      if (!d2){ d2 = document.createElement('div'); d2.id='_fitDbg2'; d2.style.cssText='position:fixed;right:6px;bottom:6px;z-index:99999999;background:#001;color:#0ff;font:11px monospace;padding:6px;border:1px solid #0ff;white-space:pre;pointer-events:none;'; document.body.appendChild(d2); }
-      d2.textContent = 'FIT CALL\nnatH='+natH+' imgReady='+_imgReady+'\nimgComplete='+(_im?_im.complete:'noimg')+' natH(img)='+(_im?_im.naturalHeight:'-')+'\nfit='+fit.toFixed(4)+' cached='+(_revealFitCache!=null?_revealFitCache.toFixed(4):'null')+'\nspinning='+(card.querySelector('._griw.spinning')?'Y':'N');
-    } catch(e){}
   }
   var scale = fit * ts * (shownNow ? 1 : 0.85);
   card.style.transform = 'scale(' + scale + ')';
@@ -10689,31 +10687,46 @@ function _revealCharacter(roll){
         var _cardImg = ro.querySelector('._griw img');
         var _slot = ro.querySelector('._griw');
         var _spinTimer = null;
+        var _pollTimer = null;
+        var _settled = false;
         var _stopSpin = function(){
             if (_spinTimer){ clearTimeout(_spinTimer); _spinTimer = null; }
             if (_slot) _slot.classList.remove('spinning');
         };
-        var _refitOnLoad = function(){
-            _stopSpin();   // image arrived → hide spinner (purely visual)
-            try { var d3=document.getElementById('_fitDbg3'); if(!d3){d3=document.createElement('div');d3.id='_fitDbg3';d3.style.cssText='position:fixed;right:6px;top:6px;z-index:99999999;background:#100;color:#fa0;font:11px monospace;padding:6px;border:1px solid #fa0;pointer-events:none;';document.body.appendChild(d3);} d3.textContent='refitOnLoad FIRED @'+Date.now(); } catch(e){}
-            // Image is laid out now → measure + lock the real fit, then apply it.
+        var _settleImage = function(){
+            // Image has real dimensions now → stop spinner + lock the correct fit.
+            // Idempotent. Driven by polling (NOT the load event, which proved
+            // unreliable — it sometimes never fired even when the image was decoded).
+            if (_settled) return;
+            _settled = true;
+            if (_pollTimer){ clearInterval(_pollTimer); _pollTimer = null; }
+            _stopSpin();
             requestAnimationFrame(function(){
                 _fitRevealCard(ro.classList.contains('show'));
             });
         };
         if (_cardImg){
-            if (_cardImg.complete && _cardImg.naturalHeight){
-                // already loaded — fit will lock immediately in _revealNow, no spinner
+            if (_cardImg.naturalHeight > 0){
+                // already decoded — fit locks immediately in _revealNow, no spinner
+                _settled = true;
             } else {
-                _cardImg.addEventListener('load', _refitOnLoad, { once: true });
-                _cardImg.addEventListener('error', _refitOnLoad, { once: true });
-                // Show the spinner ONLY if the image still hasn't loaded after 1s, so
-                // fast loads never flash it. Applies on both effects paths.
+                // load/error are a fast path if they DO fire…
+                _cardImg.addEventListener('load', _settleImage, { once: true });
+                _cardImg.addEventListener('error', function(){ _settled = true; if (_pollTimer) clearInterval(_pollTimer); _stopSpin(); }, { once: true });
+                // …but the RELIABLE path is polling naturalHeight, so a missed load
+                // event can never leave the card unscaled or the spinner stuck.
+                _pollTimer = setInterval(function(){
+                    if (_cardImg && _cardImg.naturalHeight > 0){ _settleImage(); }
+                }, 120);
+                // Show the spinner only if still not decoded after 1s (fast loads
+                // never flash it). Applies on both effects paths.
                 _spinTimer = setTimeout(function(){
-                    if (_cardImg && (!_cardImg.complete || !_cardImg.naturalHeight)){
+                    if (!_settled && _cardImg && !(_cardImg.naturalHeight > 0)){
                         if (_slot) _slot.classList.add('spinning');
                     }
                 }, 1000);
+                // Hard stop: never poll/spin beyond 60s.
+                setTimeout(function(){ if (_pollTimer){ clearInterval(_pollTimer); _pollTimer = null; } _stopSpin(); }, 60000);
             }
         }
         var _revealNow = function(){
