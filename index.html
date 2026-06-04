@@ -21,6 +21,8 @@
   --shadow:2px 2px 0 rgba(0,0,0,0.6);
   --ps-outline:-2px -2px 0 #000024,2px -2px 0 #000024,-2px 2px 0 #000024,2px 2px 0 #000024,0 -2px 0 #000024,0 2px 0 #000024,-2px 0 0 #000024,2px 0 0 #000024;
   --ps-outline-sm:-1px -1px 0 #000024,1px -1px 0 #000024,-1px 1px 0 #000024,1px 1px 0 #000024;
+  /* 12-direction hard WHITE pixel outline, used by the daily difficulty ribbons. */
+  --ps-outline-white-12:-2px 0 0 #fff,2px 0 0 #fff,0 -2px 0 #fff,0 2px 0 #fff,-2px -1px 0 #fff,-2px 1px 0 #fff,2px -1px 0 #fff,2px 1px 0 #fff,-1px -2px 0 #fff,1px -2px 0 #fff,-1px 2px 0 #fff,1px 2px 0 #fff;
 }
 html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt);overflow-x:hidden;font-size:18px;line-height:1.6;}
 .bg-stars{position:fixed;top:0;left:0;width:100%;height:100%;background-color:var(--bg);background-image:linear-gradient(rgba(65,192,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(65,192,255,0.03) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;z-index:0;}
@@ -271,6 +273,32 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   color: var(--gold);
   border-color: var(--gold);
 }
+
+/* ─── Diagonal pixel difficulty ribbon, top-left corner of each daily tile ───
+ * Clipped by the card's overflow:hidden into a corner-ribbon band. Black text
+ * with a 12-direction hard WHITE pixel outline, Press Start 2P at the same
+ * size as the tile header (.menu-name). pointer-events:none so the tile stays
+ * clickable through the ribbon. */
+#dailyPickerGrid .menu-card.daily .daily-ribbon{
+  position:absolute;
+  top:36px;
+  left:-52px;
+  width:220px;
+  transform:rotate(-45deg);
+  text-align:center;
+  font-family:var(--ps);
+  font-size:clamp(9px,1.6vw,12px);
+  line-height:1;
+  padding:6px 0;
+  color:#000;
+  text-shadow:var(--ps-outline-white-12);
+  z-index:5;
+  pointer-events:none;
+  box-shadow:0 2px 0 rgba(0,0,0,0.5);
+}
+#dailyPickerGrid .menu-card.daily .daily-ribbon.green{background:var(--green);}
+#dailyPickerGrid .menu-card.daily .daily-ribbon.blue {background:var(--cyan);}
+#dailyPickerGrid .menu-card.daily .daily-ribbon.red  {background:#ff3b3b;}
 
 /* Daily tile in "Work in Progress" mode (admin-toggled, hidden from non-admins) */
 .menu-card.daily.wip{cursor:not-allowed;opacity:0.55;filter:grayscale(0.6);}
@@ -4140,44 +4168,49 @@ function _renderDailyPicker(){
   } else if (advSubmitted){
     advBadge = '<div class="menu-count">+1 EARNED · WAITING FOR 10</div>';
   } else {
-    advBadge = '<div class="menu-count">UP TO +2 EGGS</div>';
+    advBadge = '<div class="menu-count">UP TO +3 EGGS</div>';
   }
   // ─── Yodafication tile ───
   var yodaDone = (user && user.dailyYodaDoneFor === todayKey);
   var yodaBadge = yodaDone
     ? '<div class="menu-count" style="border-color:var(--green);color:var(--green);">✅ DONE TODAY</div>'
-    : '<div class="menu-count">+1 EGG</div>';
+    : '<div class="menu-count">+2 EGGS</div>';
   // ─── Active Recall tile ───
   var recallDone = (user && user.dailyRecallStep2DoneFor === todayKey);
   var recallBadge = recallDone
     ? '<div class="menu-count" style="border-color:var(--green);color:var(--green);">✅ DONE TODAY</div>'
-    : '<div class="menu-count">+1 EGG</div>';
+    : '<div class="menu-count">UP TO +6 EGGS</div>';
   grid.innerHTML =
     '<div class="menu-card daily yoda" onclick="_dailyOpen(\'yoda\')">' +
+      '<span class="daily-ribbon green">NOVICE</span>' +
       '<span class="menu-emoji">🔀</span>' +
       '<div class="grad-wrap"><div class="menu-name grad-text grad-purple">YODAFICATION</div></div>' +
       '<div class="menu-desc">Rewrite sentences in every valid word order.</div>' +
       yodaBadge +
     '</div>' +
     '<div class="menu-card daily recall" onclick="_dailyOpen(\'recall\')">' +
+      '<span class="daily-ribbon blue">ALL Levels</span>' +
       '<span class="menu-emoji">🧠</span>' +
       '<div class="grad-wrap"><div class="menu-name grad-text grad-cyan">ACTIVE<br>RECALL</div></div>' +
       '<div class="menu-desc">Flip through flashcards and test your memory.</div>' +
       recallBadge +
     '</div>' +
     '<div class="menu-card daily" onclick="_dailyOpen(\'reading\')">' +
+      '<span class="daily-ribbon blue">ALL Levels</span>' +
       '<span class="menu-emoji">📖</span>' +
       '<div class="grad-wrap"><div class="menu-name grad-text grad-cyan">TEAMWORK<br>READING</div></div>' +
       '<div class="menu-desc">Pair up with a classmate and read a passage together.</div>' +
       readingBadge +
     '</div>' +
     '<div class="menu-card daily" onclick="_dailyOpen(\'listening\')">' +
+      '<span class="daily-ribbon blue">ALL Levels</span>' +
       '<span class="menu-emoji">🎤</span>' +
       '<div class="grad-wrap"><div class="menu-name grad-text grad-pink">SOLO<br>READING</div></div>' +
       '<div class="menu-desc">Read aloud across four levels of difficulty.</div>' +
       listeningBadge +
     '</div>' +
     '<div class="menu-card daily" onclick="_dailyOpen(\'advanced\')">' +
+      '<span class="daily-ribbon red">ADVANCED</span>' +
       '<span class="menu-emoji">🏆</span>' +
       '<div class="grad-wrap"><div class="menu-name grad-text grad-gold">ADVANCED<br>TEAMWORK</div></div>' +
       '<div class="menu-desc">Conjugate verbs in four tenses. Bigger bonus when 10 students join.</div>' +
@@ -11786,8 +11819,8 @@ async function _recallRender(){
     if (!hasFresh){
       host.innerHTML =
         '<div class="dr-empty">' +
-          '<div class="big">No card set is live right now.</div>' +
-          '<div class="sub">Check back soon, your teacher hasn\'t posted today\'s cards yet.</div>' +
+          '<div class="big">📭 NO ACTIVITY AVAILABLE</div>' +
+          '<div class="sub">Sorry, the deadline has passed! Wait for the next daily activity to be posted.</div>' +
         '</div>';
       return;
     }
@@ -11902,8 +11935,8 @@ async function _recallStartGame(){
   if (!freshDocs.length){
     host.innerHTML =
       '<div class="dr-empty">' +
-        '<div class="big">No card set is live right now.</div>' +
-        '<div class="sub">Check back soon, your teacher hasn\'t posted today\'s cards yet.</div>' +
+        '<div class="big">📭 NO ACTIVITY AVAILABLE</div>' +
+        '<div class="sub">Sorry, the deadline has passed! Wait for the next daily activity to be posted.</div>' +
         '<div style="margin-top:16px;"><button class="btn btn-ghost btn-md" onclick="_recallRender()">← BACK TO STEPS</button></div>' +
       '</div>';
     return;
@@ -12422,8 +12455,8 @@ async function _recallStartFlashcards(){
   if (!freshDocs.length){
     host.innerHTML =
       '<div class="dr-empty">' +
-        '<div class="big">No Active Recall set is live right now.</div>' +
-        '<div class="sub">Check back soon, your teacher hasn\'t posted today\'s cards yet.</div>' +
+        '<div class="big">📭 NO ACTIVITY AVAILABLE</div>' +
+        '<div class="sub">Sorry, the deadline has passed! Wait for the next daily activity to be posted.</div>' +
       '</div>';
     return;
   }
@@ -13491,7 +13524,7 @@ function _yodaRenderDone(){
   var sentences = (_yodaState.activity && _yodaState.activity.sentences) || [];
   var bannerHtml =
     '<div class="dr-feed-banner done" style="margin-bottom:20px;">' +
-      '<div class="big">✅ +1 EGG EARNED</div>' +
+      '<div class="big">✅ +2 EGGS EARNED</div>' +
       '<div class="sub">Nice work! Your submission has been sent to your teacher for review. Come back tomorrow for a new yodafication activity.</div>' +
     '</div>';
   // Show the student their own answers as a confirmation, but NOT the answer
