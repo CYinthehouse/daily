@@ -2207,68 +2207,73 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .ph-card .ph-soon{font-family:var(--ps);font-size:7px;color:#555;letter-spacing:2px;text-shadow:none;}
 
 /* ── SHOWCASE ── */
-.showcase-stats{background:#0a0a15;border:2px solid rgba(255,255,255,0.15);border-radius:2px;padding:14px 18px;margin-bottom:16px;display:flex;gap:18px;flex-wrap:wrap;font-family:var(--ps);font-size:11px;color:#ccc;box-shadow:3px 3px 0 rgba(0,0,0,0.8);text-shadow:var(--ps-outline-sm);}
-.showcase-stats .stat-num{color:var(--gold);}
-.showcase-filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
-/* Base filter button. Color/styling is INTENTIONALLY locked to gray here so
- * a filter-btn with a rarity class but no .active (e.g. `filter-btn yellow`)
- * doesn't inherit the rarity color. Only `.filter-btn.<rarity>.active`
- * rules below paint the rarity color.
- * !important is required because something in the cascade, possibly an
- * earlier rule we couldn't track down, was still painting YELLOW/GREEN
- * text in their rarity colors even when not active. */
-.filter-btn{background:#0a0a15;border:2px solid rgba(255,255,255,0.25);color:#aaa;padding:9px 14px;border-radius:2px;font-family:var(--ps);font-size:11px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,0.8);transition:all 0.1s;text-shadow:var(--ps-outline-sm);}
-.filter-btn.holo:not(.active),
-.filter-btn.pink:not(.active),
-.filter-btn.red:not(.active),
-.filter-btn.yellow:not(.active),
-.filter-btn.green:not(.active),
-.filter-btn.blue:not(.active){color:#aaa !important;border-color:rgba(255,255,255,0.25) !important;background:#0a0a15 !important;}
-.filter-btn:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 rgba(0,0,0,0.8);}
-.filter-btn.active{background:rgba(168,85,247,0.15);border-color:var(--purple);color:var(--purple);}
-.filter-btn.holo.active{border-color:#dde !important;color:#fff !important;background:linear-gradient(90deg,rgba(180,180,255,0.18),rgba(255,180,255,0.18)) !important;}
-.filter-btn.pink.active{border-color:#d4537e !important;color:#d4537e !important;background:rgba(212,83,126,0.15) !important;}
-.filter-btn.red.active{border-color:#e24b4a !important;color:#e24b4a !important;background:rgba(226,75,74,0.15) !important;}
-.filter-btn.yellow.active{border-color:#f5c842 !important;color:#f5c842 !important;background:rgba(245,200,66,0.15) !important;}
-.filter-btn.green.active{border-color:#639922 !important;color:#639922 !important;background:rgba(99,153,34,0.18) !important;}
-.filter-btn.blue.active{border-color:#378add !important;color:#378add !important;background:rgba(55,138,221,0.15) !important;}
+/* Stats now live INSIDE the header panel (merged), so this is a borderless
+ * VCR-mono row with a divider above it rather than a separate panel. */
+.section-head.showcase .sh-sub{margin-bottom:14px;}
+.showcase-stats{display:flex;gap:20px;flex-wrap:wrap;font-family:var(--vt);font-size:16px;border-top:1px solid rgba(255,255,255,0.1);padding-top:13px;}
+.sc-stat{display:inline-flex;align-items:baseline;gap:6px;}
+.sc-stat-l{color:#9aa6c4;letter-spacing:0.5px;}
+.sc-stat-n{color:#fff;font-weight:700;}
+.sc-stat.zero .sc-stat-n{color:#5b647e;}
 
-/* Points sort row: distinct line under the rarity filters. */
-.sc-sort-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex-basis:100%;margin-top:10px;}
-.sc-sort-label{font-family:var(--ps);font-size:10px;color:#888;letter-spacing:1px;text-shadow:var(--ps-outline-sm);}
+/* Filters: a labelled row of tab/chips (VCR mono, with counts). */
+.showcase-filters{margin-bottom:0;}
+.flt-label{font-family:var(--vt);font-size:14px;color:#8089a8;letter-spacing:1px;margin-bottom:9px;text-transform:uppercase;}
+.sc-chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+.filter-chip{font-family:var(--vt);font-size:15px;padding:9px 16px;border:2px solid #3a3a4f;background:#101020;color:#bfc5e8;border-radius:6px;cursor:pointer;transition:border-color .12s,color .12s,background .12s,box-shadow .12s;}
+.filter-chip:hover:not(.disabled):not(.active):not(.lit){border-color:#55557a;color:#e3e8ff;}
+.filter-chip.disabled{opacity:0.4;cursor:not-allowed;}
+/* Active / lit chips take their rarity color (border + text + faint fill). The
+ * colored drop shadow is applied inline per-chip from JS so the whole row can
+ * light up when the ALL filter is selected. */
+.filter-chip.all.active{border-color:#a855f7;background:#2a1244;color:#c084fc;}
+.filter-chip.holo.active,.filter-chip.holo.lit{border-color:#aeb4ff;background:rgba(174,180,255,0.14);color:#e8e8ff;}
+.filter-chip.pink.active,.filter-chip.pink.lit{border-color:#d4537e;background:rgba(212,83,126,0.16);color:#f08bb0;}
+.filter-chip.red.active,.filter-chip.red.lit{border-color:#e24b4a;background:rgba(226,75,74,0.16);color:#ff7b7a;}
+.filter-chip.yellow.active,.filter-chip.yellow.lit{border-color:#f5c842;background:rgba(245,200,66,0.16);color:#ffd766;}
+.filter-chip.green.active,.filter-chip.green.lit{border-color:#639922;background:rgba(99,153,34,0.18);color:#9bd85a;}
+.filter-chip.blue.active,.filter-chip.blue.lit{border-color:#378add;background:rgba(55,138,221,0.16);color:#6cb6ff;}
+
+/* Sort: custom dropdown with open/close animation. */
+.sc-sort{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
+.sc-sort-label{font-family:var(--vt);font-size:15px;color:#8089a8;letter-spacing:1px;text-transform:uppercase;}
+.sc-dropdown{position:relative;display:inline-block;}
+.sc-dd-trigger{display:inline-flex;align-items:center;justify-content:space-between;gap:10px;min-width:172px;font-family:var(--vt);font-size:15px;padding:9px 14px;border:2px solid #3a3a4f;background:#101020;color:#dfe4ff;border-radius:6px;cursor:pointer;transition:border-color .12s;}
+.sc-dd-trigger:hover{border-color:#55557a;}
+.sc-dropdown.open .sc-dd-trigger{border-color:#a855f7;}
+.sc-dd-caret{font-size:11px;color:#9aa6c4;transition:transform .16s ease;}
+.sc-dropdown.open .sc-dd-caret{transform:rotate(180deg);}
+.sc-dd-menu{position:absolute;top:calc(100% + 6px);left:0;min-width:100%;background:#101020;border:2px solid #3a3a4f;border-radius:6px;box-shadow:4px 4px 0 #050508;z-index:30;padding:5px;opacity:0;visibility:hidden;transform:translateY(-6px) scaleY(0.95);transform-origin:top;transition:opacity .16s ease,transform .16s ease,visibility 0s linear .16s;}
+.sc-dropdown.open .sc-dd-menu{opacity:1;visibility:visible;transform:none;transition:opacity .16s ease,transform .16s ease;}
+.sc-dd-opt{display:block;width:100%;text-align:left;font-family:var(--vt);font-size:15px;padding:9px 12px;background:transparent;border:none;color:#bfc5e8;border-radius:4px;cursor:pointer;white-space:nowrap;}
+.sc-dd-opt:hover{background:rgba(168,85,247,0.16);color:#fff;}
+.sc-dd-opt.active{background:rgba(168,85,247,0.22);color:#c084fc;}
+
 /* Points-earned pill in the card detail popup. */
 ._cdPts{font-family:'Press Start 2P',monospace;font-size:11px;letter-spacing:.06em;color:#1a1205;background:linear-gradient(135deg,#fff3b0,#f5c842,#e0a020);border:1px solid #b8860b;border-radius:20px;padding:7px 14px;text-align:center;box-shadow:2px 2px 0 rgba(0,0,0,0.5);}
 ._cdPts ._cdPtsNum{font-size:14px;}
 
-.showcase-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:14px;align-items:stretch;}
-/* Showcase card is a flex column; the .sc-rarity chip uses margin-top:auto
- * to push itself to the bottom of the card regardless of how tall the
- * .sc-name above it grew (1-line vs 3-line names). All chips line up at
- * the same Y position across the grid because the grid uses
- * align-items:stretch so every card matches the tallest row sibling. */
-.sc-card{position:relative;background:#0a0a15;border:2px solid;border-radius:2px;padding:12px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform 0.15s,box-shadow 0.15s;box-shadow:3px 3px 0 rgba(0,0,0,0.8);height:100%;}
-.sc-card:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(0,0,0,0.8);}
-/* Duplicate-count badge: red circle, upper-right of the thumbnail card.
- * Black Press Start 2P text. Only rendered when a card is owned 2+ times. */
-.sc-dupe{position:absolute;top:-9px;right:-9px;z-index:5;min-width:26px;height:26px;padding:0 5px;border-radius:50%;background:#e24b4a;border:2px solid #0a0a15;box-shadow:2px 2px 0 rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;font-size:9px;color:#000;line-height:1;}
-/* Showcase thumbnails: gacha render images have extra padding/floor at top
- * and bottom. Crop 10px off each end so the character fills more of the
- * thumbnail. clip-path:inset removes the unwanted area without distorting;
- * height is bumped to 130px so the *visible* cropped region matches the
- * original 110px slot, keeping layout unchanged. Negative margins absorb
- * the extra rendered height so the chip below doesn't get pushed down. */
-.sc-card img{width:100%;height:130px;margin:-10px 0;clip-path:inset(10px 0);-webkit-clip-path:inset(10px 0);object-fit:contain;pointer-events:none;user-select:none;-webkit-user-drag:none;background:#0a0a15;}
-.sc-card .sc-name{font-size:12px;color:#fff;text-align:center;line-height:1.3;font-family:var(--vt);word-break:break-word;}
+/* Cards: calmer — neutral border with a colored TOP accent, darker fill, a
+ * hard dark drop shadow, and names clamped to 2 lines. */
+.showcase-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;align-items:stretch;}
+.sc-card{position:relative;background:#0d0d1a;border:2px solid #333348;border-radius:2px;padding:12px 10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;transition:transform 0.15s,box-shadow 0.15s;box-shadow:5px 5px 0 #050508;height:100%;}
+.sc-card:hover{transform:translate(-2px,-2px);box-shadow:7px 7px 0 #050508;}
+/* Duplicate-count badge: red circle, upper-right of the thumbnail card. */
+.sc-dupe{position:absolute;top:-9px;right:-9px;z-index:5;min-width:26px;height:26px;padding:0 5px;border-radius:50%;background:#e24b4a;border:2px solid #0d0d1a;box-shadow:2px 2px 0 rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;font-family:'Press Start 2P',monospace;font-size:9px;color:#000;line-height:1;}
+/* Showcase thumbnails: crop 10px off each end so the character fills the slot. */
+.sc-card img{width:100%;height:130px;margin:-10px 0;clip-path:inset(10px 0);-webkit-clip-path:inset(10px 0);object-fit:contain;pointer-events:none;user-select:none;-webkit-user-drag:none;background:#0d0d1a;}
+.sc-card .sc-name{font-size:13px;color:#fff;text-align:center;line-height:1.3;font-family:var(--vt);word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .sc-card .sc-rarity{font-family:var(--ps);font-size:7px;letter-spacing:1px;padding:4px 8px;border-radius:2px;margin-top:auto;}
 
-.sc-card.holo{border-color:#dde;}
-.sc-card.pink{border-color:#d4537e;}
-.sc-card.red{border-color:#e24b4a;}
-.sc-card.yellow{border-color:#f5c842;}
-.sc-card.green{border-color:#639922;}
-.sc-card.blue{border-color:#378add;}
+/* Rarity = colored top accent only; the other three sides stay neutral. */
+.sc-card.holo{border-top:4px solid #dde;}
+.sc-card.pink{border-top:4px solid #d4537e;}
+.sc-card.red{border-top:4px solid #e24b4a;}
+.sc-card.yellow{border-top:4px solid #f5c842;}
+.sc-card.green{border-top:4px solid #639922;}
+.sc-card.blue{border-top:4px solid #378add;}
 
-.sc-empty{text-align:center;padding:60px 20px;color:#888;background:#0a0a15;border:2px dashed rgba(255,255,255,0.15);border-radius:2px;}
+.sc-empty{text-align:center;padding:60px 20px;color:#888;background:#0d0d1a;border:2px dashed rgba(255,255,255,0.15);border-radius:2px;}
 .sc-empty .em-icon{font-size:48px;margin-bottom:16px;opacity:0.7;line-height:1;}
 .sc-empty .em-title{font-family:var(--ps);font-size:11px;color:var(--cyan);margin-bottom:12px;text-shadow:var(--ps-outline-sm);line-height:1.5;}
 .sc-empty .em-sub{font-size:14px;color:#777;line-height:1.7;}
@@ -2559,7 +2564,9 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   .welcome-egg-wrap{margin:0 -20px -26px -20px;}
   .showcase-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;}
   .sc-card img{height:108px;}
-  .showcase-stats{font-size:10px;gap:10px;}
+  .showcase-stats{font-size:14px;gap:14px;}
+  .filter-chip{font-size:14px;padding:8px 13px;}
+  .sc-dd-trigger,.sc-dd-opt{font-size:14px;}
   .shop-grid{grid-template-columns:1fr;gap:14px;}
   .shop-card{padding:22px 18px;}
   .shop-card .shop-icon{font-size:38px;}
@@ -2841,8 +2848,8 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   <div class="section-head showcase">
     <div class="sh-title">🎴 YOUR GACHA SHOWCASE</div>
     <div class="sh-sub">Every character you've rolled, all in one place.</div>
+    <div class="showcase-stats" id="showcaseStats"></div>
   </div>
-  <div class="showcase-stats" id="showcaseStats"></div>
   <div class="showcase-filters" id="showcaseFilters"></div>
   <div id="showcaseBody"></div>
 </div>
@@ -8757,36 +8764,71 @@ function _drawShowcase(){
   var tally = { holo:0, pink:0, red:0, yellow:0, green:0, blue:0 };
   col.forEach(function(c){ if (tally[c.rarity] !== undefined) tally[c.rarity]++; });
 
-  stats.innerHTML =
-    '<div>TOTAL: <span class="stat-num">' + col.length + '</span></div>' +
-    '<div>HOLO: <span class="stat-num">' + tally.holo + '</span></div>' +
-    '<div>PINK: <span class="stat-num">' + tally.pink + '</span></div>' +
-    '<div>RED: <span class="stat-num">' + tally.red + '</span></div>' +
-    '<div>YELLOW: <span class="stat-num">' + tally.yellow + '</span></div>' +
-    '<div>GREEN: <span class="stat-num">' + tally.green + '</span></div>' +
-    '<div>BLUE: <span class="stat-num">' + tally.blue + '</span></div>';
-
-  var flt = [
-    { k:'all',    l:'ALL', cls:'' },
-    { k:'holo',   l:'HOLO ★★★', cls:'holo' },
-    { k:'pink',   l:'PINK ★★★', cls:'pink' },
-    { k:'red',    l:'RED ★★',   cls:'red' },
-    { k:'yellow', l:'YELLOW ★★',cls:'yellow' },
-    { k:'green',  l:'GREEN ★',  cls:'green' },
-    { k:'blue',   l:'BLUE ★',   cls:'blue' }
+  var statItems = [
+    ['Total', col.length, false],
+    ['Holo', tally.holo, tally.holo === 0],
+    ['Pink', tally.pink, tally.pink === 0],
+    ['Red', tally.red, tally.red === 0],
+    ['Yellow', tally.yellow, tally.yellow === 0],
+    ['Green', tally.green, tally.green === 0],
+    ['Blue', tally.blue, tally.blue === 0]
   ];
-  filters.innerHTML = flt.map(function(f){
-    var active = _scFilter === f.k ? ' active' : '';
-    return '<button class="filter-btn ' + f.cls + active + '" onclick="setShowcaseFilter(\'' + f.k + '\')">' + f.l + '</button>';
-  }).join('') +
-  // Points sort controls. Separate row so they read as a distinct axis from
-  // the rarity filters above.
-  '<div class="sc-sort-row">' +
-    '<span class="sc-sort-label">SORT:</span>' +
-    '<button class="filter-btn' + (_scSort === 'rarity' ? ' active' : '') + '" onclick="setShowcaseSort(\'rarity\')">RARITY</button>' +
-    '<button class="filter-btn' + (_scSort === 'pts-desc' ? ' active' : '') + '" onclick="setShowcaseSort(\'pts-desc\')">POINTS \u2193</button>' +
-    '<button class="filter-btn' + (_scSort === 'pts-asc' ? ' active' : '') + '" onclick="setShowcaseSort(\'pts-asc\')">POINTS \u2191</button>' +
-  '</div>';
+  stats.innerHTML = statItems.map(function(s){
+    return '<span class="sc-stat' + (s[2] ? ' zero' : '') + '">' +
+      '<span class="sc-stat-l">' + s[0] + '</span>' +
+      '<span class="sc-stat-n">' + s[1] + '</span>' +
+    '</span>';
+  }).join('');
+
+  // ── Filter chips (tab-style, with counts). 0-count rarities are disabled.
+  // The selected chip gets a rarity-colored drop shadow; when ALL is selected,
+  // every in-stock chip lights up with its own colored shadow. ──
+  var RARITY_SHADOW = { holo:'#aeb4ff', pink:'#d4537e', red:'#e24b4a', yellow:'#f5c842', green:'#639922', blue:'#378add' };
+  var fchips = [
+    { k:'all',    l:'All' },
+    { k:'holo',   l:'Holo' },
+    { k:'pink',   l:'Pink' },
+    { k:'red',    l:'Red' },
+    { k:'yellow', l:'Yellow' },
+    { k:'green',  l:'Green' },
+    { k:'blue',   l:'Blue' }
+  ];
+  var chipsHtml = fchips.map(function(f){
+    if (f.k === 'all'){
+      var aActive = (_scFilter === 'all');
+      var aStyle = aActive ? 'box-shadow:4px 4px 0 #a855f7;' : '';
+      return '<button class="filter-chip all' + (aActive ? ' active' : '') + '" style="' + aStyle + '" onclick="setShowcaseFilter(\'all\')">All</button>';
+    }
+    var count = tally[f.k] || 0;
+    var disabled = count === 0;
+    var selected = (_scFilter === f.k);
+    var lit = !disabled && (selected || _scFilter === 'all');
+    var cls = 'filter-chip ' + f.k + (selected ? ' active' : '') + (lit ? ' lit' : '') + (disabled ? ' disabled' : '');
+    var style = lit ? 'box-shadow:4px 4px 0 ' + RARITY_SHADOW[f.k] + ';' : '';
+    var onclick = disabled ? '' : ' onclick="setShowcaseFilter(\'' + f.k + '\')"';
+    return '<button class="' + cls + '" style="' + style + '"' + onclick + '>' + f.l + ' ' + count + '</button>';
+  }).join('');
+
+  // ── Sort: custom dropdown. The current selection labels the trigger; the
+  // menu opens/closes via _scToggleSortMenu (no full re-render on open). ──
+  var sortLabels = { 'rarity':'Rarity', 'pts-desc':'Points: High \u2192 Low', 'pts-asc':'Points: Low \u2192 High' };
+  var sortCurrent = sortLabels[_scSort] || 'Rarity';
+  var sortMenu = ['rarity','pts-desc','pts-asc'].map(function(s){
+    return '<button class="sc-dd-opt' + (_scSort === s ? ' active' : '') + '" onclick="setShowcaseSort(\'' + s + '\')">' + sortLabels[s] + '</button>';
+  }).join('');
+
+  filters.innerHTML =
+    '<div class="flt-label">Filters</div>' +
+    '<div class="sc-chips">' + chipsHtml + '</div>' +
+    '<div class="sc-sort">' +
+      '<span class="sc-sort-label">Sort by</span>' +
+      '<div class="sc-dropdown" id="scSortDD">' +
+        '<button class="sc-dd-trigger" onclick="_scToggleSortMenu(event)">' +
+          '<span>' + sortCurrent + '</span><span class="sc-dd-caret">\u25BC</span>' +
+        '</button>' +
+        '<div class="sc-dd-menu">' + sortMenu + '</div>' +
+      '</div>' +
+    '</div>';
 
   var rarityBadge = {
     holo:   'background:linear-gradient(90deg,#b0b0ff,#e0e0ff,#ffb0ff,#b0b0ff);background-size:200% 100%;color:#222;',
@@ -8875,6 +8917,22 @@ function setShowcaseFilter(k){ _scFilter = k; _drawShowcase(); }
 window.setShowcaseFilter = setShowcaseFilter;
 function setShowcaseSort(s){ _scSort = s; _drawShowcase(); }
 window.setShowcaseSort = setShowcaseSort;
+
+// Toggle the sort dropdown open/closed. stopPropagation so the document
+// click-outside handler below doesn't immediately re-close it.
+function _scToggleSortMenu(e){
+  if (e) e.stopPropagation();
+  var dd = document.getElementById('scSortDD');
+  if (dd) dd.classList.toggle('open');
+}
+window._scToggleSortMenu = _scToggleSortMenu;
+// Click anywhere outside the open dropdown closes it.
+document.addEventListener('click', function(e){
+  var dd = document.getElementById('scSortDD');
+  if (dd && dd.classList.contains('open') && !dd.contains(e.target)){
+    dd.classList.remove('open');
+  }
+});
 
 /* ═══ SHOWCASE CARD DETAIL ═══ */
 /* Click a showcase card to re-view its reveal popup (same layout as the crack reveal),
