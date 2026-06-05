@@ -1277,8 +1277,8 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .lb-chip,.wbf-chip[data-uid]{cursor:pointer;}
 
 /* ─── PROFILE MODAL (edit own / view others) ─── */
-.prof-overlay{position:fixed;inset:0;z-index:10000002;background:rgba(0,0,0,0.74);display:flex;align-items:center;justify-content:center;padding:20px;font-family:var(--vt);}
-.prof-card{background:#0d0d1f;border:3px solid var(--cyan);border-radius:2px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto;padding:26px 24px 22px;box-shadow:6px 6px 0 rgba(0,0,0,0.85);position:relative;}
+.prof-overlay{position:fixed;inset:0;z-index:10000002;background:rgba(0,0,0,0.74);display:flex;align-items:center;justify-content:center;padding:20px;font-family:var(--vt);animation:profOverlayIn 0.22s ease both;}
+.prof-card{background:#0d0d1f;border:3px solid var(--cyan);border-radius:2px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto;padding:26px 24px 22px;box-shadow:8px 8px 0 rgba(0,0,0,0.85);position:relative;animation:profCardIn 0.24s ease both;}
 .prof-title{font-family:'Press Start 2P',monospace;font-size:14px;color:var(--cyan);text-shadow:var(--ps-outline-sm);text-align:center;margin-bottom:18px;letter-spacing:1px;}
 .prof-x{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:2px;background:#7f1d1d;border:2px solid #dc2626;color:#fff;font-family:'Press Start 2P',monospace;font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:2px 2px 0 rgba(0,0,0,0.7);}
 .prof-x:hover{background:#dc2626;}
@@ -1287,7 +1287,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .prof-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
 .prof-avatar .dr-avatar-init{width:100%;height:100%;font-size:42px;border-radius:0;}
 .prof-field{margin-bottom:14px;}
-.prof-label{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--gold);text-shadow:var(--ps-outline-sm);letter-spacing:1px;margin-bottom:7px;display:block;}
+.prof-label{font-family:'Press Start 2P',monospace;font-size:12px;color:var(--gold);text-shadow:var(--ps-outline-sm);letter-spacing:1px;margin-bottom:7px;display:block;}
 .prof-input,.prof-textarea{width:100%;box-sizing:border-box;background:#0a0a1a;border:2px solid rgba(255,215,0,0.4);border-radius:2px;color:#fff;font-family:var(--vt);font-size:16px;padding:10px 12px;outline:none;box-shadow:2px 2px 0 rgba(0,0,0,0.8);}
 .prof-textarea{resize:vertical;min-height:74px;line-height:1.5;}
 .prof-input:focus,.prof-textarea:focus{border-color:var(--gold);}
@@ -1296,6 +1296,13 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .prof-empty{color:#7a8398;font-style:italic;}
 .prof-actions{display:flex;gap:10px;margin-top:18px;}
 .prof-actions .btn{flex:1;}
+/* Fade + rise on open; fade + sink on close (added via .closing in _profileClose). */
+.prof-overlay.closing{animation:profOverlayOut 0.2s ease forwards;}
+.prof-overlay.closing .prof-card{animation:profCardOut 0.2s ease forwards;}
+@keyframes profOverlayIn{from{opacity:0;}to{opacity:1;}}
+@keyframes profOverlayOut{from{opacity:1;}to{opacity:0;}}
+@keyframes profCardIn{from{opacity:0;transform:translateY(10px) scale(0.97);}to{opacity:1;transform:none;}}
+@keyframes profCardOut{from{opacity:1;transform:none;}to{opacity:0;transform:translateY(10px) scale(0.97);}}
 
 /* ─── DIARY, weekly activity ─── */
 .diary-composer{background:#10172a;border:2px solid #2a3650;border-radius:10px;padding:18px;margin-bottom:18px;}
@@ -8399,6 +8406,8 @@ window.cancelEnrollment = cancelEnrollment;
 /* ═══════════════════════════════════════════════════════ */
 var _acctCache = [];
 var _acctFilter = '';
+var _acctPage = 0;
+var _ACCT_PAGE_SIZE = 20;
 
 async function renderAccountsMgr(){
   var host = document.getElementById('accountsMgrHost');
@@ -8424,6 +8433,7 @@ async function renderAccountsMgr(){
     // Newest first; legacy accounts without createdAt sink to the bottom.
     rows.sort(function(a, b){ return b.createdAt - a.createdAt; });
     _acctCache = rows;
+    _acctPage = 0;
     _acctRerender();
   } catch(e){
     host.innerHTML = '<div class="drm-help" style="color:#ff7777;">Couldn\'t load accounts: ' + _esc(e.message || String(e)) + '</div>';
@@ -8455,35 +8465,75 @@ function _acctRowHtml(r){
   '</div>';
 }
 
-function _acctListHtml(){
+function _acctFiltered(){
   var f = (_acctFilter || '').toLowerCase().trim();
-  var shown = f
+  return f
     ? _acctCache.filter(function(r){ return (r.displayName + ' ' + r.username).toLowerCase().indexOf(f) !== -1; })
     : _acctCache;
-  if (!shown.length) return '<div class="drm-help">No accounts match your search.</div>';
-  return shown.map(_acctRowHtml).join('');
+}
+
+// Count line + current page of rows + pager. Lives inside #acctList so search
+// keystrokes and page changes can refresh it without rebuilding the search box.
+function _acctListHtml(){
+  var shown = _acctFiltered();
+  var totalAll = _acctCache.length;
+  var totalPoints = _acctCache.reduce(function(s, r){ return s + (r.points || 0); }, 0);
+  var n = shown.length;
+  var pages = Math.max(1, Math.ceil(n / _ACCT_PAGE_SIZE));
+  if (_acctPage >= pages) _acctPage = pages - 1;
+  if (_acctPage < 0) _acctPage = 0;
+  var start = _acctPage * _ACCT_PAGE_SIZE;
+  var pageRows = shown.slice(start, start + _ACCT_PAGE_SIZE);
+
+  var countLine = _acctFilter
+    ? n + ' match' + (n === 1 ? '' : 'es') + ' · ' + totalAll + ' account' + (totalAll === 1 ? '' : 's') + ' total'
+    : totalAll + ' account' + (totalAll === 1 ? '' : 's') + ' · ' + totalPoints + ' total points';
+
+  var rowsHtml = pageRows.length
+    ? pageRows.map(_acctRowHtml).join('')
+    : '<div class="drm-help">No accounts match your search.</div>';
+
+  var pager = '';
+  if (pages > 1){
+    var rangeStart = start + 1;
+    var rangeEnd = Math.min(start + _ACCT_PAGE_SIZE, n);
+    pager =
+      '<div style="display:flex;gap:10px;align-items:center;justify-content:center;margin-top:14px;flex-wrap:wrap;">' +
+        '<button class="btn btn-ghost btn-sm" onclick="_acctGoPage(' + (_acctPage - 1) + ')"' + (_acctPage === 0 ? ' disabled' : '') + '>‹ PREV</button>' +
+        '<span style="font-family:\'Noto Sans\',sans-serif;font-size:13px;color:#8a93a8;">Page ' + (_acctPage + 1) + ' of ' + pages + ' · ' + rangeStart + '\u2013' + rangeEnd + ' of ' + n + '</span>' +
+        '<button class="btn btn-ghost btn-sm" onclick="_acctGoPage(' + (_acctPage + 1) + ')"' + (_acctPage >= pages - 1 ? ' disabled' : '') + '>NEXT ›</button>' +
+      '</div>';
+  }
+
+  return '<div style="font-family:\'Noto Sans\',sans-serif;font-size:13px;color:#8a93a8;margin-bottom:12px;">' + countLine + '</div>' +
+         '<div class="drm-list">' + rowsHtml + '</div>' + pager;
 }
 
 function _acctRerender(){
   var host = document.getElementById('accountsMgrHost');
   if (!host) return;
-  var total = _acctCache.length;
-  var totalPoints = _acctCache.reduce(function(s, r){ return s + (r.points || 0); }, 0);
   host.innerHTML =
     '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">' +
       '<input type="text" id="acctSearch" placeholder="Search name or email…" value="' + _esc(_acctFilter) + '" oninput="_acctOnSearch(this.value)" style="flex:1;min-width:180px;background:#0d1424;color:#e6ebf5;border:1px solid #334155;border-radius:5px;padding:9px 12px;font-family:\'Noto Sans\',sans-serif;font-size:14px;box-sizing:border-box;outline:none;">' +
       '<button class="btn btn-ghost btn-sm" onclick="renderAccountsMgr()">🔄 REFRESH</button>' +
     '</div>' +
-    '<div style="font-family:\'Noto Sans\',sans-serif;font-size:13px;color:#8a93a8;margin-bottom:12px;">' + total + ' account' + (total === 1 ? '' : 's') + ' · ' + totalPoints + ' total points</div>' +
-    '<div class="drm-list" id="acctList">' + _acctListHtml() + '</div>';
+    '<div id="acctList">' + _acctListHtml() + '</div>';
 }
 
 function _acctOnSearch(v){
   _acctFilter = v;
+  _acctPage = 0;   // jump back to the first page of the new results
   var listEl = document.getElementById('acctList');
   if (listEl) listEl.innerHTML = _acctListHtml();
 }
 window._acctOnSearch = _acctOnSearch;
+
+function _acctGoPage(p){
+  _acctPage = p;
+  var listEl = document.getElementById('acctList');
+  if (listEl) listEl.innerHTML = _acctListHtml();
+}
+window._acctGoPage = _acctGoPage;
 
 async function _acctAdjustPoints(uid){
   var r = _acctCache.find(function(x){ return x.id === uid; });
@@ -8521,13 +8571,17 @@ async function _acctDelete(uid){
   var r = _acctCache.find(function(x){ return x.id === uid; });
   var nm = r ? r.displayName : 'this account';
   if (user && uid === user.id){ toast('You can\'t delete your own account here.', 'var(--pink)'); return; }
-  if (!confirm('Delete ' + nm + '\u2019s profile?\n\nThis removes their points, gacha collection, and profile data and cannot be undone.\n\nNote: their login itself is not removed — to reliably block access, use Disable instead (full deletion requires a server-side admin tool).')) return;
+  if (!confirm('Permanently delete ' + nm + '?\n\nThis removes their login, points, gacha collection, profile, and uploaded photo. This cannot be undone.')) return;
   try {
-    await db.collection(TC).doc(uid).delete();
+    var callable = firebase.app('gacha').functions('us-central1').httpsCallable('deleteStudentAccount');
+    await callable({ uid: uid });
     _acctCache = _acctCache.filter(function(x){ return x.id !== uid; });
     _acctRerender();
-    toast(nm + '\u2019s profile deleted.', 'var(--gold)');
-  } catch(e){ toast('Delete failed: ' + (e.message || e), 'var(--pink)'); }
+    toast(nm + ' permanently deleted.', 'var(--gold)');
+  } catch(e){
+    var msg = (e && e.message) ? e.message : String(e);
+    toast('Delete failed: ' + msg, 'var(--pink)');
+  }
 }
 window._acctDelete = _acctDelete;
 
@@ -13293,12 +13347,13 @@ function _recallNewWeek(){
       '<div style="font-size:13px;color:#a0aef7;line-height:1.5;margin-bottom:16px;">Enter a topic and card count for each day. Each day becomes its own draft. Leave a day blank to skip it. Only Day 1 opens for editing — schedule each when ready.</div>' +
       '<div id="recallWeekRows">' + rows + '</div>' +
       '<div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end;">' +
-        '<button class="btn btn-ghost" onclick="_recallWeekClose()">CANCEL</button>' +
-        '<button id="recallWeekGenBtn" class="btn btn-cyan" onclick="_recallWeekSubmit()">✨ GENERATE</button>' +
+        '<button class="btn btn-ghost btn-md" onclick="_recallWeekClose()">CANCEL</button>' +
+        '<button id="recallWeekGenBtn" class="btn btn-cyan btn-md sparkle-btn" onclick="_recallWeekSubmit()">✨ GENERATE</button>' +
       '</div>' +
     '</div>';
   ov.addEventListener('click', function(e){ if (e.target === ov) _recallWeekClose(); });
   document.body.appendChild(ov);
+  if (typeof addSparkles === 'function'){ var _gb = document.getElementById('recallWeekGenBtn'); if (_gb) addSparkles(_gb); }
 }
 window._recallNewWeek = _recallNewWeek;
 
@@ -14198,29 +14253,38 @@ window.addEventListener('resize', function(){
 });
 
 /* ─── POINTS LEADERBOARD (Point Shop top banner) ───
- * Same continuous seamless ticker as the weekly-bonus marquee, on its own
- * track. Generic starter so both share the measurement/loop logic. */
+ * Ping-pong ticker (iTunes "now playing" style): slide to the far end, pause,
+ * slide back, pause, repeat — instead of a continuous loop. Leaderboard-only;
+ * the weekly-bonus ticker keeps its own continuous scroll (_wbfStartMarquee). */
 function _marqueeStart(track, setHtml){
   if (!track || !setHtml) return;
   var vp = track.parentElement;
   if (!vp) return;
+  if (track._lbAnim){ try { track._lbAnim.cancel(); } catch(e){} track._lbAnim = null; }
   track.style.animation = 'none';
+  track.style.transform = 'translateX(0)';
+  track.innerHTML = setHtml;                       // single set, no duplication
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (typeof track.animate !== 'function') return; // no Web Animations API → leave static
   requestAnimationFrame(function(){
     requestAnimationFrame(function(){
       if (!track.isConnected) return;
-      track.innerHTML = setHtml;
-      var W = track.scrollWidth;
-      if (W <= 0) return;
-      var vw = vp.clientWidth || 1;
-      var halfCopies = Math.max(1, Math.ceil(vw / W));
-      var total = halfCopies * 2;
-      var html = '';
-      for (var i = 0; i < total; i++) html += setHtml;
-      track.innerHTML = html;
-      var dur = Math.max(6, (halfCopies * W) / 45);   // 45 px/sec, constant
-      void track.offsetWidth;
-      track.style.animation = 'wbf-scroll ' + dur.toFixed(2) + 's linear infinite';
+      var overflow = track.scrollWidth - vp.clientWidth;
+      if (overflow <= 6){ track.style.transform = 'translateX(0)'; return; }  // fits → no scroll
+      var travel = overflow + 10;                            // px to slide (+ small margin)
+      var travelMs = Math.max(2200, (travel / 38) * 1000);   // ~38 px/sec each way
+      var pauseMs = 1500;                                    // dwell at each end
+      var total = travelMs * 2 + pauseMs * 2;
+      var k1 = pauseMs / total;                              // start-pause ends
+      var k2 = k1 + travelMs / total;                        // arrived at far end
+      var k3 = k2 + pauseMs / total;                         // far-pause ends
+      track._lbAnim = track.animate([
+        { transform: 'translateX(0)',                 offset: 0 },
+        { transform: 'translateX(0)',                 offset: k1, easing: 'ease-in-out' },
+        { transform: 'translateX(-' + travel + 'px)', offset: k2, easing: 'ease-in-out' },
+        { transform: 'translateX(-' + travel + 'px)', offset: k3, easing: 'ease-in-out' },
+        { transform: 'translateX(0)',                 offset: 1 }
+      ], { duration: total, iterations: Infinity });
     });
   });
 }
@@ -14240,12 +14304,13 @@ function _lbChipHtml(e, rank){
   var name = _lbName(e);
   var medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : ('#' + rank);
   var rankCls = rank <= 3 ? 'lb-rank medal' : 'lb-rank';
-  var me = (e.id && user && e.id === user.id) ? ' me' : '';
+  var me = (e._isMe || (e.id && user && e.id === user.id)) ? ' me' : '';
+  var pts = Math.round(e.points || 0);
   return '<span class="wbf-chip lb-chip' + me + '" data-uid="' + _esc(e.id || '') + '" onclick="_profileView(\'' + _esc(e.id || '') + '\')">' +
     '<span class="' + rankCls + '">' + medal + '</span>' +
     '<span class="wbf-ava">' + _drInitialsAvatar(name, e.photoURL || null) + '</span>' +
     '<span class="wbf-text">' + _esc(name) + (me ? ' (you)' : '') + '</span>' +
-    '<span class="lb-pts">' + (e.points || 0) + ' pts</span>' +
+    '<span class="lb-pts">' + pts + ' pts</span>' +
   '</span>';
 }
 
@@ -14265,12 +14330,23 @@ async function _lbRender(){
 
   var entries = [];
   try {
-    var snap = await db.collection(TC).orderBy('points', 'desc').limit(10).get();
+    // Pull more than 10 so we can collapse duplicate accounts (same email) and
+    // still end up with 10 unique people. Highest score per person is kept.
+    var snap = await db.collection(TC).orderBy('points', 'desc').limit(50).get();
+    var seen = {};
     snap.forEach(function(d){
       var data = d.data() || {};
-      if ((data.points || 0) > 0){
-        entries.push({ id: d.id, displayName: data.displayName, username: data.username, photoURL: data.photoURL, points: data.points || 0 });
+      var pts = data.points || 0;
+      if (pts <= 0) return;
+      var key = (data.username || data.displayName || d.id).toString().trim().toLowerCase();
+      var isMe = !!(user && d.id === user.id);
+      if (seen[key] != null){            // same person already listed (their higher score won)
+        if (isMe) entries[seen[key]]._isMe = true;
+        return;
       }
+      if (entries.length >= 10) return;
+      seen[key] = entries.length;
+      entries.push({ id: d.id, displayName: data.displayName, username: data.username, photoURL: data.photoURL, points: pts, _isMe: isMe });
     });
   } catch(e){ console.warn('leaderboard load:', e); }
 
@@ -14304,9 +14380,12 @@ window.addEventListener('resize', function(){
 var _profileEditState = null;
 
 function _profileClose(){
-  _profileEditState = null;
   var ov = document.getElementById('profOverlay');
-  if (ov && ov.parentNode) ov.parentNode.removeChild(ov);
+  _profileEditState = null;
+  if (!ov) return;
+  if (ov.classList.contains('closing')) return;   // already animating out
+  ov.classList.add('closing');
+  setTimeout(function(){ if (ov && ov.parentNode) ov.parentNode.removeChild(ov); }, 200);
 }
 window._profileClose = _profileClose;
 
@@ -14334,8 +14413,8 @@ function _profileOpen(){
       '<div class="prof-field"><label class="prof-label">Monthly Korean Goal</label>' +
         '<input type="text" id="profGoal" class="prof-input" maxlength="120" value="' + _esc(user.monthlyGoal || '') + '" placeholder="e.g. Learn 50 new words"></div>' +
       '<div class="prof-actions">' +
-        '<button class="btn btn-ghost" onclick="_profileClose()">CANCEL</button>' +
-        '<button class="btn btn-cyan" id="profSaveBtn" onclick="_profileSave()">💾 SAVE</button>' +
+        '<button class="btn btn-ghost btn-md sparkle-btn" onclick="_profileClose()">CANCEL</button>' +
+        '<button class="btn btn-cyan btn-md sparkle-btn" id="profSaveBtn" onclick="_profileSave()">💾 SAVE</button>' +
       '</div>' +
     '</div>';
   ov.addEventListener('click', function(e){ if (e.target === ov) _profileClose(); });
@@ -14442,7 +14521,7 @@ async function _profileView(uid){
       '<div class="prof-readline' + (about ? '' : ' prof-empty') + '">' + (about ? _esc(about) : 'No bio yet.') + '</div></div>' +
     '<div class="prof-field"><label class="prof-label">Monthly Korean Goal</label>' +
       '<div class="prof-readline' + (goal ? '' : ' prof-empty') + '">' + (goal ? _esc(goal) : 'No goal set yet.') + '</div></div>' +
-    '<div class="prof-actions"><button class="btn btn-cyan" onclick="_profileClose()">CLOSE</button></div>';
+    '<div class="prof-actions"><button class="btn btn-cyan btn-md sparkle-btn" onclick="_profileClose()">CLOSE</button></div>';
 }
 window._profileView = _profileView;
 
