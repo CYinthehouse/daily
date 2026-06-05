@@ -1277,7 +1277,7 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .lb-chip,.wbf-chip[data-uid]{cursor:pointer;}
 
 /* ─── PROFILE MODAL (edit own / view others) ─── */
-.prof-overlay{position:fixed;inset:0;z-index:10000002;background:rgba(0,0,0,0.74);display:flex;align-items:center;justify-content:center;padding:20px;font-family:var(--vt);animation:profOverlayIn 0.22s ease both;}
+.prof-overlay{position:fixed;inset:0;z-index:10000002;background:rgba(0,0,0,0.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;font-family:var(--vt);animation:profOverlayIn 0.22s ease both;}
 .prof-card{background:#0d0d1f;border:3px solid var(--cyan);border-radius:2px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto;padding:26px 24px 22px;box-shadow:8px 8px 0 rgba(0,0,0,0.85);position:relative;animation:profCardIn 0.24s ease both;}
 .prof-title{font-family:'Press Start 2P',monospace;font-size:14px;color:var(--cyan);text-shadow:var(--ps-outline-sm);text-align:center;margin-bottom:18px;letter-spacing:1px;}
 .prof-x{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:2px;background:#7f1d1d;border:2px solid #dc2626;color:#fff;font-family:'Press Start 2P',monospace;font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:2px 2px 0 rgba(0,0,0,0.7);}
@@ -1286,6 +1286,10 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .prof-avatar{width:100px;height:100px;border-radius:50%;overflow:hidden;border:3px solid var(--cyan);background:#10172a;display:flex;align-items:center;justify-content:center;flex:none;box-shadow:3px 3px 0 rgba(0,0,0,0.7);}
 .prof-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
 .prof-avatar .dr-avatar-init{width:100%;height:100%;font-size:42px;border-radius:0;}
+/* Change Photo: pronounced hard drop shadow that lifts on hover, presses on click. */
+.prof-avatar-wrap .btn{box-shadow:4px 4px 0 rgba(0,0,0,0.85);transition:transform 0.1s,box-shadow 0.1s,filter 0.1s;}
+.prof-avatar-wrap .btn:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 rgba(0,0,0,0.85);filter:brightness(1.12);}
+.prof-avatar-wrap .btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 rgba(0,0,0,0.85);}
 .prof-field{margin-bottom:14px;}
 .prof-label{font-family:'Press Start 2P',monospace;font-size:12px;color:var(--gold);text-shadow:var(--ps-outline-sm);letter-spacing:1px;margin-bottom:7px;display:block;}
 .prof-input,.prof-textarea{width:100%;box-sizing:border-box;background:#0a0a1a;border:2px solid rgba(255,215,0,0.4);border-radius:2px;color:#fff;font-family:var(--vt);font-size:16px;padding:10px 12px;outline:none;box-shadow:2px 2px 0 rgba(0,0,0,0.8);}
@@ -12255,6 +12259,9 @@ const RECALL_COLLECTION = 'gacha_recall_activities';
 // each Korean word in DICTIONARY FORM (verbs/adjectives in plain -다 form).
 // Leave the placeholder to hide the GENERATE button until deployed.
 const RECALL_AI_FN = 'https://generateflashcards-enxui54vmq-uc.a.run.app';
+// Active Recall sets are ALWAYS this many cards — the game breaks with more, and
+// admins no longer choose the count anywhere.
+const RECALL_CARD_COUNT = 5;
 
 
 var _recallState = {
@@ -12439,7 +12446,7 @@ async function _recallStartGame(){
   }
   var cards = (doc.data().cards || []).filter(function(c){
     return c && (c.korean || '').trim() && (c.english || '').trim();
-  });
+  }).slice(0, RECALL_CARD_COUNT);   // game only supports 5 cards
   if (cards.length < RECALL_GAME_PAIRS){
     host.innerHTML =
       '<div class="dr-empty">' +
@@ -12961,7 +12968,7 @@ async function _recallStartFlashcards(){
 
   var cards = (_recallState.activity.cards || []).filter(function(c){
     return c && (c.korean || '').trim() && (c.english || '').trim();
-  });
+  }).slice(0, RECALL_CARD_COUNT);   // game only supports 5 cards
   if (!cards.length){
     host.innerHTML =
       '<div class="dr-empty">' +
@@ -13288,7 +13295,7 @@ async function _recallNewSet(){
   try {
     var ref = await db.collection(RECALL_COLLECTION).add({
       title: 'Active Recall set',
-      cards: [{ korean: '', english: '' }],
+      cards: [{ korean: '', english: '' }, { korean: '', english: '' }, { korean: '', english: '' }, { korean: '', english: '' }, { korean: '', english: '' }],
       status: 'draft',
       scheduledFor: null,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
@@ -13303,12 +13310,13 @@ async function _recallNewSet(){
 }
 window._recallNewSet = _recallNewSet;
 
-// Ping the AI Cloud Function once for a topic; return normalized [{korean,english}].
-async function _recallFetchCards(topic, count){
+// Ping the AI Cloud Function for a topic; always asks for RECALL_CARD_COUNT (5)
+// cards and never returns more than that. Return normalized [{korean,english}].
+async function _recallFetchCards(topic){
   var resp = await fetch(RECALL_AI_FN, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ topic: topic, count: count })
+    body: JSON.stringify({ topic: topic, count: RECALL_CARD_COUNT })
   });
   if (!resp.ok) throw new Error('Generator returned ' + resp.status);
   var data = await resp.json();
@@ -13321,7 +13329,7 @@ async function _recallFetchCards(topic, count){
     if (ko || en) out.push({ korean: ko, english: en });
   });
   if (!out.length) throw new Error('No usable cards in the response.');
-  return out;
+  return out.slice(0, RECALL_CARD_COUNT);
 }
 window._recallFetchCards = _recallFetchCards;
 
@@ -13335,7 +13343,6 @@ function _recallNewWeek(){
       '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">' +
         '<span style="flex:0 0 52px;font-size:12px;font-weight:700;color:#a0aef7;">Day ' + day + '</span>' +
         '<input class="rw-topic" data-day="' + day + '" type="text" placeholder="Topic (e.g. kitchen verbs)" style="flex:1;min-width:0;background:#0a1018;color:#e6ebf5;border:1px solid #334155;border-radius:5px;padding:8px;font-size:14px;box-sizing:border-box;">' +
-        '<input class="rw-count" data-day="' + day + '" type="number" min="1" max="30" value="10" title="Number of cards" style="flex:0 0 62px;min-width:0;background:#0a1018;color:#e6ebf5;border:1px solid #334155;border-radius:5px;padding:8px;font-size:14px;box-sizing:border-box;">' +
       '</div>';
   }
   var ov = document.createElement('div');
@@ -13344,7 +13351,7 @@ function _recallNewWeek(){
   ov.innerHTML =
     '<div style="background:#0d1424;border:2px solid #334155;border-radius:12px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,0.55);">' +
       '<div style="font-size:18px;font-weight:700;color:#e6ebf5;margin-bottom:4px;">📅 Generate a Week of Active Recall</div>' +
-      '<div style="font-size:13px;color:#a0aef7;line-height:1.5;margin-bottom:16px;">Enter a topic and card count for each day. Each day becomes its own draft. Leave a day blank to skip it. Only Day 1 opens for editing — schedule each when ready.</div>' +
+      '<div style="font-size:13px;color:#a0aef7;line-height:1.5;margin-bottom:16px;">Enter a topic for each day — every day becomes its own 5-card draft. Leave a day blank to skip it. Only Day 1 opens for editing — schedule each when ready.</div>' +
       '<div id="recallWeekRows">' + rows + '</div>' +
       '<div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end;">' +
         '<button class="btn btn-ghost btn-md" onclick="_recallWeekClose()">CANCEL</button>' +
@@ -13370,10 +13377,7 @@ async function _recallWeekSubmit(){
   topicEls.forEach(function(el){
     var day = parseInt(el.getAttribute('data-day'), 10);
     var topic = (el.value || '').trim();
-    var countEl = document.querySelector('#recallWeekRows .rw-count[data-day="' + day + '"]');
-    var count = parseInt(countEl && countEl.value, 10) || 10;
-    if (count < 1) count = 1; if (count > 30) count = 30;
-    if (topic) days.push({ day: day, topic: topic, count: count });
+    if (topic) days.push({ day: day, topic: topic });
   });
   if (!days.length){ alert('Enter a topic for at least one day.'); return; }
 
@@ -13385,7 +13389,7 @@ async function _recallWeekSubmit(){
     var dd = days[j];
     if (btn) btn.textContent = '⏳ Day ' + dd.day + '…';
     try {
-      var cards = await _recallFetchCards(dd.topic, dd.count);
+      var cards = await _recallFetchCards(dd.topic);
       var ref = await db.collection(RECALL_COLLECTION).add({
         title: 'Day ' + dd.day + ' \u2013 ' + dd.topic,
         cards: cards, status: 'draft', scheduledFor: null, weekDay: dd.day, batchId: batchId,
@@ -13586,6 +13590,7 @@ function _recallAddCardRow(id){
   var wrap = document.getElementById('recallCardRows_' + id);
   if (!wrap) return;
   var i = wrap.querySelectorAll('.recall-edit-row').length;
+  if (i >= RECALL_CARD_COUNT){ toast('Active Recall sets are limited to ' + RECALL_CARD_COUNT + ' cards.', 'var(--gold)'); return; }
   var div = document.createElement('div');
   div.className = 'recall-edit-row';
   div.innerHTML =
@@ -13597,12 +13602,9 @@ function _recallAddCardRow(id){
 }
 window._recallAddCardRow = _recallAddCardRow;
 
-/* AI flashcard generator. Admin gives a TOPIC and a count; the Cloud Function
- * (RECALL_AI_FN) asks ChatGPT to pick that many Korean vocab words for the
- * topic and return each in DICTIONARY FORM with an English meaning. Each
- * returned pair is APPENDED as a new card row, existing rows are never wiped.
- * Same call style as the generatekeywords Cloud Function: plain JSON in, plain
- * JSON out, no markdown-fence handling needed. */
+/* AI flashcard generator. Admin gives a TOPIC; the Cloud Function (RECALL_AI_FN)
+ * returns exactly RECALL_CARD_COUNT (5) Korean vocab words in dictionary form with
+ * English meanings. The 5 generated cards REPLACE the rows (sets are always 5). */
 async function _recallGenerateCards(id){
   if (RECALL_AI_FN.indexOf('REPLACE-ME') !== -1){ toast('AI generator not configured.', 'var(--pink)'); return; }
   var wrap = document.getElementById('recallCardRows_' + id);
@@ -13613,48 +13615,25 @@ async function _recallGenerateCards(id){
   topic = topic.trim();
   if (!topic){ toast('No topic entered.', 'var(--pink)'); return; }
 
-  var countRaw = prompt('How many flashcards? (1–30)', '10');
-  if (countRaw === null) return; // cancelled
-  var count = parseInt(countRaw, 10);
-  if (!count || count < 1){ toast('Enter a number between 1 and 30.', 'var(--pink)'); return; }
-  if (count > 30) count = 30;
-
   var btn = document.getElementById('recallGenBtn_' + id);
   var btnLabel = btn ? btn.textContent : '';
   if (btn){ btn.disabled = true; btn.textContent = '⏳ GENERATING…'; }
 
   try {
-    var resp = await fetch(RECALL_AI_FN, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ topic: topic, count: count })
-    });
-    if (!resp.ok) throw new Error('Generator returned ' + resp.status);
-    var data = await resp.json();
-    // Accept { cards: [...] } or a bare array, for forgiveness.
-    var cards = (data && Array.isArray(data.cards)) ? data.cards
-              : (Array.isArray(data) ? data : null);
-    if (!cards || !cards.length) throw new Error('No cards in the response.');
-
-    // Append a card row per returned pair.
-    var added = 0;
-    cards.forEach(function(c){
-      var ko = (c && (c.korean || c.ko) || '').toString().trim();
-      var en = (c && (c.english || c.en) || '').toString().trim();
-      if (!ko && !en) return;
-      var i = wrap.querySelectorAll('.recall-edit-row').length;
+    var cards = await _recallFetchCards(topic);   // always ≤5, normalized
+    // Replace all rows with the generated set so it's always 5 cards.
+    wrap.innerHTML = '';
+    cards.forEach(function(c, i){
       var div = document.createElement('div');
       div.className = 'recall-edit-row';
       div.innerHTML =
         '<span class="recall-edit-num">' + (i + 1) + '</span>' +
-        '<input type="text" class="recall-edit-ko" placeholder="Korean" value="' + _esc(ko) + '">' +
-        '<input type="text" class="recall-edit-en" placeholder="English" value="' + _esc(en) + '">' +
+        '<input type="text" class="recall-edit-ko" placeholder="Korean" value="' + _esc(c.korean || '') + '">' +
+        '<input type="text" class="recall-edit-en" placeholder="English" value="' + _esc(c.english || '') + '">' +
         '<button class="recall-edit-del" onclick="_recallRemoveCardRow(this)">✕</button>';
       wrap.appendChild(div);
-      added++;
     });
-    if (!added) throw new Error('No usable cards in the response.');
-    toast('Added ' + added + ' card' + (added === 1 ? '' : 's') + ', review, then SAVE.', 'var(--green)');
+    toast('Generated ' + cards.length + ' card' + (cards.length === 1 ? '' : 's') + ', review, then SAVE.', 'var(--green)');
   } catch(e){
     console.error('recall AI generate:', e);
     toast('Generation failed: ' + (e.message || 'unknown error'), 'var(--pink)');
@@ -13695,6 +13674,7 @@ async function _recallSaveEdit(id){
     toast('Add at least one card.', 'var(--pink)');
     return;
   }
+  if (cards.length > RECALL_CARD_COUNT) cards = cards.slice(0, RECALL_CARD_COUNT);  // game only supports 5
   var incomplete = cards.filter(function(c){ return !c.korean || !c.english; }).length;
   if (incomplete){
     toast('Every card needs both Korean and English.', 'var(--pink)');
@@ -14413,8 +14393,8 @@ function _profileOpen(){
       '<div class="prof-field"><label class="prof-label">Monthly Korean Goal</label>' +
         '<input type="text" id="profGoal" class="prof-input" maxlength="120" value="' + _esc(user.monthlyGoal || '') + '" placeholder="e.g. Learn 50 new words"></div>' +
       '<div class="prof-actions">' +
-        '<button class="btn btn-ghost btn-md sparkle-btn" onclick="_profileClose()">CANCEL</button>' +
-        '<button class="btn btn-cyan btn-md sparkle-btn" id="profSaveBtn" onclick="_profileSave()">💾 SAVE</button>' +
+        '<button class="btn btn-pink btn-md sparkle-btn" onclick="_profileClose()">CANCEL</button>' +
+        '<button class="btn btn-green btn-md sparkle-btn" id="profSaveBtn" onclick="_profileSave()">💾 SAVE</button>' +
       '</div>' +
     '</div>';
   ov.addEventListener('click', function(e){ if (e.target === ov) _profileClose(); });
