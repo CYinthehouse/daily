@@ -298,8 +298,8 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   line-height:1;
   color:#000;
   text-shadow:var(--ps-outline-white-12),3px 5px 0 rgba(5,5,8,0.7);
-  outline:3px solid #080811;
-  box-shadow:0 5px 0 #050508;
+  outline:3px solid transparent;
+  box-shadow:0 5px 0 #000;
   z-index:5;
   pointer-events:none;
 }
@@ -307,9 +307,9 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 #dailyPickerGrid .menu-card.daily .daily-ribbon::before{
   content:"";position:absolute;inset:3px 0 auto 0;height:2px;background:rgba(255,255,255,0.35);
 }
-#dailyPickerGrid .menu-card.daily .daily-ribbon.green{background:linear-gradient(to right,#1f6b22 0%,#1f6b22 10%,#46c94a 22%,#46c94a 78%,#1f6b22 90%,#1f6b22 100%);}
-#dailyPickerGrid .menu-card.daily .daily-ribbon.blue {background:linear-gradient(to right,#1c6a99 0%,#1c6a99 10%,var(--cyan) 22%,var(--cyan) 78%,#1c6a99 90%,#1c6a99 100%);}
-#dailyPickerGrid .menu-card.daily .daily-ribbon.red  {background:linear-gradient(to right,#a81d1d 0%,#a81d1d 10%,#ff3b3b 22%,#ff3b3b 78%,#a81d1d 90%,#a81d1d 100%);}
+#dailyPickerGrid .menu-card.daily .daily-ribbon.green{background:linear-gradient(to right,#2c8f31 0%,#2c8f31 17%,#46c94a 17%,#46c94a 83%,#2c8f31 83%,#2c8f31 100%);outline-color:#19641d;}
+#dailyPickerGrid .menu-card.daily .daily-ribbon.blue {background:linear-gradient(to right,#2585bf 0%,#2585bf 17%,var(--cyan) 17%,var(--cyan) 83%,#2585bf 83%,#2585bf 100%);outline-color:#185e84;}
+#dailyPickerGrid .menu-card.daily .daily-ribbon.red  {background:linear-gradient(to right,#c23030 0%,#c23030 17%,#ff3b3b 17%,#ff3b3b 83%,#c23030 83%,#c23030 100%);outline-color:#7e1d1d;}
 
 /* Daily tile in "Work in Progress" mode (admin-toggled, hidden from non-admins) */
 .menu-card.daily.wip{cursor:not-allowed;opacity:0.55;filter:grayscale(0.6);}
@@ -1266,6 +1266,37 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .wbf-track.scrolling{animation:wbf-scroll var(--wbf-dur,20s) linear infinite;}
 @media (prefers-reduced-motion: reduce){.wbf-track{animation:none !important;}}
 
+/* ─── POINTS LEADERBOARD (Point Shop top banner) — reuses the weekly-bonus
+ * container + marquee styling; these add the rank + points chip bits. ─── */
+.lb-rank{font-family:'Press Start 2P',monospace;font-size:12px;color:var(--gold);text-shadow:var(--ps-outline-sm);line-height:1;display:inline-flex;align-items:center;}
+.lb-rank.medal{font-size:18px;text-shadow:none;}
+.lb-pts{font-family:'Press Start 2P',monospace;font-size:11px;color:#ffd76b;text-shadow:var(--ps-outline-sm);line-height:1;display:inline-flex;align-items:center;letter-spacing:0.5px;}
+.lb-chip{gap:8px;}
+.lb-chip.me .wbf-text{color:#fff;font-weight:bold;}
+.lb-chip.me .lb-pts{color:#fff;}
+.lb-chip,.wbf-chip[data-uid]{cursor:pointer;}
+
+/* ─── PROFILE MODAL (edit own / view others) ─── */
+.prof-overlay{position:fixed;inset:0;z-index:10000002;background:rgba(0,0,0,0.74);display:flex;align-items:center;justify-content:center;padding:20px;font-family:var(--vt);}
+.prof-card{background:#0d0d1f;border:3px solid var(--cyan);border-radius:2px;max-width:460px;width:100%;max-height:90vh;overflow-y:auto;padding:26px 24px 22px;box-shadow:6px 6px 0 rgba(0,0,0,0.85);position:relative;}
+.prof-title{font-family:'Press Start 2P',monospace;font-size:14px;color:var(--cyan);text-shadow:var(--ps-outline-sm);text-align:center;margin-bottom:18px;letter-spacing:1px;}
+.prof-x{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:2px;background:#7f1d1d;border:2px solid #dc2626;color:#fff;font-family:'Press Start 2P',monospace;font-size:13px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:2px 2px 0 rgba(0,0,0,0.7);}
+.prof-x:hover{background:#dc2626;}
+.prof-avatar-wrap{display:flex;flex-direction:column;align-items:center;gap:12px;margin-bottom:18px;}
+.prof-avatar{width:100px;height:100px;border-radius:50%;overflow:hidden;border:3px solid var(--cyan);background:#10172a;display:flex;align-items:center;justify-content:center;flex:none;box-shadow:3px 3px 0 rgba(0,0,0,0.7);}
+.prof-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+.prof-avatar .dr-avatar-init{width:100%;height:100%;font-size:42px;border-radius:0;}
+.prof-field{margin-bottom:14px;}
+.prof-label{font-family:'Press Start 2P',monospace;font-size:10px;color:var(--gold);text-shadow:var(--ps-outline-sm);letter-spacing:1px;margin-bottom:7px;display:block;}
+.prof-input,.prof-textarea{width:100%;box-sizing:border-box;background:#0a0a1a;border:2px solid rgba(255,215,0,0.4);border-radius:2px;color:#fff;font-family:var(--vt);font-size:16px;padding:10px 12px;outline:none;box-shadow:2px 2px 0 rgba(0,0,0,0.8);}
+.prof-textarea{resize:vertical;min-height:74px;line-height:1.5;}
+.prof-input:focus,.prof-textarea:focus{border-color:var(--gold);}
+.prof-readname{font-family:'Press Start 2P',monospace;font-size:15px;color:#fff;text-shadow:var(--ps-outline-sm);text-align:center;line-height:1.4;}
+.prof-readline{font-family:var(--vt);font-size:17px;color:#e6ebf5;line-height:1.6;white-space:pre-wrap;word-break:break-word;}
+.prof-empty{color:#7a8398;font-style:italic;}
+.prof-actions{display:flex;gap:10px;margin-top:18px;}
+.prof-actions .btn{flex:1;}
+
 /* ─── DIARY, weekly activity ─── */
 .diary-composer{background:#10172a;border:2px solid #2a3650;border-radius:10px;padding:18px;margin-bottom:18px;}
 .diary-composer.locked{border-color:#39ff14;}
@@ -2138,10 +2169,12 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 #dailyReadingScreen .dr-empty,
 #dailyListeningScreen .dr-empty,
 #dailyAdvancedScreen .dr-empty,
+#dailyRecallScreen .dr-empty,
 #dailyYodaScreen .dr-empty              { font-size: 17px !important; }
 #dailyReadingScreen .dr-empty .sub,
 #dailyListeningScreen .dr-empty .sub,
 #dailyAdvancedScreen .dr-empty .sub,
+#dailyRecallScreen .dr-empty .sub,
 #dailyYodaScreen .dr-empty .sub         { font-size: 16px !important; }
 
 /* Activity banner sub-text (VCR mono) on every daily sub-screen.
@@ -2252,9 +2285,10 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .sc-dd-opt:hover{background:rgba(168,85,247,0.16);color:#fff;}
 .sc-dd-opt.active{background:rgba(168,85,247,0.22);color:#c084fc;}
 
-/* Points-earned pill in the card detail popup. */
-._cdPts{font-family:'Press Start 2P',monospace;font-size:11px;letter-spacing:.06em;color:#1a1205;background:linear-gradient(135deg,#fff3b0,#f5c842,#e0a020);border:1px solid #b8860b;border-radius:20px;padding:7px 14px;text-align:center;box-shadow:2px 2px 0 rgba(0,0,0,0.5);}
-._cdPts ._cdPtsNum{font-size:14px;}
+/* Points-earned badge in the card detail popup. Blocky 8-bit gold chip:
+ * square corners, hard dark-gold border, hard black pixel drop shadow. */
+._cdPts{font-family:'Press Start 2P',monospace;font-size:11px;letter-spacing:.06em;color:#3a2600;background:#f5c842;border:3px solid #8a5a00;border-radius:2px;padding:10px 18px;text-align:center;box-shadow:4px 4px 0 #000;text-transform:uppercase;line-height:1.4;}
+._cdPts ._cdPtsNum{font-size:15px;color:#1a1000;}
 
 /* Cards: calmer — neutral border with a colored TOP accent, darker fill, names
  * clamped to 2 lines. Hover/press lifts the card up-left and brings up a hard
@@ -2354,6 +2388,25 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 }
 .shop-card .btn:disabled:hover,
 .shop-card button:disabled:hover{
+  background:#3a3a4a !important;
+  border-color:#4a4a5a !important;
+  transform:none !important;
+}
+/* Cancel-enrollment button when it's too late to cancel: read as disabled
+ * (grayed out) instead of staying red, which looked clickable/confusing. */
+.enroll-cancel-group .btn:disabled,
+.enroll-cancel-group button:disabled{
+  background:#3a3a4a !important;
+  border-color:#4a4a5a !important;
+  color:#888 !important;
+  text-shadow:none !important;
+  cursor:not-allowed !important;
+  opacity:1 !important;
+}
+.enroll-cancel-group .btn:disabled:hover,
+.enroll-cancel-group .btn:disabled:active,
+.enroll-cancel-group button:disabled:hover,
+.enroll-cancel-group button:disabled:active{
   background:#3a3a4a !important;
   border-color:#4a4a5a !important;
   transform:none !important;
@@ -2844,6 +2897,18 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
     <div class="sh-title">🏪 POINT SHOP</div>
     <div class="sh-sub">Spend your hard-earned points on exclusive items.</div>
   </div>
+  <div class="weekly-bonus-container" id="shopLeaderboard">
+    <div class="weekly-bonus-banner nested" style="cursor:default;">
+      <span class="wbb-emoji">🏆</span>
+      <span>POINTS LEADERBOARD · TOP 10</span>
+      <span class="wbb-emoji">🏆</span>
+    </div>
+    <div class="weekly-bonus-body">
+      <div class="wbf-viewport">
+        <div class="wbf-track" id="lbfTrack"><span class="wbf-lead">Loading the leaderboard…</span></div>
+      </div>
+    </div>
+  </div>
   <div id="shopGrid"></div>
 </div>
 
@@ -2879,6 +2944,18 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   <div style="margin-bottom:18px;">
     <div style="font-family:var(--vt);font-size:13px;color:#8a93a8;margin-bottom:8px;letter-spacing:0.5px;">PER-ACTIVITY TOGGLES, master switch above must be LIVE for these to take effect</div>
     <div id="dailyActivityToggles" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
+  </div>
+
+  <!-- All Accounts (collapsible, collapsed by default) -->
+  <div class="admin-section collapsed" data-admin-section="accounts">
+    <div class="admin-section-head" onclick="_adminToggleSection(this)">
+      <div class="admin-section-title">👥 All Accounts</div>
+      <span class="chev">▼</span>
+    </div>
+    <div class="admin-section-body">
+      <div style="margin-bottom:12px;color:#b8c5dc;font-weight:600;">Every student account, newest first. Adjust points, disable (blocks login), or delete a profile.</div>
+      <div id="accountsMgrHost"></div>
+    </div>
   </div>
 
   <!-- Class Manager (collapsible, collapsed by default) -->
@@ -3567,11 +3644,20 @@ async function _loadUserProfile(authUser){
     snap = await ref.get();
   }
   var d = snap.data();
+  // Disabled accounts are signed out and blocked (admins are never locked out).
+  if (d && d.disabled && !d.isAdmin){
+    try { if (auth) await auth.signOut(); } catch(e){ /* ignore */ }
+    user = null;
+    alert('This account has been disabled. Please contact your teacher.');
+    return null;
+  }
   user = {
     id: snap.id, // = authUser.uid
     username: d.username || (authUser.email || '').toLowerCase(),
     displayName: d.displayName || d.username || authUser.email,
     photoURL: d.photoURL || null,  // optional uploaded avatar (URL); feed falls back to initials
+    aboutMe: d.aboutMe || '',
+    monthlyGoal: d.monthlyGoal || '',
     gachaRolls: Math.max(0, typeof d.gachaRolls === 'number' ? d.gachaRolls : 0),
     points: Math.max(0, typeof d.points === 'number' ? d.points : 0),
     freeEggsUsed: !!d.freeEggsUsed,
@@ -3840,6 +3926,13 @@ window.doLogout = doLogout;
 /* ═══ ROUTING ═══ */
 function enterApp(){
   if (!user) return;
+  // Reload the daily WIP/LIVE config now that we're authenticated. The module-init
+  // call to _loadGachaConfig() fires before Firebase Auth restores the session, so
+  // if the gacha_config read is auth-gated it can be denied/race and _dailyEnabled
+  // falls back to its default (true/active). Re-loading here (with an authenticated
+  // session) makes the saved toggle state stick across reloads, re-uploads, and
+  // logout/login. The loader self-refreshes the tile + admin toggle when it resolves.
+  if (typeof _loadGachaConfig === 'function') _loadGachaConfig();
   hide('loginScreen');
   show('topBar'); updateTopBar();
   // Welcome flow: any account that hasn't claimed the starter pack gets 5 free eggs
@@ -4066,7 +4159,7 @@ function updateTopBar(){
   if (display.length > 14) display = display.slice(0, 13) + '…';
   var r = $('topBarRight');
   r.innerHTML =
-    '<span class="chip cyan"><span class="chip-emoji">👤</span> ' + esc(display.toUpperCase()) + '</span>' +
+    '<span class="chip cyan" id="chipUser" onclick="_profileOpen()" style="cursor:pointer;" title="Edit your profile"><span class="chip-emoji">👤</span> ' + esc(display.toUpperCase()) + '</span>' +
     '<span class="chip purple" id="chipRolls" onclick="_eggChipClick()"><span class="chip-emoji">🪺</span><span class="chip-label"> EGGS: ' + (user.gachaRolls||0) + '</span></span>' +
     '<span class="chip gold" id="chipPoints"><span class="chip-emoji">⭐</span> POINTS: ' + (user.points||0) + '</span>' +
     '<button class="icon-btn" id="inboxBtn" onclick="_inboxOpen()" title="Inbox">📬<span class="inbox-badge" id="inboxBadge">0</span></button>' +
@@ -7888,6 +7981,8 @@ function _cancelPolicy(){
 
 function renderShop(){
   if (!user) return;
+  // Refresh the top-10 points leaderboard banner (independent of enrollment).
+  if (typeof _lbRender === 'function') _lbRender();
   // Pull a fresh copy of the user doc on every shop open. The admin may have
   // set start/end dates, the class level, or admin override since the student
   // logged in, and renderShop reads from the local user object, without this
@@ -8300,6 +8395,143 @@ async function cancelEnrollment(){
 window.cancelEnrollment = cancelEnrollment;
 
 /* ═══════════════════════════════════════════════════════ */
+/* ADMIN: ALL ACCOUNTS (list / points / disable / delete)  */
+/* ═══════════════════════════════════════════════════════ */
+var _acctCache = [];
+var _acctFilter = '';
+
+async function renderAccountsMgr(){
+  var host = document.getElementById('accountsMgrHost');
+  if (!host) return;
+  if (!user || !user.isAdmin) return;
+  host.innerHTML = '<div class="drm-help">Loading accounts…</div>';
+  try {
+    var snap = await db.collection(TC).get();
+    var rows = [];
+    snap.forEach(function(doc){
+      var d = doc.data() || {};
+      rows.push({
+        id: doc.id,
+        displayName: d.displayName || d.username || '(no name)',
+        username: d.username || '',
+        points: typeof d.points === 'number' ? d.points : 0,
+        photoURL: d.photoURL || null,
+        isAdmin: !!d.isAdmin,
+        disabled: !!d.disabled,
+        createdAt: (d.createdAt && d.createdAt.toMillis) ? d.createdAt.toMillis() : 0
+      });
+    });
+    // Newest first; legacy accounts without createdAt sink to the bottom.
+    rows.sort(function(a, b){ return b.createdAt - a.createdAt; });
+    _acctCache = rows;
+    _acctRerender();
+  } catch(e){
+    host.innerHTML = '<div class="drm-help" style="color:#ff7777;">Couldn\'t load accounts: ' + _esc(e.message || String(e)) + '</div>';
+  }
+}
+window.renderAccountsMgr = renderAccountsMgr;
+
+function _acctRowHtml(r){
+  var avatar = _drInitialsAvatar(r.displayName, r.photoURL);
+  var created = r.createdAt
+    ? new Date(r.createdAt).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' })
+    : 'unknown';
+  var badges = '';
+  if (r.isAdmin)  badges += '<span class="badge" style="background:rgba(65,192,255,0.15)!important;border:1px solid #2a6f9e!important;color:#7fd0ff!important;">ADMIN</span> ';
+  if (r.disabled) badges += '<span class="badge expired">Disabled</span> ';
+  var disableBtn = r.disabled
+    ? '<button class="btn btn-ghost" onclick="_acctToggleDisabled(\'' + r.id + '\',false)">✅ ENABLE</button>'
+    : '<button class="btn btn-ghost" onclick="_acctToggleDisabled(\'' + r.id + '\',true)">🚫 DISABLE</button>';
+  return '<div class="drm-row" id="acctRow_' + r.id + '">' +
+    '<div class="drm-row-title" style="display:flex;align-items:center;gap:10px;"><span class="wbf-ava">' + avatar + '</span><span>' + _esc(r.displayName) + '</span></div>' +
+    '<div class="drm-row-meta">' + badges +
+      '<span>' + _esc(r.username || '(no email)') + '</span> · <span>Joined ' + created + '</span> · ' +
+      '<span style="color:#ffd76b !important;">⭐ ' + r.points + ' pts</span></div>' +
+    '<div class="drm-row-actions">' +
+      '<button class="btn btn-cyan" onclick="_acctAdjustPoints(\'' + r.id + '\')">⭐ ADJUST POINTS</button>' +
+      disableBtn +
+      '<button class="btn btn-danger" onclick="_acctDelete(\'' + r.id + '\')">🗑 DELETE</button>' +
+    '</div>' +
+  '</div>';
+}
+
+function _acctListHtml(){
+  var f = (_acctFilter || '').toLowerCase().trim();
+  var shown = f
+    ? _acctCache.filter(function(r){ return (r.displayName + ' ' + r.username).toLowerCase().indexOf(f) !== -1; })
+    : _acctCache;
+  if (!shown.length) return '<div class="drm-help">No accounts match your search.</div>';
+  return shown.map(_acctRowHtml).join('');
+}
+
+function _acctRerender(){
+  var host = document.getElementById('accountsMgrHost');
+  if (!host) return;
+  var total = _acctCache.length;
+  var totalPoints = _acctCache.reduce(function(s, r){ return s + (r.points || 0); }, 0);
+  host.innerHTML =
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px;">' +
+      '<input type="text" id="acctSearch" placeholder="Search name or email…" value="' + _esc(_acctFilter) + '" oninput="_acctOnSearch(this.value)" style="flex:1;min-width:180px;background:#0d1424;color:#e6ebf5;border:1px solid #334155;border-radius:5px;padding:9px 12px;font-family:\'Noto Sans\',sans-serif;font-size:14px;box-sizing:border-box;outline:none;">' +
+      '<button class="btn btn-ghost btn-sm" onclick="renderAccountsMgr()">🔄 REFRESH</button>' +
+    '</div>' +
+    '<div style="font-family:\'Noto Sans\',sans-serif;font-size:13px;color:#8a93a8;margin-bottom:12px;">' + total + ' account' + (total === 1 ? '' : 's') + ' · ' + totalPoints + ' total points</div>' +
+    '<div class="drm-list" id="acctList">' + _acctListHtml() + '</div>';
+}
+
+function _acctOnSearch(v){
+  _acctFilter = v;
+  var listEl = document.getElementById('acctList');
+  if (listEl) listEl.innerHTML = _acctListHtml();
+}
+window._acctOnSearch = _acctOnSearch;
+
+async function _acctAdjustPoints(uid){
+  var r = _acctCache.find(function(x){ return x.id === uid; });
+  if (!r) return;
+  var raw = prompt('Adjust points for ' + r.displayName + '.\nCurrent balance: ' + r.points + ' pts.\n\nEnter an amount to ADD (use a negative number to remove):', '0');
+  if (raw === null) return;
+  var delta = parseInt(raw, 10);
+  if (isNaN(delta)){ toast('Enter a whole number like 50 or -20.', 'var(--pink)'); return; }
+  if (delta === 0) return;
+  var next = Math.max(0, r.points + delta);
+  try {
+    await db.collection(TC).doc(uid).update({ points: next });
+    r.points = next;
+    _acctRerender();
+    toast(r.displayName + ' → ' + next + ' pts (' + (delta > 0 ? '+' : '') + delta + ')', 'var(--green)');
+  } catch(e){ toast('Update failed: ' + (e.message || e), 'var(--pink)'); }
+}
+window._acctAdjustPoints = _acctAdjustPoints;
+
+async function _acctToggleDisabled(uid, disable){
+  var r = _acctCache.find(function(x){ return x.id === uid; });
+  var nm = r ? r.displayName : 'this account';
+  if (disable && r && r.isAdmin){ toast('Admin accounts can\'t be disabled here.', 'var(--pink)'); return; }
+  if (disable && !confirm('Disable ' + nm + '?\n\nThey\'ll be signed out and blocked from logging in until you re-enable them.')) return;
+  try {
+    await db.collection(TC).doc(uid).update({ disabled: !!disable });
+    if (r) r.disabled = !!disable;
+    _acctRerender();
+    toast(nm + (disable ? ' disabled.' : ' enabled.'), disable ? 'var(--gold)' : 'var(--green)');
+  } catch(e){ toast('Update failed: ' + (e.message || e), 'var(--pink)'); }
+}
+window._acctToggleDisabled = _acctToggleDisabled;
+
+async function _acctDelete(uid){
+  var r = _acctCache.find(function(x){ return x.id === uid; });
+  var nm = r ? r.displayName : 'this account';
+  if (user && uid === user.id){ toast('You can\'t delete your own account here.', 'var(--pink)'); return; }
+  if (!confirm('Delete ' + nm + '\u2019s profile?\n\nThis removes their points, gacha collection, and profile data and cannot be undone.\n\nNote: their login itself is not removed — to reliably block access, use Disable instead (full deletion requires a server-side admin tool).')) return;
+  try {
+    await db.collection(TC).doc(uid).delete();
+    _acctCache = _acctCache.filter(function(x){ return x.id !== uid; });
+    _acctRerender();
+    toast(nm + '\u2019s profile deleted.', 'var(--gold)');
+  } catch(e){ toast('Delete failed: ' + (e.message || e), 'var(--pink)'); }
+}
+window._acctDelete = _acctDelete;
+
+/* ═══════════════════════════════════════════════════════ */
 /* ADMIN PANEL                                            */
 /* ═══════════════════════════════════════════════════════ */
 function renderAdmin(){
@@ -8318,6 +8550,7 @@ function renderAdmin(){
   if (typeof _advmRenderManager === 'function') _advmRenderManager();
   if (typeof _yodaRenderManager === 'function') _yodaRenderManager();
   if (typeof _recallRenderManager === 'function') _recallRenderManager();
+  if (typeof renderAccountsMgr === 'function') renderAccountsMgr();
   if (typeof _istcRender === 'function') _istcRender();
   var body = $('adminBody');
   if (!body) return;
@@ -8815,9 +9048,9 @@ function _drawShowcase(){
 
   // ── Sort: custom dropdown. The current selection labels the trigger; the
   // menu opens/closes via _scToggleSortMenu (no full re-render on open). ──
-  var sortLabels = { 'rarity':'Rarity', 'pts-desc':'Points: High \u2192 Low', 'pts-asc':'Points: Low \u2192 High' };
+  var sortLabels = { 'rarity':'Rarity', 'newest':'Newest', 'pts-desc':'Points: High \u2192 Low', 'pts-asc':'Points: Low \u2192 High' };
   var sortCurrent = sortLabels[_scSort] || 'Rarity';
-  var sortMenu = ['rarity','pts-desc','pts-asc'].map(function(s){
+  var sortMenu = ['rarity','newest','pts-desc','pts-asc'].map(function(s){
     return '<button class="sc-dd-opt' + (_scSort === s ? ' active' : '') + '" onclick="setShowcaseSort(\'' + s + '\')">' + sortLabels[s] + '</button>';
   }).join('');
 
@@ -8870,15 +9103,24 @@ function _drawShowcase(){
     var key = (c.animalKey||'') + '|' + (c.colorKey||'') + '|' + (c.itemKey||'') + '|' + (c.glitter ? 'g' : 'n');
     if (uniqueMap[key]){
       uniqueMap[key].count++;
+      // Keep the latest acquisition time across duplicates (for the Newest sort).
+      if ((c.wonAt||'') > (uniqueMap[key]._maxWonAt||'')) uniqueMap[key]._maxWonAt = c.wonAt || '';
     } else {
-      var entry = Object.assign({}, c, { count: 1 });
+      var entry = Object.assign({}, c, { count: 1, _maxWonAt: c.wonAt || '' });
       uniqueMap[key] = entry;
       uniqueCards.push(entry);
     }
   });
 
-  // Points sort (most/least first) overrides the rarity grouping when chosen.
-  if (_scSort === 'pts-desc' || _scSort === 'pts-asc'){
+  // Newest first by acquisition time; or points sort. Either overrides the
+  // default rarity grouping when chosen.
+  if (_scSort === 'newest'){
+    uniqueCards.sort(function(a, b){
+      var ta = a._maxWonAt || '', tb = b._maxWonAt || '';
+      if (ta !== tb) return ta < tb ? 1 : -1;   // latest ISO timestamp first
+      return (a.animal || '').localeCompare(b.animal || '');
+    });
+  } else if (_scSort === 'pts-desc' || _scSort === 'pts-asc'){
     uniqueCards.sort(function(a, b){
       var pa = _gachaPointsForCard(a), pb = _gachaPointsForCard(b);
       if (pa !== pb) return _scSort === 'pts-desc' ? pb - pa : pa - pb;
@@ -8954,6 +9196,8 @@ function showCardDetail(idx){
   var item   = _GACHA_ITEMS.find(function(it){ return it.key === c.itemKey; })   || { name: c.item   || '?', key: c.itemKey,   weight: 1, tier: c.tier || 1 };
 
   var TIER_LABELS = { 3: '\u2605\u2605\u2605 Legendary', 2: '\u2605\u2605 Rare', 1: '\u2605 Common' };
+  var TIER_STARS = { 3: '\u2605\u2605\u2605', 2: '\u2605\u2605', 1: '\u2605' };
+  var TIER_WORDS = { 3: 'Legendary', 2: 'Rare', 1: 'Common' };
   var TIER_CLASSES = { 3: 'tier-3', 2: 'tier-2', 1: 'tier-1' };
   var tA = _GACHA_ANIMALS.reduce(function(s,e){return s+e.weight;},0);
   var tC = _GACHA_COLORS.reduce(function(s,e){return s+e.weight;},0);
@@ -8985,12 +9229,12 @@ function showCardDetail(idx){
         (imgUrl ? '<img src="' + esc(imgUrl) + '" alt="">' : '<div style="height:220px;display:flex;align-items:center;justify-content:center;color:#555;">No image</div>') +
         '<div class="_ggsc"></div>' +
       '</div>' +
-      '<div style="font-size:17px;font-weight:bold;color:#fff;letter-spacing:.04em;text-align:center">' + esc(animal.name) + '</div>' +
+      '<div class="_gran">' + esc(animal.name) + '</div>' +
       '<div class="_cdPts">\u2756 EARNS <span class="_cdPtsNum">' + _gachaPointsForCard(c) + '</span> POINTS \u2756</div>' +
       '<div class="_grrws">' +
-        '<div class="_grrw"><span class="_grrl">Character</span><span class="_grrn">' + esc(animal.name) + '</span><span class="_grrt ' + TIER_CLASSES[aTier] + '">' + TIER_LABELS[aTier] + '</span><span class="_grrp">' + _gachaFmtPct(aPct) + '</span></div>' +
-        '<div class="_grrw"><span class="_grrl">Color</span><span class="_grrn">' + esc(color.name) + '</span><span class="_grrt ' + TIER_CLASSES[cTier] + '">' + TIER_LABELS[cTier] + '</span><span class="_grrp">' + _gachaFmtPct(cPct) + '</span></div>' +
-        '<div class="_grrw"><span class="_grrl">Item</span><span class="_grrn">' + esc(item.name) + '</span><span class="_grrt ' + TIER_CLASSES[iTier] + '">' + TIER_LABELS[iTier] + '</span><span class="_grrp">' + _gachaFmtPct(iPct) + '</span></div>' +
+        '<div class="_grrw"><span class="_grrl">Character</span><span class="_grrn">' + esc(animal.name) + '</span><span class="_grrt ' + TIER_CLASSES[aTier] + '"><span class="_gic">' + TIER_STARS[aTier] + '</span>' + TIER_WORDS[aTier] + '</span><span class="_grrp">' + _gachaFmtPct(aPct) + '</span></div>' +
+        '<div class="_grrw"><span class="_grrl">Color</span><span class="_grrn">' + esc(color.name) + '</span><span class="_grrt ' + TIER_CLASSES[cTier] + '"><span class="_gic">' + TIER_STARS[cTier] + '</span>' + TIER_WORDS[cTier] + '</span><span class="_grrp">' + _gachaFmtPct(cPct) + '</span></div>' +
+        '<div class="_grrw"><span class="_grrl">Item</span><span class="_grrn">' + esc(item.name) + '</span><span class="_grrt ' + TIER_CLASSES[iTier] + '"><span class="_gic">' + TIER_STARS[iTier] + '</span>' + TIER_WORDS[iTier] + '</span><span class="_grrp">' + _gachaFmtPct(iPct) + '</span></div>' +
       '</div>' +
       '<div class="_gcmb">' + (c.glitter
         ? 'Pull chance: ' + _gachaFmtPct(c.pct || (aPct*cPct*iPct/10000)) + ' &nbsp;<span>\u2756 GLITTER \u2756</span>'
@@ -9002,7 +9246,35 @@ function showCardDetail(idx){
 
   if (c.glitter) _addSparklesReveal(document.getElementById('_gspov_detail'));
 
+  // Scale the detail card to fit the viewport. It reuses the reveal-card styles,
+  // whose viewport fit is normally handled by _fitRevealCard during the egg-crack
+  // flow — but this popup never runs that, so without this it renders at full
+  // natural size and gets cut off (and the wide image can overflow narrow
+  // screens). Measure the untransformed extent (including any overflow) and scale
+  // the whole card down to fit, respecting the A-/A/A+ reveal-scale.
+  function _fitDetailCard(){
+    var card = ro.querySelector('._grc');
+    if (!card) return;
+    var ts = parseFloat(getComputedStyle(document.body).getPropertyValue('--reveal-scale')) || 1;
+    if (!isFinite(ts) || ts <= 0) ts = 1;
+    card.style.transition = 'none';
+    card.style.transform = 'none';
+    var natH = Math.max(card.offsetHeight, card.scrollHeight);
+    var natW = Math.max(card.offsetWidth, card.scrollWidth);
+    if (!natH || !natW){ card.style.transition = ''; return; }
+    var fit = Math.min(1, (window.innerHeight - 20) / (natH * ts), (window.innerWidth - 20) / (natW * ts));
+    if (!isFinite(fit) || fit <= 0) fit = 1;
+    card.style.transform = 'scale(' + (fit * ts) + ')';
+    requestAnimationFrame(function(){ if (card) card.style.transition = ''; });
+  }
+  requestAnimationFrame(function(){ requestAnimationFrame(_fitDetailCard); });
+  // Re-fit once the (possibly still-loading) image lays out, and on resize.
+  var _detImg = ro.querySelector('._griw._detail img');
+  if (_detImg && !(_detImg.complete && _detImg.naturalHeight)) _detImg.addEventListener('load', _fitDetailCard);
+  window.addEventListener('resize', _fitDetailCard);
+
   function closeDetail(){
+    window.removeEventListener('resize', _fitDetailCard);
     ro.classList.remove('show');
     setTimeout(function(){ if (ro.parentNode) ro.remove(); }, 350);
   }
@@ -11365,6 +11637,9 @@ async function _yodaRenderManager(){
         var schedStr = dt.toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
         sched = ' <span class="badge scheduled">📅 ' + schedStr + '</span>';
       }
+      if (!sched && d.status === 'draft'){
+        sched = ' <span class="badge" style="background:rgba(255,213,107,0.12) !important;border:1px solid #7a5e10 !important;color:#ffd56b !important;">⏳ Pending schedule</span>';
+      }
       var sentenceCount = (d.sentences || []).length;
       var actions = '';
       if (d.status === 'draft'){
@@ -11410,7 +11685,9 @@ async function _yodaRenderManager(){
       section('generate',
         '✨ Generate with AI',
         '<button id="yodaGenBtn" class="btn btn-cyan btn-md" onclick="_yodaGenerate()">✨ GENERATE NEW YODAFICATION</button>' +
-        '<div class="drm-help" style="margin-top:8px;">One click generates 5 English sentences with constituent labels (S, O, PP, PPN, V, VAV) and every valid permutation answer key. You can edit before publishing.</div>'
+        '<button id="yodaWeekBtn" class="btn btn-purple btn-md" style="margin-left:8px;" onclick="_yodaGenerateWeek()">📅 GENERATE A WEEK</button>' +
+        '<button class="btn btn-ghost btn-md" style="margin-left:8px;" onclick="_yodaScheduleWeek()">🗓️ SCHEDULE WEEK</button>' +
+        '<div class="drm-help" style="margin-top:8px;color:#fff !important;">Generate one set (opens straight into edit), or a full week of 7 daily sets. Only Day 1 opens for editing — then use Schedule Week to post all days on consecutive days from one dialog.</div>'
       ) +
       section('drafts',  '📝 Drafts ('   + drafts.length   + ')', draftHtml) +
       section('live',    '🟢 Live ('     + lives.length    + ')', liveHtml) +
@@ -11432,10 +11709,7 @@ function _yodaToggleSection(headEl){
 window._yodaToggleSection = _yodaToggleSection;
 
 /* ─── ADMIN: GENERATE ─── */
-async function _yodaGenerate(){
-  var btn = document.getElementById('yodaGenBtn');
-  if (btn){ btn.disabled = true; btn.textContent = '⏳ Generating…'; }
-
+async function _yodaFetchSet(){
   var prompt =
     'You generate English-sentence permutation drills for Korean language learners.\n' +
     '\n' +
@@ -11506,8 +11780,7 @@ async function _yodaGenerate(){
     '• Every constituent\'s "text" must appear verbatim in the sentence\'s "english".\n' +
     '• Answer keys are for ADMIN REVIEW ONLY, they will not be shown to students. Write them as a useful reference for the teacher.';
 
-  try {
-    var resp = await fetch(YODA_WEBHOOK, {
+  var resp = await fetch(YODA_WEBHOOK, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt: prompt })
@@ -11558,23 +11831,62 @@ async function _yodaGenerate(){
       });
     }
 
-    await db.collection(YODA_COLLECTION).add({
-      title: parsed.title || 'Yodafication',
-      sentences: parsed.sentences,
-      status: 'draft',
-      scheduledFor: null,
-      generatedByAI: true,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    return { title: parsed.title || 'Yodafication', sentences: parsed.sentences };
+}
+window._yodaFetchSet = _yodaFetchSet;
+
+// Single generate → one draft, opened straight into edit mode.
+async function _yodaGenerate(){
+  var btn = document.getElementById('yodaGenBtn');
+  if (btn){ btn.disabled = true; btn.textContent = '\u23F3 Generating…'; }
+  try {
+    var set = await _yodaFetchSet();
+    var ref = await db.collection(YODA_COLLECTION).add({
+      title: set.title, sentences: set.sentences, status: 'draft', scheduledFor: null,
+      generatedByAI: true, createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       createdBy: (user && user.username) || ''
     });
-    _yodaRenderManager();
+    await _yodaRenderManager();
+    _yodaEdit(ref.id);   // open the new draft straight into edit mode
   } catch(e){
     alert('Generation failed: ' + (e.message || e));
   } finally {
-    if (btn){ btn.disabled = false; btn.textContent = '✨ GENERATE NEW YODAFICATION'; }
+    if (btn){ btn.disabled = false; btn.textContent = '\u2728 GENERATE NEW YODAFICATION'; }
   }
 }
 window._yodaGenerate = _yodaGenerate;
+
+// Week batch → 7 drafts (Day 1–7). Pings the webhook 7 times; only Day 1 opens to edit.
+async function _yodaGenerateWeek(){
+  if (!confirm('Generate a full week of Yodafication?\n\nThis creates 7 draft sets (one per day) by asking the AI 7 times, so it can take a minute or two. Only Day 1 opens for editing — schedule each day when you\'re ready.')) return;
+  var wkBtn = document.getElementById('yodaWeekBtn');
+  var genBtn = document.getElementById('yodaGenBtn');
+  if (genBtn) genBtn.disabled = true;
+  if (wkBtn) wkBtn.disabled = true;
+  var batchId = String(Date.now());
+  var firstId = null, made = 0, failed = 0;
+  for (var day = 1; day <= 7; day++){
+    if (wkBtn) wkBtn.textContent = '\u23F3 Day ' + day + '/7…';
+    try {
+      var set = await _yodaFetchSet();
+      var ref = await db.collection(YODA_COLLECTION).add({
+        title: 'Day ' + day + ' \u2013 ' + (set.title || 'Yodafication'),
+        sentences: set.sentences, status: 'draft', scheduledFor: null, generatedByAI: true,
+        weekDay: day, batchId: batchId, createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        createdBy: (user && user.username) || ''
+      });
+      if (day === 1) firstId = ref.id;
+      made++;
+    } catch(e){ console.warn('yoda week day ' + day + ':', e); failed++; }
+  }
+  if (wkBtn){ wkBtn.disabled = false; wkBtn.textContent = '\uD83D\uDCC5 GENERATE A WEEK'; }
+  if (genBtn) genBtn.disabled = false;
+  await _yodaRenderManager();
+  if (firstId) _yodaEdit(firstId);
+  if (failed) toast('Made ' + made + ' of 7 sets (' + failed + ' failed — run it again for the rest).', 'var(--gold)');
+  else toast('Generated 7 daily sets — schedule each when ready.', 'var(--green)');
+}
+window._yodaGenerateWeek = _yodaGenerateWeek;
 
 /* ─── ADMIN: EDIT ─── */
 async function _yodaEdit(id){
@@ -12853,6 +13165,9 @@ async function _recallRenderManager(){
           sched = ' <span class="badge scheduled">📅 ' + schedStr + '</span>';
         }
       }
+      if (!sched && d.status === 'draft'){
+        sched = ' <span class="badge" style="background:rgba(255,213,107,0.12) !important;border:1px solid #7a5e10 !important;color:#ffd56b !important;">⏳ Pending schedule</span>';
+      }
       var cardCount = (d.cards || []).length;
       var actions = '';
       if (d.status === 'draft'){
@@ -12900,7 +13215,11 @@ async function _recallRenderManager(){
       section('create',
         '➕ New set',
         '<button class="btn btn-cyan btn-md" onclick="_recallNewSet()">➕ NEW ACTIVE RECALL SET</button>' +
-        '<div class="drm-help" style="margin-top:8px;">Creates a blank draft. Add Korean → English cards, then publish when ready.</div>'
+        (RECALL_AI_FN.indexOf('REPLACE-ME') === -1
+          ? '<button class="btn btn-purple btn-md" style="margin-left:8px;" onclick="_recallNewWeek()">📅 GENERATE A WEEK</button>' +
+            '<button class="btn btn-ghost btn-md" style="margin-left:8px;" onclick="_recallScheduleWeek()">🗓️ SCHEDULE WEEK</button>'
+          : '') +
+        '<div class="drm-help" style="margin-top:8px;color:#fff !important;">This will create a blank draft for you to edit OR have AI generate the cards. Generate a Week makes 7 daily drafts; Schedule Week posts them on consecutive days from one dialog.</div>'
       ) +
       section('drafts',  '📝 Drafts ('   + drafts.length   + ')', draftHtml) +
       section('live',    '🟢 Live ('     + lives.length    + ')', liveHtml) +
@@ -12913,20 +13232,255 @@ window._recallRenderManager = _recallRenderManager;
 
 async function _recallNewSet(){
   try {
-    await db.collection(RECALL_COLLECTION).add({
+    var ref = await db.collection(RECALL_COLLECTION).add({
       title: 'Active Recall set',
       cards: [{ korean: '', english: '' }],
       status: 'draft',
+      scheduledFor: null,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       createdBy: (user && user.username) || ''
     });
-    toast('Draft created, edit it to add cards.', 'var(--green)');
-    _recallRenderManager();
+    await _recallRenderManager();
+    // Open it straight into edit mode so the teacher can start typing/generating.
+    _recallEdit(ref.id);
   } catch(e){
     toast('Couldn\'t create set: ' + (e.message || e), 'var(--pink)');
   }
 }
 window._recallNewSet = _recallNewSet;
+
+// Ping the AI Cloud Function once for a topic; return normalized [{korean,english}].
+async function _recallFetchCards(topic, count){
+  var resp = await fetch(RECALL_AI_FN, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ topic: topic, count: count })
+  });
+  if (!resp.ok) throw new Error('Generator returned ' + resp.status);
+  var data = await resp.json();
+  var cards = (data && Array.isArray(data.cards)) ? data.cards : (Array.isArray(data) ? data : null);
+  if (!cards || !cards.length) throw new Error('No cards in the response.');
+  var out = [];
+  cards.forEach(function(c){
+    var ko = (c && (c.korean || c.ko) || '').toString().trim();
+    var en = (c && (c.english || c.en) || '').toString().trim();
+    if (ko || en) out.push({ korean: ko, english: en });
+  });
+  if (!out.length) throw new Error('No usable cards in the response.');
+  return out;
+}
+window._recallFetchCards = _recallFetchCards;
+
+// Open the "generate a week" popup: one topic + card count per day (7 days).
+function _recallNewWeek(){
+  if (RECALL_AI_FN.indexOf('REPLACE-ME') !== -1){ toast('AI generator not configured.', 'var(--pink)'); return; }
+  if (document.getElementById('recallWeekOverlay')) return;
+  var rows = '';
+  for (var day = 1; day <= 7; day++){
+    rows +=
+      '<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">' +
+        '<span style="flex:0 0 52px;font-size:12px;font-weight:700;color:#a0aef7;">Day ' + day + '</span>' +
+        '<input class="rw-topic" data-day="' + day + '" type="text" placeholder="Topic (e.g. kitchen verbs)" style="flex:1;min-width:0;background:#0a1018;color:#e6ebf5;border:1px solid #334155;border-radius:5px;padding:8px;font-size:14px;box-sizing:border-box;">' +
+        '<input class="rw-count" data-day="' + day + '" type="number" min="1" max="30" value="10" title="Number of cards" style="flex:0 0 62px;min-width:0;background:#0a1018;color:#e6ebf5;border:1px solid #334155;border-radius:5px;padding:8px;font-size:14px;box-sizing:border-box;">' +
+      '</div>';
+  }
+  var ov = document.createElement('div');
+  ov.id = 'recallWeekOverlay';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:10000000;background:rgba(0,0,0,0.72);display:flex;align-items:center;justify-content:center;padding:20px;font-family:"Noto Sans",sans-serif;';
+  ov.innerHTML =
+    '<div style="background:#0d1424;border:2px solid #334155;border-radius:12px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,0.55);">' +
+      '<div style="font-size:18px;font-weight:700;color:#e6ebf5;margin-bottom:4px;">📅 Generate a Week of Active Recall</div>' +
+      '<div style="font-size:13px;color:#a0aef7;line-height:1.5;margin-bottom:16px;">Enter a topic and card count for each day. Each day becomes its own draft. Leave a day blank to skip it. Only Day 1 opens for editing — schedule each when ready.</div>' +
+      '<div id="recallWeekRows">' + rows + '</div>' +
+      '<div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end;">' +
+        '<button class="btn btn-ghost" onclick="_recallWeekClose()">CANCEL</button>' +
+        '<button id="recallWeekGenBtn" class="btn btn-cyan" onclick="_recallWeekSubmit()">✨ GENERATE</button>' +
+      '</div>' +
+    '</div>';
+  ov.addEventListener('click', function(e){ if (e.target === ov) _recallWeekClose(); });
+  document.body.appendChild(ov);
+}
+window._recallNewWeek = _recallNewWeek;
+
+function _recallWeekClose(){
+  var ov = document.getElementById('recallWeekOverlay');
+  if (ov && ov.parentNode) ov.parentNode.removeChild(ov);
+}
+window._recallWeekClose = _recallWeekClose;
+
+// Generate the week: ping the AI once per filled day, create a draft each.
+async function _recallWeekSubmit(){
+  var topicEls = document.querySelectorAll('#recallWeekRows .rw-topic');
+  var days = [];
+  topicEls.forEach(function(el){
+    var day = parseInt(el.getAttribute('data-day'), 10);
+    var topic = (el.value || '').trim();
+    var countEl = document.querySelector('#recallWeekRows .rw-count[data-day="' + day + '"]');
+    var count = parseInt(countEl && countEl.value, 10) || 10;
+    if (count < 1) count = 1; if (count > 30) count = 30;
+    if (topic) days.push({ day: day, topic: topic, count: count });
+  });
+  if (!days.length){ alert('Enter a topic for at least one day.'); return; }
+
+  var btn = document.getElementById('recallWeekGenBtn');
+  if (btn){ btn.disabled = true; }
+  var batchId = String(Date.now());
+  var firstId = null, made = 0, failed = 0;
+  for (var j = 0; j < days.length; j++){
+    var dd = days[j];
+    if (btn) btn.textContent = '⏳ Day ' + dd.day + '…';
+    try {
+      var cards = await _recallFetchCards(dd.topic, dd.count);
+      var ref = await db.collection(RECALL_COLLECTION).add({
+        title: 'Day ' + dd.day + ' \u2013 ' + dd.topic,
+        cards: cards, status: 'draft', scheduledFor: null, weekDay: dd.day, batchId: batchId,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        createdBy: (user && user.username) || ''
+      });
+      if (firstId === null) firstId = ref.id;   // first successful day opens to edit
+      made++;
+    } catch(e){ console.warn('recall week day ' + dd.day + ':', e); failed++; }
+  }
+  _recallWeekClose();
+  await _recallRenderManager();
+  if (firstId) _recallEdit(firstId);
+  if (failed) toast('Made ' + made + ' day(s); ' + failed + ' failed — try again for the rest.', 'var(--gold)');
+  else toast('Generated ' + made + ' daily set' + (made === 1 ? '' : 's') + ' — schedule each when ready.', 'var(--green)');
+}
+window._recallWeekSubmit = _recallWeekSubmit;
+
+/* ─── Schedule a whole generated week from one dialog ───
+ * Batch-generated daily drafts share a `batchId` and carry `weekDay`. This
+ * grabs the most recently generated batch of still-draft days and schedules
+ * them on consecutive days from a single start date + time. The student side
+ * auto-promotes each draft to live once its scheduledFor passes. */
+var _swState = null;
+
+async function _scheduleWeekOpen(collection, renderFn){
+  if (document.getElementById('schedWeekOverlay')) return;
+  var snap;
+  try { snap = await db.collection(collection).get(); }
+  catch(e){ toast('Could not load sets: ' + (e.message || e), 'var(--pink)'); return; }
+  var byBatch = {};
+  snap.forEach(function(doc){
+    var d = doc.data() || {};
+    if (d.status !== 'draft' || !d.batchId) return;
+    (byBatch[d.batchId] = byBatch[d.batchId] || []).push({ id: doc.id, weekDay: d.weekDay || 0, title: d.title || '' });
+  });
+  var batchIds = Object.keys(byBatch);
+  if (!batchIds.length){ toast('No generated week to schedule yet — use "Generate a Week" first.', 'var(--gold)'); return; }
+  batchIds.sort(function(a, b){ return Number(b) - Number(a); });   // newest batch first
+  var days = byBatch[batchIds[0]].sort(function(a, b){ return (a.weekDay || 0) - (b.weekDay || 0); });
+  _swState = { collection: collection, days: days, renderFn: renderFn };
+
+  var t = new Date(); t.setDate(t.getDate() + 1);   // default: tomorrow 9:00 AM
+  var dateDefault = t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0');
+  var hourOpts = '';
+  for (var h = 1; h <= 12; h++) hourOpts += '<option value="' + h + '"' + (h === 9 ? ' selected' : '') + '>' + h + '</option>';
+  var minOpts = '';
+  for (var m = 0; m < 60; m += 5){ minOpts += '<option value="' + m + '"' + (m === 0 ? ' selected' : '') + '>' + String(m).padStart(2,'0') + '</option>'; }
+  var selStyle = 'background:#0a1018;color:#e6ebf5;border:1px solid #334155;border-radius:5px;padding:8px;font-size:14px;';
+
+  var ov = document.createElement('div');
+  ov.id = 'schedWeekOverlay';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:10000000;background:rgba(0,0,0,0.72);display:flex;align-items:center;justify-content:center;padding:20px;font-family:"Noto Sans",sans-serif;';
+  ov.innerHTML =
+    '<div style="background:#0d1424;border:2px solid #334155;border-radius:12px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,0.55);">' +
+      '<div style="font-size:18px;font-weight:700;color:#e6ebf5;margin-bottom:4px;">🗓️ Schedule the Week</div>' +
+      '<div style="font-size:13px;color:#a0aef7;line-height:1.5;margin-bottom:16px;">The first day posts on your start date/time; each following day posts on the next consecutive day at the same time. This schedules the most recently generated week (' + days.length + ' day' + (days.length===1?'':'s') + ').</div>' +
+      '<label style="font-size:11px;font-weight:700;color:#a0aef7;text-transform:uppercase;letter-spacing:.5px;">Start date</label>' +
+      '<input id="swDate" type="date" value="' + dateDefault + '" oninput="_swUpdatePreview()" style="display:block;width:100%;box-sizing:border-box;margin:6px 0 12px;' + selStyle + '">' +
+      '<label style="font-size:11px;font-weight:700;color:#a0aef7;text-transform:uppercase;letter-spacing:.5px;">Time (same for each day)</label>' +
+      '<div style="display:flex;gap:8px;align-items:center;margin:6px 0 14px;">' +
+        '<select id="swHour" onchange="_swUpdatePreview()" style="' + selStyle + '">' + hourOpts + '</select>' +
+        '<span style="color:#e6ebf5;font-weight:700;">:</span>' +
+        '<select id="swMin" onchange="_swUpdatePreview()" style="' + selStyle + '">' + minOpts + '</select>' +
+        '<select id="swAmPm" onchange="_swUpdatePreview()" style="' + selStyle + '"><option value="AM" selected>AM</option><option value="PM">PM</option></select>' +
+      '</div>' +
+      '<div id="swPreview" style="background:rgba(0,0,0,0.25);border:1px solid #2a3650;border-radius:8px;padding:10px 12px;font-size:13px;color:#cdd7f5;line-height:1.8;margin-bottom:16px;"></div>' +
+      '<div style="display:flex;gap:10px;justify-content:flex-end;">' +
+        '<button class="btn btn-ghost" onclick="_swClose()">CANCEL</button>' +
+        '<button id="swSubmitBtn" class="btn btn-cyan" onclick="_swSubmit()">🗓️ SCHEDULE ' + days.length + ' DAY' + (days.length===1?'':'S') + '</button>' +
+      '</div>' +
+    '</div>';
+  ov.addEventListener('click', function(e){ if (e.target === ov) _swClose(); });
+  document.body.appendChild(ov);
+  _swUpdatePreview();
+}
+window._scheduleWeekOpen = _scheduleWeekOpen;
+
+function _swClose(){
+  _swState = null;
+  var ov = document.getElementById('schedWeekOverlay');
+  if (ov && ov.parentNode) ov.parentNode.removeChild(ov);
+}
+window._swClose = _swClose;
+
+function _swReadStart(){
+  var dateStr = (document.getElementById('swDate') || {}).value || '';
+  var hour12 = parseInt((document.getElementById('swHour') || {}).value, 10);
+  var minute = parseInt((document.getElementById('swMin') || {}).value, 10);
+  var ampm = (document.getElementById('swAmPm') || {}).value || 'AM';
+  if (!dateStr || isNaN(hour12) || isNaN(minute)) return null;
+  var hour24 = hour12 % 12; if (ampm === 'PM') hour24 += 12;
+  var parts = dateStr.split('-').map(Number);
+  if (parts.length !== 3 || parts.some(isNaN)) return null;
+  var d = new Date(parts[0], parts[1]-1, parts[2], hour24, minute, 0, 0);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function _swUpdatePreview(){
+  var el = document.getElementById('swPreview');
+  if (!el || !_swState) return;
+  var start = _swReadStart();
+  if (!start){ el.innerHTML = '<span style="color:#ff8a8a;">Pick a valid date and time.</span>'; return; }
+  if (start.getTime() <= Date.now()){ el.innerHTML = '<span style="color:#ff8a8a;">That start time is in the past — pick a future date/time.</span>'; return; }
+  var html = '';
+  _swState.days.forEach(function(day, i){
+    var d = new Date(start.getTime()); d.setDate(d.getDate() + i);
+    var ds = d.toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric' });
+    var ts = d.toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit', hour12:true });
+    var label = day.title ? _esc(day.title) : ('Day ' + (day.weekDay || (i+1)));
+    html += '<div style="display:flex;justify-content:space-between;gap:12px;">' +
+      '<span style="color:#9fb0d8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + label + '</span>' +
+      '<span style="color:#9bd2a3;white-space:nowrap;">' + ds + ', ' + ts + '</span></div>';
+  });
+  el.innerHTML = html;
+}
+window._swUpdatePreview = _swUpdatePreview;
+
+async function _swSubmit(){
+  if (!_swState) return;
+  var start = _swReadStart();
+  if (!start){ alert('Pick a valid date and time.'); return; }
+  if (start.getTime() <= Date.now()){ alert('That start time is in the past. Pick a future date/time.'); return; }
+  var btn = document.getElementById('swSubmitBtn');
+  if (btn){ btn.disabled = true; btn.textContent = '⏳ Scheduling…'; }
+  try {
+    var batch = db.batch();
+    _swState.days.forEach(function(day, i){
+      var d = new Date(start.getTime()); d.setDate(d.getDate() + i);
+      batch.update(db.collection(_swState.collection).doc(day.id), {
+        scheduledFor: firebase.firestore.Timestamp.fromMillis(d.getTime())
+      });
+    });
+    await batch.commit();
+    var renderFn = _swState.renderFn;
+    var n = _swState.days.length;
+    _swClose();
+    if (typeof renderFn === 'function') renderFn();
+    toast('Scheduled ' + n + ' day' + (n===1?'':'s') + ' on consecutive days.', 'var(--green)');
+  } catch(e){
+    if (btn){ btn.disabled = false; btn.textContent = '🗓️ SCHEDULE'; }
+    alert('Scheduling failed: ' + (e.message || e));
+  }
+}
+window._swSubmit = _swSubmit;
+
+function _yodaScheduleWeek(){ return _scheduleWeekOpen(YODA_COLLECTION, _yodaRenderManager); }
+window._yodaScheduleWeek = _yodaScheduleWeek;
+function _recallScheduleWeek(){ return _scheduleWeekOpen(RECALL_COLLECTION, _recallRenderManager); }
+window._recallScheduleWeek = _recallScheduleWeek;
 
 async function _recallEdit(id){
   var row = document.getElementById('recallRow_' + id);
@@ -13415,6 +13969,7 @@ async function _diarySubmit(){
     await db.collection(DIARY_COLLECTION).doc(entryId).set({
       uid: user.id,
       userName: (user.displayName || user.username || 'Student'),
+      photoURL: user.photoURL || null,
       userEmail: user.username || '',
       weekKey: weekKey,
       text: text,
@@ -13546,7 +14101,8 @@ function _wbfChipHtml(e){
     // No written text → treat as a voice-only submission.
     label = '<span class="wbf-text audio">(Audio submission)</span>';
   }
-  return '<span class="wbf-chip">' +
+  var uidAttr = e.uid ? ' data-uid="' + _esc(e.uid) + '" onclick="_profileView(\'' + _esc(e.uid) + '\')"' : '';
+  return '<span class="wbf-chip"' + uidAttr + '>' +
     '<span class="wbf-ava">' + _drInitialsAvatar(name, e.photoURL || null) + '</span>' +
     label +
   '</span>';
@@ -13640,6 +14196,255 @@ window.addEventListener('resize', function(){
     }
   }, 200);
 });
+
+/* ─── POINTS LEADERBOARD (Point Shop top banner) ───
+ * Same continuous seamless ticker as the weekly-bonus marquee, on its own
+ * track. Generic starter so both share the measurement/loop logic. */
+function _marqueeStart(track, setHtml){
+  if (!track || !setHtml) return;
+  var vp = track.parentElement;
+  if (!vp) return;
+  track.style.animation = 'none';
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      if (!track.isConnected) return;
+      track.innerHTML = setHtml;
+      var W = track.scrollWidth;
+      if (W <= 0) return;
+      var vw = vp.clientWidth || 1;
+      var halfCopies = Math.max(1, Math.ceil(vw / W));
+      var total = halfCopies * 2;
+      var html = '';
+      for (var i = 0; i < total; i++) html += setHtml;
+      track.innerHTML = html;
+      var dur = Math.max(6, (halfCopies * W) / 45);   // 45 px/sec, constant
+      void track.offsetWidth;
+      track.style.animation = 'wbf-scroll ' + dur.toFixed(2) + 's linear infinite';
+    });
+  });
+}
+window._marqueeStart = _marqueeStart;
+
+// Don't expose full emails as names; if the only name we have looks like an
+// email, show just the part before the @.
+function _lbName(e){
+  var n = (e.displayName || e.username || '').toString().trim();
+  if (!n) return 'Student';
+  var at = n.indexOf('@');
+  if (at > 0) n = n.slice(0, at);
+  return n;
+}
+
+function _lbChipHtml(e, rank){
+  var name = _lbName(e);
+  var medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : ('#' + rank);
+  var rankCls = rank <= 3 ? 'lb-rank medal' : 'lb-rank';
+  var me = (e.id && user && e.id === user.id) ? ' me' : '';
+  return '<span class="wbf-chip lb-chip' + me + '" data-uid="' + _esc(e.id || '') + '" onclick="_profileView(\'' + _esc(e.id || '') + '\')">' +
+    '<span class="' + rankCls + '">' + medal + '</span>' +
+    '<span class="wbf-ava">' + _drInitialsAvatar(name, e.photoURL || null) + '</span>' +
+    '<span class="wbf-text">' + _esc(name) + (me ? ' (you)' : '') + '</span>' +
+    '<span class="lb-pts">' + (e.points || 0) + ' pts</span>' +
+  '</span>';
+}
+
+var _lbSetHtml = '';
+
+async function _lbRender(){
+  var track = document.getElementById('lbfTrack');
+  if (!track) return;
+  var lead = '<span class="wbf-lead">🏆 Top point-earners</span>';
+
+  if (typeof db === 'undefined' || !db || typeof db.collection !== 'function'){
+    _lbSetHtml = lead;
+    track.innerHTML = _lbSetHtml;
+    _marqueeStart(track, _lbSetHtml);
+    return;
+  }
+
+  var entries = [];
+  try {
+    var snap = await db.collection(TC).orderBy('points', 'desc').limit(10).get();
+    snap.forEach(function(d){
+      var data = d.data() || {};
+      if ((data.points || 0) > 0){
+        entries.push({ id: d.id, displayName: data.displayName, username: data.username, photoURL: data.photoURL, points: data.points || 0 });
+      }
+    });
+  } catch(e){ console.warn('leaderboard load:', e); }
+
+  if (!entries.length){
+    _lbSetHtml = lead + '<span class="wbf-text" style="color:#7a8398;font-style:italic;">No points earned yet — be the first!</span>';
+  } else {
+    _lbSetHtml = lead + entries.map(function(e, i){ return _lbChipHtml(e, i + 1); }).join('');
+  }
+  track.innerHTML = _lbSetHtml;
+  _marqueeStart(track, _lbSetHtml);
+}
+window._lbRender = _lbRender;
+
+// Recompute the leaderboard ticker on resize while the shop is visible.
+window.addEventListener('resize', function(){
+  clearTimeout(window._lbResizeT);
+  window._lbResizeT = setTimeout(function(){
+    var ss = document.getElementById('shopScreen');
+    var t = document.getElementById('lbfTrack');
+    if (ss && !ss.classList.contains('hidden') && t && _lbSetHtml){
+      _marqueeStart(t, _lbSetHtml);
+    }
+  }, 200);
+});
+
+/* ─── PROFILE (edit own / view others) ───
+ * Stored on the public tevello_accounts doc: displayName, photoURL, aboutMe,
+ * monthlyGoal. Display name + photo are denormalized onto new submissions so
+ * they appear wherever others' submissions are shown; the leaderboard reads
+ * them live. Tapping an avatar/name opens the read-only view of that person. */
+var _profileEditState = null;
+
+function _profileClose(){
+  _profileEditState = null;
+  var ov = document.getElementById('profOverlay');
+  if (ov && ov.parentNode) ov.parentNode.removeChild(ov);
+}
+window._profileClose = _profileClose;
+
+function _profileOpen(){
+  if (!user) return;
+  if (document.getElementById('profOverlay')) return;
+  _profileEditState = { photoBlob: null };
+  var avatar = _drInitialsAvatar(user.displayName || user.username || 'S', user.photoURL || null);
+  var ov = document.createElement('div');
+  ov.id = 'profOverlay';
+  ov.className = 'prof-overlay';
+  ov.innerHTML =
+    '<div class="prof-card">' +
+      '<button class="prof-x" onclick="_profileClose()" aria-label="Close">✕</button>' +
+      '<div class="prof-title">MY PROFILE</div>' +
+      '<div class="prof-avatar-wrap">' +
+        '<div class="prof-avatar" id="profAvatar">' + avatar + '</div>' +
+        '<input type="file" id="profPhotoInput" accept="image/*" style="display:none;" onchange="_profilePhotoChosen(this)">' +
+        '<button type="button" class="btn btn-ghost btn-sm" onclick="document.getElementById(\'profPhotoInput\').click()">📷 Change Photo</button>' +
+      '</div>' +
+      '<div class="prof-field"><label class="prof-label">Display Name</label>' +
+        '<input type="text" id="profName" class="prof-input" maxlength="40" value="' + _esc(user.displayName || '') + '" placeholder="Your name"></div>' +
+      '<div class="prof-field"><label class="prof-label">About Me</label>' +
+        '<textarea id="profAbout" class="prof-textarea" maxlength="300" placeholder="Tell everyone a bit about yourself…">' + _esc(user.aboutMe || '') + '</textarea></div>' +
+      '<div class="prof-field"><label class="prof-label">Monthly Korean Goal</label>' +
+        '<input type="text" id="profGoal" class="prof-input" maxlength="120" value="' + _esc(user.monthlyGoal || '') + '" placeholder="e.g. Learn 50 new words"></div>' +
+      '<div class="prof-actions">' +
+        '<button class="btn btn-ghost" onclick="_profileClose()">CANCEL</button>' +
+        '<button class="btn btn-cyan" id="profSaveBtn" onclick="_profileSave()">💾 SAVE</button>' +
+      '</div>' +
+    '</div>';
+  ov.addEventListener('click', function(e){ if (e.target === ov) _profileClose(); });
+  document.body.appendChild(ov);
+}
+window._profileOpen = _profileOpen;
+
+// Downscale a chosen image to a small square-ish avatar (max 256px) JPEG.
+function _profileResizeImage(file){
+  return new Promise(function(resolve, reject){
+    var img = new Image();
+    var url = URL.createObjectURL(file);
+    img.onload = function(){
+      var max = 256;
+      var scale = Math.min(1, max / Math.max(img.width, img.height));
+      var cw = Math.max(1, Math.round(img.width * scale));
+      var ch = Math.max(1, Math.round(img.height * scale));
+      var canvas = document.createElement('canvas');
+      canvas.width = cw; canvas.height = ch;
+      canvas.getContext('2d').drawImage(img, 0, 0, cw, ch);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(function(blob){ blob ? resolve(blob) : reject(new Error('encode')); }, 'image/jpeg', 0.85);
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error('load')); };
+    img.src = url;
+  });
+}
+
+function _profilePhotoChosen(input){
+  var file = input.files && input.files[0];
+  if (!file) return;
+  if (!/^image\//.test(file.type || '')){ toast('Please choose an image file.', 'var(--pink)'); return; }
+  _profileResizeImage(file).then(function(blob){
+    if (!_profileEditState) return;
+    _profileEditState.photoBlob = blob;
+    var av = document.getElementById('profAvatar');
+    if (av) av.innerHTML = '<img src="' + URL.createObjectURL(blob) + '" alt="">';
+  }).catch(function(){ toast('Could not read that image.', 'var(--pink)'); });
+}
+window._profilePhotoChosen = _profilePhotoChosen;
+
+async function _profileSave(){
+  if (!user || !user.id) return;
+  var name  = (document.getElementById('profName')  || {}).value || '';
+  var about = (document.getElementById('profAbout') || {}).value || '';
+  var goal  = (document.getElementById('profGoal')  || {}).value || '';
+  name = name.trim(); about = about.trim(); goal = goal.trim();
+  if (!name){ toast('Please enter a display name.', 'var(--pink)'); return; }
+  var btn = document.getElementById('profSaveBtn');
+  if (btn){ btn.disabled = true; btn.textContent = '⏳ Saving…'; }
+  try {
+    var photoURL = user.photoURL || null;
+    if (_profileEditState && _profileEditState.photoBlob && typeof storage !== 'undefined' && storage){
+      if (btn) btn.textContent = '⏳ Uploading…';
+      var path = 'avatars/' + user.id + '/' + Date.now() + '.jpg';
+      var snap = await storage.ref().child(path).put(_profileEditState.photoBlob, { contentType: 'image/jpeg' });
+      photoURL = await snap.ref.getDownloadURL();
+    }
+    await db.collection(TC).doc(user.id).update({
+      displayName: name, photoURL: photoURL, aboutMe: about, monthlyGoal: goal
+    });
+    user.displayName = name; user.photoURL = photoURL; user.aboutMe = about; user.monthlyGoal = goal;
+    _profileClose();
+    updateTopBar();
+    var ss = document.getElementById('shopScreen');
+    if (ss && !ss.classList.contains('hidden') && typeof _lbRender === 'function') _lbRender();
+    toast('Profile saved!', 'var(--green)');
+  } catch(e){
+    if (btn){ btn.disabled = false; btn.textContent = '💾 SAVE'; }
+    toast('Save failed: ' + (e.message || e), 'var(--pink)');
+  }
+}
+window._profileSave = _profileSave;
+
+// Read-only view of any student's profile (tapping their own opens the editor).
+async function _profileView(uid){
+  if (!uid) return;
+  if (user && uid === user.id){ _profileOpen(); return; }
+  if (document.getElementById('profOverlay')) return;
+  var ov = document.createElement('div');
+  ov.id = 'profOverlay';
+  ov.className = 'prof-overlay';
+  ov.innerHTML = '<div class="prof-card"><button class="prof-x" onclick="_profileClose()" aria-label="Close">✕</button><div class="prof-title">PROFILE</div><div class="prof-readline" style="text-align:center;color:#7a8398;">Loading…</div></div>';
+  ov.addEventListener('click', function(e){ if (e.target === ov) _profileClose(); });
+  document.body.appendChild(ov);
+
+  var d = {};
+  try { var snap = await db.collection(TC).doc(uid).get(); if (snap.exists) d = snap.data() || {}; }
+  catch(e){ console.warn('profile view:', e); }
+  var card = ov.querySelector('.prof-card');
+  if (!card) return;
+  var name = (d.displayName || d.username || 'Student');
+  if (name.indexOf('@') > 0) name = name.split('@')[0];
+  var about = (d.aboutMe || '').trim();
+  var goal  = (d.monthlyGoal || '').trim();
+  card.innerHTML =
+    '<button class="prof-x" onclick="_profileClose()" aria-label="Close">✕</button>' +
+    '<div class="prof-title">PROFILE</div>' +
+    '<div class="prof-avatar-wrap">' +
+      '<div class="prof-avatar">' + _drInitialsAvatar(name, d.photoURL || null) + '</div>' +
+      '<div class="prof-readname">' + _esc(name) + '</div>' +
+    '</div>' +
+    '<div class="prof-field"><label class="prof-label">About Me</label>' +
+      '<div class="prof-readline' + (about ? '' : ' prof-empty') + '">' + (about ? _esc(about) : 'No bio yet.') + '</div></div>' +
+    '<div class="prof-field"><label class="prof-label">Monthly Korean Goal</label>' +
+      '<div class="prof-readline' + (goal ? '' : ' prof-empty') + '">' + (goal ? _esc(goal) : 'No goal set yet.') + '</div></div>' +
+    '<div class="prof-actions"><button class="btn btn-cyan" onclick="_profileClose()">CLOSE</button></div>';
+}
+window._profileView = _profileView;
 
 function _yodaRenderForm(){
   var host = document.getElementById('dailyYodaHost');
