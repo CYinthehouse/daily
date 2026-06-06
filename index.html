@@ -15474,5 +15474,64 @@ window.toggleVolPanel = toggleVolPanel;
 
 })();
 </script>
+
+<!-- Custom bottom-left launcher for the Arcade Helper bot -->
+<style>
+  #arcadeBotBtn{
+    position:fixed; left:16px; bottom:16px; z-index:99998;
+    width:56px; height:56px; border-radius:50%;
+    background:#0a0a15; border:2px solid var(--cyan,#41c0ff);
+    box-shadow:3px 3px 0 rgba(0,0,0,0.7);
+    display:none; align-items:center; justify-content:center;
+    cursor:pointer; padding:0; transition:transform 0.1s, box-shadow 0.1s;
+  }
+  #arcadeBotBtn:hover{ transform:translateY(-2px); }
+  #arcadeBotBtn:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(0,0,0,0.7); }
+  #arcadeBotBtn .arcade-bot-emoji{
+    font-size:24px; line-height:1; display:inline-block;
+    animation:arcadeBotBob 3.2s ease-in-out infinite;
+  }
+  @keyframes arcadeBotBob{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-3px);} }
+</style>
+
+<button id="arcadeBotBtn" title="Ask the Arcade Helper" aria-label="Open chat">
+  <span class="arcade-bot-emoji">💬</span>
+</button>
+
+<!-- ChatBotKit Arcade Helper widget -->
+<script id="chatbotkit-widget" src="https://static.chatbotkit.com/integrations/widget/v2.js" data-widget="cmq1s5gwn000104l8z9ovqg78"></script>
+
+<script>
+(function () {
+  var btn = document.getElementById('arcadeBotBtn');
+  var watch = null;
+
+  function withWidget(fn) {
+    if (window.chatbotkit && window.chatbotkit.instancePromise) {
+      window.chatbotkit.instancePromise.then(fn).catch(function(){});
+    }
+  }
+  function reveal(instance) {
+    try { instance.hide(); } catch (e) {}   // kill ChatBotKit's own bottom-right bubble
+    if (btn) btn.style.display = 'flex';     // show our circle instead
+  }
+
+  // Documented init hook (order-independent) + a fallback via the global object.
+  window.chatbotkitWidgetInit = reveal;
+  withWidget(reveal);
+
+  if (btn) btn.addEventListener('click', function () {
+    withWidget(function (instance) {
+      try { instance.show(); instance.open = true; } catch (e) {}
+      // When the user closes the panel, hide the whole widget again so the
+      // default bubble never lingers — only our circle stays.
+      if (watch) clearInterval(watch);
+      watch = setInterval(function () {
+        if (!instance.open) { try { instance.hide(); } catch (e) {} clearInterval(watch); watch = null; }
+      }, 400);
+    });
+  });
+})();
+</script>
 </body>
 </html>
