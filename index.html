@@ -2836,7 +2836,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   </div>
   <div class="section-head daily">
     <div class="sh-title">📖 TEAMWORK READING</div>
-    <div class="sh-sub">Read aloud with a partner. See everyone's recordings below.</div>
+    <div class="sh-sub">Read aloud with a partner — finish a pair and you BOTH earn 2 🥚 (just 1 🥚 if it stays incomplete). See everyone's recordings below.</div>
   </div>
   <div id="dailyReadingHost"></div>
 </div>
@@ -4664,6 +4664,7 @@ async function _drRender(){
     }
   }
 
+  await _drClaimReadingBonus();
   _drRenderFeed(host);
 }
 
@@ -5276,6 +5277,46 @@ async function _drCommitParticipation(audioUrl, audioPath, audioMime){
   user.dailyReadingDoneFor = todayKey;
   // Refresh top-bar chip + global CTA so the new egg is visible immediately
   if (typeof updateCounts === 'function') updateCounts();
+}
+// Completion bonus: when a pair is fully complete (both partners recorded),
+// each partner earns +1 extra egg on top of their participation egg (2 total).
+// Awarded per-partner, claim-on-view, because Firestore rules forbid one
+// student writing eggs to another's account: the completer claims theirs right
+// after submitting (next _drRender), the first reader claims on their next
+// visit. A per-reader flag on the pair doc dedupes the claim.
+async function _drClaimReadingBonus(){
+  if (!user || !_drState.pairs) return;
+  var mine = null, role = null;
+  for (var i = 0; i < _drState.pairs.length; i++){
+    var p = _drState.pairs[i];
+    if (p.status !== 'complete') continue;
+    if (p.reader1Uid === user.id){ mine = p; role = 'reader1'; break; }
+    if (p.reader2Uid === user.id){ mine = p; role = 'reader2'; break; }
+  }
+  if (!mine) return;
+  var flagKey = role === 'reader1' ? 'reader1BonusClaimed' : 'reader2BonusClaimed';
+  if (mine[flagKey]) return; // already claimed locally
+  var pairRef = db.collection(DR_PASSAGES_COLLECTION).doc(_drState.passageId).collection('pairs').doc(mine.id);
+  var acctRef = db.collection(TC).doc(user.id);
+  var awarded = false;
+  try {
+    await db.runTransaction(async function(tx){
+      var ps = await tx.get(pairRef);
+      if (!ps.exists) return;
+      var pd = ps.data() || {};
+      if (pd.status !== 'complete' || pd[flagKey]) return; // not complete, or already claimed
+      var upd = {}; upd[flagKey] = true;
+      tx.update(pairRef, upd);
+      tx.update(acctRef, { gachaRolls: firebase.firestore.FieldValue.increment(1) });
+      awarded = true;
+    });
+  } catch(e){ console.warn('reading completion-bonus claim failed:', e); }
+  if (awarded){
+    user.gachaRolls = (user.gachaRolls || 0) + 1;
+    mine[flagKey] = true;
+    if (typeof updateCounts === 'function') updateCounts();
+    if (typeof toast === 'function') toast('🥚 Pair complete! +1 bonus egg', 'var(--gold)');
+  }
 }
 window._drRender = _drRender;
 
@@ -8059,6 +8100,14 @@ function _subOpenClasses(){
 }
 function _seatsLeft(c){
   if (!c) return 0;
+  // Absolute Beginner and Novice are sold as 2-seat classes in the arcade,
+  // counting ONLY gacha purchases — students added by hand in the Class Manager
+  // don't use up these seats. Once 2 arcade purchases land, the class is full
+  // and drops out of the shop.
+  if (c.classType === 'absolute' || c.classType === 'novice'){
+    var gachaTaken = (typeof c.gachaSeatsTaken === 'number') ? c.gachaSeatsTaken : 0;
+    return Math.max(0, 2 - gachaTaken);
+  }
   var seats = (typeof c.seats === 'number') ? c.seats : 0;
   var taken = (typeof c.seatsTaken === 'number') ? c.seatsTaken : 0;
   return Math.max(0, seats - taken);
@@ -8136,7 +8185,7 @@ function _drawShop(){
     '<div class="shop-card"' + (helpReason ? ' title="' + esc(helpReason) + '"' : '') + '>' +
       '<div class="shop-icon">🎟️</div>' +
       '<div class="shop-name">FRIDAY<br>EXTRA HELP</div>' +
-      '<div class="shop-desc">Group class w/ Mr. Calvin, Fridays at 7:15 PM Eastern (NY). Ask any questions you have.</div>' +
+      '<div class="shop-desc">Group class w/ Miss Wonjoo, Fridays at 7:15 PM Eastern (NY). Ask any questions you have.</div>' +
       '<div class="shop-price"><span style="color:var(--gold);">⭐ ' + PRICE_EXTRA_HELP + '</span> <span style="color:#888;font-size:13px;">pts</span></div>' +
       '<div class="shop-level-spacer" aria-hidden="true"></div>' +
       '<button class="btn btn-cyan btn-md ' + (canBuyHelp ? 'sparkle-btn' : '') + '" onclick="buyExtraHelp()" ' + (canBuyHelp ? '' : 'disabled') + '>' +
@@ -8206,14 +8255,14 @@ function _fmtDate(iso){
 
 /* ═══ BUY: FRIDAY EXTRA HELP ═══
  * Despite the legacy variable/function names (extraHelpCredits, buyExtraHelp),
- * this purchases a credit for a Friday GROUP class with Mr. Calvin where
+ * this purchases a credit for a Friday GROUP class with Miss Wonjoo where
  * students can ask any questions they have, not a 1-on-1. Fires a distinct
  * webhook event (purchase.friday_class) so Make.com can branch separately
  * from the 6-week purchase. */
 async function buyExtraHelp(){
   if (!user) return;
   if ((user.points||0) < PRICE_EXTRA_HELP){ toast('Not enough points.', 'var(--pink)'); return; }
-  if (!confirm('Purchase 1 Friday Group Class credit for ' + PRICE_EXTRA_HELP + ' points?\n\nThis lets you join a Friday group class with Mr. Calvin to ask any questions you have.\n\nYou currently have ' + user.points + ' points.')) return;
+  if (!confirm('Purchase 1 Friday Group Class credit for ' + PRICE_EXTRA_HELP + ' points?\n\nThis lets you join a Friday group class with Miss Wonjoo to ask any questions you have.\n\nYou currently have ' + user.points + ' points.')) return;
   playSelect();
   try {
     await db.collection(TC).doc(user.id).update({
