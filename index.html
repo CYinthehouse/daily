@@ -15499,24 +15499,31 @@ window.toggleVolPanel = toggleVolPanel;
 </button>
 
 <!-- ChatBotKit Arcade Helper widget — default launcher hidden, opened by #arcadeBotBtn -->
-<script id="chatbotkit-widget" src="https://static.chatbotkit.com/integrations/widget/v2.js" data-widget="cmq1s5gwn000104l8z9ovqg78" data-hidebutton="true" data-position="bottom-left"></script>
+<script id="chatbotkit-widget" src="https://static.chatbotkit.com/integrations/widget/v2.js" data-widget="cmq1s5gwn000104l8z9ovqg78" data-hidebutton="true" data-layout="popout"></script>
 
 <script>
 (function () {
   var btn = document.getElementById('arcadeBotBtn');
   var widget = null;
 
-  function onInit(instance) {
-    widget = instance;                  // keep the real instance, regardless of global name
+  // Only accept the real widget instance (window itself can sneak through event.target).
+  function isWidget(x){ return x && typeof x.restartConversation === 'function'; }
+
+  function capture(instance) {
+    if (!isWidget(instance)) return;
+    widget = instance;
     if (btn) btn.style.display = 'flex'; // reveal our circle once the bot is available
   }
 
-  // Documented init hook fires with the instance once it's available.
-  window.chatbotkitWidgetInit = onInit;
-
-  // Fallback in case the script loaded before this ran: try both possible globals.
+  // 1) documented global init function (fires with the instance directly)
+  window.chatbotkitWidgetInit = capture;
+  // 2) documented window init event (belt & suspenders)
+  window.addEventListener('chatbotkitWidgetInit', function (e) {
+    capture(e && (e.target || (e.detail && e.detail.target)));
+  });
+  // 3) fallback via whichever global object exists
   var g = window.chatbotkitWidget || window.chatbotkit;
-  if (g && g.instancePromise) g.instancePromise.then(onInit).catch(function(){});
+  if (g && g.instancePromise) g.instancePromise.then(capture).catch(function(){});
 
   function whenReady(inst) {
     if (inst && inst.ready) return Promise.resolve(inst);
@@ -15526,9 +15533,10 @@ window.toggleVolPanel = toggleVolPanel;
 
   if (btn) btn.addEventListener('click', function () {
     var inst = widget || ((window.chatbotkitWidget || window.chatbotkit || {}).instance);
-    if (!inst) return;
+    if (!isWidget(inst)) { console.log('[arcadeBot] widget not ready yet'); return; }
     whenReady(inst).then(function (i) {
-      try { i.open = !i.open; } catch (e) {}  // toggle the panel open/closed
+      try { i.open = !i.open; console.log('[arcadeBot] open ->', i.open); }
+      catch (e) { console.log('[arcadeBot] open failed', e); }
     });
   });
 })();
