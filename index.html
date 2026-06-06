@@ -7992,6 +7992,7 @@ function _cancelPolicy(){
 
 function renderShop(){
   if (!user) return;
+  _subOpenClasses();
   // Refresh the top-10 points leaderboard banner (independent of enrollment).
   if (typeof _lbRender === 'function') _lbRender();
   // Pull a fresh copy of the user doc on every shop open. The admin may have
@@ -8017,6 +8018,32 @@ function _refreshEnrollmentFromFirestore(){
     if (typeof d.points === 'number') user.points = d.points;
     if (typeof d.extraHelpCredits === 'number') user.extraHelpCredits = d.extraHelpCredits;
   }).catch(function(e){ console.warn('Shop enrollment refresh failed:', e); });
+}
+
+/* ═══ OPEN CLASSES (mirrored from Class Manager prescheduled slots) ═══ */
+var OPEN_CLASSES = [];
+var _openClassesUnsub = null;
+function _subOpenClasses(){
+  if (_openClassesUnsub) return;
+  try {
+    _openClassesUnsub = db.collection('open_classes')
+      .where('status', '==', 'open')
+      .onSnapshot(function(snap){
+        OPEN_CLASSES = snap.docs.map(function(d){ return Object.assign({ id: d.id }, d.data()); });
+        OPEN_CLASSES.sort(function(a, b){ return String(a.startISO || '').localeCompare(String(b.startISO || '')); });
+        _drawShop(); // no-op when the shop isn't on screen ($('shopGrid') guard)
+      }, function(e){ console.warn('open_classes sub:', e); });
+  } catch(e){ console.warn('open_classes sub init:', e); }
+}
+function _seatsLeft(c){
+  if (!c) return 0;
+  var seats = (typeof c.seats === 'number') ? c.seats : 0;
+  var taken = (typeof c.seatsTaken === 'number') ? c.seatsTaken : 0;
+  return Math.max(0, seats - taken);
+}
+function _classLabel(c){
+  if (!c) return 'Class';
+  return (c.level || c.classType || 'Class') + ' · starts ' + _fmtDate(c.startISO || c.startDate);
 }
 
 function _drawShop(){
@@ -8098,16 +8125,24 @@ function _drawShop(){
         : '<div class="shop-locked-spacer" aria-hidden="true"></div>') +
     '</div>';
 
-  // ── 6-Week Program card (with class level selector) ──
+  // ── 6-Week Program card (enroll into an open prescheduled class) ──
   var canBuy6NoFunds = pts >= PRICE_SIX_WEEK;
-  var canBuy6All = canBuy6 && canBuy6NoFunds;
+  var _openList = (typeof OPEN_CLASSES !== 'undefined' ? OPEN_CLASSES : []).filter(function(c){ return _seatsLeft(c) > 0; });
+  var hasOpen = _openList.length > 0;
+  var canBuy6All = canBuy6 && canBuy6NoFunds && hasOpen;
   var sixReason = '';
   if (!canBuy6) sixReason = 'You already have an active enrollment. Finish it first.';
+  else if (!hasOpen) sixReason = 'No classes are open for enrollment right now.';
   else if (!canBuy6NoFunds) sixReason = 'Not enough points.';
 
-  var levelOptions = CLASS_LEVELS.map(function(lvl){
-    return '<option value="' + esc(lvl) + '">' + esc(lvl) + '</option>';
+  var classOptions = _openList.map(function(c){
+    var left = _seatsLeft(c);
+    return '<option value="' + esc(c.id) + '">' + esc(_classLabel(c)) + ' — ' + left + ' seat' + (left === 1 ? '' : 's') + ' left</option>';
   }).join('');
+
+  var openCountLine = hasOpen
+    ? '<div style="font-size:12px;color:var(--cyan,#41c0ff);margin-bottom:6px;">' + _openList.length + ' class' + (_openList.length === 1 ? '' : 'es') + ' open for enrollment</div>'
+    : '';
 
   var sixCardHtml =
     '<div class="shop-card"' + (sixReason ? ' title="' + esc(sixReason) + '"' : '') + '>' +
@@ -8115,10 +8150,11 @@ function _drawShop(){
       '<div class="shop-name">6-WEEK<br>PROGRAM</div>' +
       '<div class="shop-desc">Full cohort class, 6 weeks of live instruction.</div>' +
       '<div class="shop-price"><span style="color:var(--gold);">⭐ ' + PRICE_SIX_WEEK + '</span> <span style="color:#888;font-size:13px;">pts</span></div>' +
+      openCountLine +
       '<div class="shop-level-wrap">' +
-        '<label class="shop-level-label">CLASS LEVEL</label>' +
+        '<label class="shop-level-label">CHOOSE A CLASS</label>' +
         '<select id="sixWeekLevel" class="shop-level-select" ' + (canBuy6All ? '' : 'disabled') + '>' +
-          levelOptions +
+          (hasOpen ? classOptions : '<option value="">— none open —</option>') +
         '</select>' +
       '</div>' +
       '<button class="btn btn-gold btn-md ' + (canBuy6All ? 'sparkle-btn' : '') + '" onclick="buySixWeek()" ' + (canBuy6All ? '' : 'disabled') + '>' +
@@ -8222,15 +8258,18 @@ async function buySixWeek(){
   if (!_canBuySixWeek()){ toast('Finish your current enrollment first.', 'var(--pink)'); return; }
   if ((user.points||0) < PRICE_SIX_WEEK){ toast('Not enough points.', 'var(--pink)'); return; }
   var sel = document.getElementById('sixWeekLevel');
-  var classLevel = sel ? sel.value : CLASS_LEVELS[0];
-  if (CLASS_LEVELS.indexOf(classLevel) === -1){ toast('Pick a valid class level.', 'var(--pink)'); return; }
+  var slotId = sel ? sel.value : '';
+  var chosen = (typeof OPEN_CLASSES !== 'undefined' ? OPEN_CLASSES : []).filter(function(c){ return c.id === slotId; })[0];
+  if (!chosen){ toast('Pick a class to enroll in.', 'var(--pink)'); return; }
+  if (_seatsLeft(chosen) <= 0){ toast('That class is full.', 'var(--pink)'); return; }
   playSelect();
   // Open policy modal, actual purchase happens after sign-off
-  _showSixWeekPolicyModal(classLevel);
+  _showSixWeekPolicyModal(slotId);
 }
 window.buySixWeek = buySixWeek;
 
-function _showSixWeekPolicyModal(classLevel){
+function _showSixWeekPolicyModal(slotId){
+  var chosen = (typeof OPEN_CLASSES !== 'undefined' ? OPEN_CLASSES : []).filter(function(c){ return c.id === slotId; })[0] || {};
   // Remove any existing modal
   var ex = document.getElementById('policyModalOverlay');
   if (ex) ex.remove();
@@ -8261,13 +8300,14 @@ function _showSixWeekPolicyModal(classLevel){
           '<input type="text" id="policyNameInput" class="policy-name-input" autocomplete="off" placeholder="Your full name" />' +
         '</div>' +
         '<div class="policy-summary">' +
-          'Class level: <b>' + esc(classLevel) + '</b><br>' +
+          'Class: <b>' + esc(_classLabel(chosen)) + '</b><br>' +
+          'Seats left: <b>' + _seatsLeft(chosen) + '</b><br>' +
           'Cost: <b style="color:var(--gold);">' + PRICE_SIX_WEEK + ' pts</b>' +
         '</div>' +
       '</div>' +
       '<div class="policy-actions">' +
         '<button class="btn btn-ghost btn-md" onclick="_closePolicyModal()">CANCEL</button>' +
-        '<button class="btn btn-gold btn-md" id="policyConfirmBtn" disabled onclick="_confirmSixWeekPurchase(\'' + esc(classLevel) + '\')">PURCHASE</button>' +
+        '<button class="btn btn-gold btn-md" id="policyConfirmBtn" disabled onclick="_confirmSixWeekPurchase(\'' + esc(slotId) + '\')">PURCHASE</button>' +
       '</div>' +
     '</div>';
   document.body.appendChild(ov);
@@ -8308,47 +8348,59 @@ function _closePolicyModal(){
 }
 window._closePolicyModal = _closePolicyModal;
 
-async function _confirmSixWeekPurchase(classLevel){
+async function _confirmSixWeekPurchase(slotId){
   if (!user) return;
-  // Re-validate everything (button could have been re-enabled via DevTools)
   if (!_canBuySixWeek()){ toast('Finish your current enrollment first.', 'var(--pink)'); _closePolicyModal(); return; }
   if ((user.points||0) < PRICE_SIX_WEEK){ toast('Not enough points.', 'var(--pink)'); _closePolicyModal(); return; }
-  if (CLASS_LEVELS.indexOf(classLevel) === -1){ toast('Invalid class level.', 'var(--pink)'); _closePolicyModal(); return; }
+  var chosen = (typeof OPEN_CLASSES !== 'undefined' ? OPEN_CLASSES : []).filter(function(c){ return c.id === slotId; })[0];
+  if (!chosen){ toast('That class is no longer available.', 'var(--pink)'); _closePolicyModal(); _drawShop(); return; }
+  if (_seatsLeft(chosen) <= 0){ toast('That class just filled up.', 'var(--pink)'); _closePolicyModal(); _drawShop(); return; }
   var chk = document.getElementById('policyAgreeChk');
   var nameInput = document.getElementById('policyNameInput');
   if (!chk || !chk.checked){ toast('Please check the agreement box.', 'var(--pink)'); return; }
   var signedName = (nameInput && nameInput.value || '').trim();
   if (signedName.length < 2){ toast('Please type your name to sign.', 'var(--pink)'); return; }
 
-  // Disable button to prevent double-submit
   var confirmBtn = document.getElementById('policyConfirmBtn');
   if (confirmBtn){ confirmBtn.disabled = true; confirmBtn.textContent = 'PROCESSING…'; }
 
   try {
     var enrollment = {
       type: 'six_week',
-      classLevel: classLevel,
+      classLevel: chosen.level || chosen.classType || '',
+      sourceSlotId: chosen.id,
       status: 'pending',
       purchasedAt: new Date().toISOString(),
-      startDate: null,
-      endDate: null,
+      startDate: chosen.startISO || null,
+      endDate: chosen.endISO || null,
       adminOverride: false,
       signedName: signedName,
       signedAt: new Date().toISOString(),
       signedPolicyVersion: '2026-04-30'
     };
-    await db.collection(TC).doc(user.id).update({
+    var batch = db.batch();
+    batch.update(db.collection(TC).doc(user.id), {
       points: firebase.firestore.FieldValue.increment(-PRICE_SIX_WEEK),
       enrollment: enrollment
     });
+    batch.set(db.collection('enrollment_requests').doc(), {
+      uid: user.id,
+      sourceSlotId: chosen.id,
+      name: user.displayName || user.username || '',
+      email: user.username || user.displayName || '',
+      status: 'pending',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    await batch.commit();
     user.points -= PRICE_SIX_WEEK;
     user.enrollment = enrollment;
     _closePolicyModal();
-    toast('ENROLLED in ' + classLevel + '! Calvin will message you soon.', 'var(--gold)');
+    toast('ENROLLED in ' + (chosen.level || 'your class') + '! Calvin will message you soon.', 'var(--gold)');
     playSfx(SOUND_WIN, 0.95);
     fireWebhook('purchase.six_week', {
-      classType: classLevel,
-      classDate: null,
+      classType: chosen.level || chosen.classType || '',
+      classDate: chosen.startISO || null,
+      sourceSlotId: chosen.id,
       pointsSpent: PRICE_SIX_WEEK,
       item: 'six_week_program',
       enrollment: enrollment,
@@ -15475,71 +15527,7 @@ window.toggleVolPanel = toggleVolPanel;
 })();
 </script>
 
-<!-- Custom bottom-left launcher for the Arcade Helper bot -->
-<style>
-  #arcadeBotBtn{
-    position:fixed; left:16px; bottom:16px; z-index:2147483646;
-    width:56px; height:56px; border-radius:50%;
-    background:#0a0a15; border:2px solid var(--cyan,#41c0ff);
-    box-shadow:3px 3px 0 rgba(0,0,0,0.7);
-    display:none; align-items:center; justify-content:center;
-    cursor:pointer; padding:0; transition:transform 0.1s, box-shadow 0.1s;
-  }
-  #arcadeBotBtn:hover{ transform:translateY(-2px); }
-  #arcadeBotBtn:active{ transform:translate(2px,2px); box-shadow:1px 1px 0 rgba(0,0,0,0.7); }
-  #arcadeBotBtn .arcade-bot-emoji{
-    font-size:24px; line-height:1; display:inline-block;
-    animation:arcadeBotBob 3.2s ease-in-out infinite;
-  }
-  @keyframes arcadeBotBob{ 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-3px);} }
-</style>
-
-<button id="arcadeBotBtn" title="Ask the Arcade Helper" aria-label="Open chat">
-  <span class="arcade-bot-emoji">💬</span>
-</button>
-
-<!-- ChatBotKit Arcade Helper widget — default launcher hidden, opened by #arcadeBotBtn -->
-<script id="chatbotkit-widget" src="https://static.chatbotkit.com/integrations/widget/v2.js" data-widget="cmq1s5gwn000104l8z9ovqg78" data-hidebutton="true" data-layout="popout"></script>
-
-<script>
-(function () {
-  var btn = document.getElementById('arcadeBotBtn');
-  var widget = null;
-
-  // Only accept the real widget instance (window itself can sneak through event.target).
-  function isWidget(x){ return x && typeof x.restartConversation === 'function'; }
-
-  function capture(instance) {
-    if (!isWidget(instance)) return;
-    widget = instance;
-    if (btn) btn.style.display = 'flex'; // reveal our circle once the bot is available
-  }
-
-  // 1) documented global init function (fires with the instance directly)
-  window.chatbotkitWidgetInit = capture;
-  // 2) documented window init event (belt & suspenders)
-  window.addEventListener('chatbotkitWidgetInit', function (e) {
-    capture(e && (e.target || (e.detail && e.detail.target)));
-  });
-  // 3) fallback via whichever global object exists
-  var g = window.chatbotkitWidget || window.chatbotkit;
-  if (g && g.instancePromise) g.instancePromise.then(capture).catch(function(){});
-
-  function whenReady(inst) {
-    if (inst && inst.ready) return Promise.resolve(inst);
-    if (inst && inst.readyPromise) return inst.readyPromise.then(function () { return inst; });
-    return Promise.resolve(inst);
-  }
-
-  if (btn) btn.addEventListener('click', function () {
-    var inst = widget || ((window.chatbotkitWidget || window.chatbotkit || {}).instance);
-    if (!isWidget(inst)) { console.log('[arcadeBot] widget not ready yet'); return; }
-    whenReady(inst).then(function (i) {
-      try { i.open = !i.open; console.log('[arcadeBot] open ->', i.open); }
-      catch (e) { console.log('[arcadeBot] open failed', e); }
-    });
-  });
-})();
-</script>
+<!-- ChatBotKit Arcade Helper widget -->
+<script id="chatbotkit-widget" src="https://static.chatbotkit.com/integrations/widget/v2.js" data-widget="cmq1s5gwn000104l8z9ovqg78"></script>
 </body>
 </html>
