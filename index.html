@@ -3255,6 +3255,10 @@ const POINTS_BY_RARITY = {
 /* ═══ SHOP / ENROLLMENT CONFIG ═══ */
 // Make.com webhook. Leave blank ('') to disable, purchases still work, just no DM fires.
 const MAKE_WEBHOOK_URL = 'https://hook.us1.make.com/mk2cas4gre8l7e5hgzw4up0462clanab';
+// Make.com webhook that pings Discord when a brand-new account signs up.
+// Paste your Make webhook URL between the quotes to turn this on. While it's
+// empty, the signup ping simply no-ops (no failed requests).
+const SIGNUP_WEBHOOK = 'https://hook.us1.make.com/01h4hrr4c7tkhsvloil36kx5aj1m5kjl';
 const CLASS_LEVELS = ['Novice', 'Beginner', 'Advanced Beginner'];
 const PRICE_EXTRA_HELP = 300;     // Friday Extra Help (one session)
 const PRICE_SIX_WEEK = 1850;      // 6-week program
@@ -3910,6 +3914,7 @@ async function doSignup(){
       isAdmin: _isAdminEmail(emailLower),
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
+    fireSignupWebhook({ email: emailLower, displayName: email, userId: uid });
     await _loadUserProfile(cred.user);
     playSfx(SOUND_WIN, 0.9);
     enterApp();
@@ -7912,6 +7917,23 @@ window._advmDelete = _advmDelete;
    Fire-and-forget, never blocks purchase. Required fields for every event:
      event, who, email, classDate, pointsSpent, classType
    Plus extras (enrollment object, credit balance, etc.) passed per call. */
+// Fire-and-forget ping to the dedicated signup webhook (Discord via Make).
+// Does nothing until SIGNUP_WEBHOOK is set. Keeps Content-Type intact (no
+// mode:'no-cors') so Make parses the JSON into structured fields.
+function fireSignupWebhook(data){
+  if (!SIGNUP_WEBHOOK) return;
+  try {
+    fetch(SIGNUP_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(Object.assign({
+        event: 'account.signup',
+        timestamp: new Date().toISOString()
+      }, data || {}))
+    }).catch(function(e){ console.warn('Signup webhook failed:', e); });
+  } catch(e){ console.warn('Signup webhook error:', e); }
+}
+
 function fireWebhook(event, payload){
   if (!MAKE_WEBHOOK_URL) return;
   try {
