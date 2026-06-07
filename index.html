@@ -19,6 +19,10 @@
   --border:rgba(255,255,255,0.15);--ps:'Press Start 2P',monospace;
   --ns:'Noto Sans',sans-serif;--vt:'VCR OSD Mono',monospace;
   --shadow:2px 2px 0 rgba(0,0,0,0.6);
+  /* Continuous device scale, set by JS (head script) from viewport width +
+   * orientation. Multiplies with --app-zoom in the  body > div  zoom rule, so
+   * one value scales every visible element. 1 = no scaling (desktop default). */
+  --device-scale:1;
   --ps-outline:-2px -2px 0 #000024,2px -2px 0 #000024,-2px 2px 0 #000024,2px 2px 0 #000024,0 -2px 0 #000024,0 2px 0 #000024,-2px 0 0 #000024,2px 0 0 #000024;
   --ps-outline-sm:-1px -1px 0 #000024,1px -1px 0 #000024,-1px 1px 0 #000024,1px 1px 0 #000024;
   /* 12-direction hard WHITE pixel outline, used by the daily difficulty ribbons. */
@@ -105,11 +109,11 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .form-expanding{animation:formExpand 0.35s ease-out both;overflow:hidden;}
 
 /* ── TOP BAR ── */
-#topBar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:#08081a;border-bottom:2px solid rgba(255,255,255,0.2);position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:10px;zoom:1.2;}
+#topBar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:#08081a;border-bottom:2px solid rgba(255,255,255,0.2);position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:10px;zoom:calc(1.2 * var(--device-scale, 1));}
 .topbar-logo img{height:44px;width:auto;display:block;}
 .topbar-user{font-family:var(--ps);font-size:11px;color:var(--green);display:flex;align-items:center;gap:12px;text-shadow:var(--ps-outline-sm);flex-wrap:wrap;}
 /* Font-size controls row, sits beneath the topBar, right-aligned. Hidden on login. */
-#fontControlsRow{display:flex;justify-content:flex-end;padding:6px 24px;background:#08081a;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;z-index:99;zoom:1.2;}
+#fontControlsRow{display:flex;justify-content:flex-end;padding:6px 24px;background:#08081a;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;z-index:99;zoom:calc(1.2 * var(--device-scale, 1));}
 .font-ctrls{display:flex;align-items:center;gap:6px;}
 .font-ctrls .tfc-label{font-family:var(--ps);font-size:9px;color:#9aa3b8;text-shadow:var(--ps-outline-sm);}
 .font-ctrls .tfc-btn{background:#1e293b;color:#e8eaf2;border:1px solid #2a3650;border-radius:5px;padding:5px 9px;font-family:'Noto Sans',sans-serif;font-weight:700;font-size:11px;cursor:pointer;transition:background 0.15s;min-width:30px;line-height:1;}
@@ -1375,8 +1379,15 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
  * accurate) while scaling everything the user sees: #app, the background
  * grid, the toast, and any modal overlays the JS appends to <body> at
  * runtime (policy modal, ea-modal date/level pickers, drm modals,
- * freeEggsScreen, etc.) */
-body > div { zoom: var(--app-zoom, 1.2); }
+ * freeEggsScreen, etc.)
+ *
+ * The zoom is the PRODUCT of two independent multipliers:
+ *   --app-zoom      the user's A-/A/A+ text-size preference (0.8–1.5, default 1.2)
+ *   --device-scale  the viewport/orientation scale set by the head script
+ * so the layout scales with the device while still honoring the user's
+ * chosen text size. Desktop keeps --device-scale = 1, i.e. exactly the prior
+ * behavior (net zoom 1.2). */
+body > div { zoom: calc(var(--app-zoom, 1.2) * var(--device-scale, 1)); }
 
 /* The gacha reveal sequence (egg crack, monster reveal, win popup, rarity
  * tables, epic-effects opt-in) must ALWAYS render at native scale, never
@@ -2682,7 +2693,157 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   .chip{display:none;}
   .chip.cyan{display:inline-block;} /* keep rolls visible */
 }
+
+/* ════════════════════════════════════════════════════════════════════
+   RESPONSIVE / MULTI-DEVICE LAYER
+   ────────────────────────────────────────────────────────────────────
+   Proportional scaling is handled CONTINUOUSLY by --device-scale (set in
+   the head script) multiplying the existing  body > div { zoom: … }  rule,
+   so every visible element scales with the viewport in one place. That
+   zoom mechanism is the same one the app already shipped at 1.2, so fixed
+   overlays/modals behave exactly as before — only the multiplier is now
+   viewport-aware. Hard design floor: 360px (Samsung Galaxy base).
+
+   The rules below cover ONLY what proportional zoom can't:
+     • structural reflow of the few fixed-column grids,
+     • landscape phones (height ≤480px, e.g. iPhone landscape ~390px tall),
+     • touch tablets that sit in the desktop width bucket (iPad / Android
+       landscape 1024–1376px) where :hover sticks and tap targets shrink.
+   ════════════════════════════════════════════════════════════════════ */
+
+/* ── Fixed-column grids that don't auto-reflow ── */
+@media(max-width:560px){
+  /* Active Recall match-up: 5 columns → 3 so cells stay finger-tappable. */
+  .rg-arrows,.rg-row{grid-template-columns:repeat(3,1fr);}
+}
+@media(max-width:768px){
+  /* Admin conjugation manager (6-col verb grid): scroll horizontally rather
+     than crush each cell. .advm-verbs is the scroll container around them. */
+  .advm-verbs{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .advm-verbs-head,.advm-verb-row{min-width:560px;}
+}
+
+/* ════ SHORT VIEWPORT — landscape phones (height ≤480px) ════
+   iPhone/Galaxy landscape are only ~360–440px TALL. A modal centered in
+   that height overflows above/below and can't be reached, so switch the
+   class-based fixed overlays to top-aligned + internally scrollable and
+   trim the vertical chrome. (Game/reveal overlays are pinned to zoom:1 and
+   keep their own fit logic — intentionally untouched here.) */
+@media(max-height:480px){
+  #topBar{padding:6px 14px;}
+  .topbar-logo img{height:28px;}
+  #fontControlsRow{padding:3px 14px;}
+  .sub-screen{padding:12px 16px;}
+  .menu-header{margin-bottom:14px;}
+  .points-info-modal,.mtip-modal,.prof-overlay,.drm-modal,
+  .subrev-overlay,.policy-overlay,#freeEggsScreen{
+    align-items:flex-start;
+    overflow-y:auto;
+    padding:10px;
+  }
+  .policy-modal{max-height:calc(100vh - 20px);}
+}
+
+/* ════ TOUCH DEVICES (no hover + coarse pointer) ════
+   Fires on phones AND on iPad / Android tablets that land in the desktop
+   width bucket but are finger-driven. (1) Cancel hover transforms that
+   stick after a tap; (2) ensure the smaller controls clear ~44px. */
+@media(hover:none) and (pointer:coarse){
+  .btn:hover,.tab-toggle-btn:hover,.menu-card:hover,.sc-card:hover,
+  .inbox-card:hover,.weekly-bonus-banner:hover,.weekly-bonus-container:hover,
+  .dr-rec-btn:hover,.prof-avatar-wrap .btn:hover,.points-info-close:hover,
+  .mtip-btn:hover,.mtip-close:hover,.subrev-close:hover,
+  ._grevbtn:hover,._gsrb:hover,._gnxtb:hover,._gpixelBtn:hover,._ghoverlift:hover{
+    transform:none;
+  }
+  .tfc-btn{min-width:40px;min-height:40px;}
+  .filter-chip,.sc-dd-trigger,.sc-dd-opt{min-height:40px;}
+  .points-info-close,.mtip-close,.subrev-close{min-width:40px;min-height:40px;}
+}
+
+/* ════ MOBILE GACHA CARD — fix the squished rarity rows ════
+   On a ~340px-wide portrait card the side-by-side [label | value | badge | pct]
+   row collapses the value column so far the name wraps one letter per line (the
+   "vertical wall" in the screenshots). On phone PORTRAIT we stack each row: the
+   CHARACTER / COLOR / ITEM label sits on its own line, with the value (+ badge +
+   pct) left-aligned directly beneath at full width. We also widen the card and
+   trim its padding so the value gets more room. Applies to BOTH the reveal popup
+   and the showcase re-view — they share the same ._grc / ._grrw component. */
+@media(max-width:640px){
+  ._grc{ width:97vw; padding:16px 13px; }
+}
+@media(orientation:portrait) and (max-width:640px){
+  ._grrw{ flex-wrap:wrap; align-items:center; padding:8px 12px; gap:calc(6px * var(--gc-fs)); }
+  ._grrw ._grrl{
+    flex:0 0 100%; width:100%;
+    border-right:none; border-bottom:1px solid #333;
+    padding-right:0; padding-bottom:5px; margin-bottom:3px;
+  }
+  ._grrw ._grrn{
+    flex:1 1 auto; text-align:left;
+    white-space:normal; word-break:normal; overflow-wrap:break-word;
+  }
+}
+
+/* ════ EGG-CRACK GAME — landscape phones ════
+   At native scale the egg column (roll counter + egg + "TAP TO CRACK" hint +
+   "X / 5") is taller than a ~390px landscape phone, so the bottom items fall
+   below the fold (you only see the egg + timer). Scale just the CONTENT COLUMN
+   down on short viewports — the ._gov overlay itself stays full-viewport so its
+   opaque background keeps covering the screen behind it (no edge leak). */
+@media(max-height:480px){
+  #_gachaOverlay ._gcol{ transform:scale(0.70); transform-origin:center center; }
+}
+
+/* ════ DIFFICULTY RIBBON — phone portrait ════
+   The corner difficulty band reads oversized on narrow portrait tiles. Shrink
+   it ~30%; the geometry stays centered on the same corner (band centre is
+   preserved: scaling width/height/top/left together by ~0.70). */
+@media(orientation:portrait) and (max-width:640px){
+  #dailyPickerGrid .menu-card.daily .daily-ribbon{
+    width:196px; height:24px; top:37px; left:-49px; font-size:9px; letter-spacing:.5px;
+  }
+  #dailyPickerGrid .menu-card.daily .daily-ribbon::before{ inset:2px 0 auto 0; height:1px; }
+}
 </style>
+<script>
+/* ── DEVICE SCALE (continuous, viewport + orientation aware) ──────────────
+ * Sets the inherited custom property --device-scale on <html>. The stylesheet
+ * rule  body > div { zoom: calc(var(--app-zoom) * var(--device-scale)) }
+ * multiplies it with the user's text-size preference, scaling every visible
+ * element proportionally. Lives in <head> so it runs BEFORE first paint (no
+ * layout flash); re-runs on resize / orientationchange.
+ *
+ * Model: take the GENTLER of a width-driven and a height-driven scale, so
+ * whichever dimension is more constrained wins — portrait phones are sized by
+ * width, SHORT landscape phones are compressed by height. Capped at 1.0 (never
+ * magnifies past the app's baseline) with a hard 360px floor. The four anchor
+ * pairs below are the only tuning knobs.
+ */
+(function(){
+  // width:  360px → 0.70   …   1080px+ → 1.00
+  var W_MIN=360, W_MAX=1080, WS_MIN=0.70, WS_MAX=1.00;
+  // height: 380px → 0.62   …    820px+ → 1.00   (landscape-phone guard)
+  var H_MIN=380, H_MAX=820, HS_MIN=0.62, HS_MAX=1.00;
+  function lerp(v,inA,inB,outA,outB){
+    if(v<=inA) return outA;
+    if(v>=inB) return outB;
+    return outA + (v-inA)*(outB-outA)/(inB-inA);
+  }
+  function compute(){
+    var w=window.innerWidth||document.documentElement.clientWidth||360;
+    var h=window.innerHeight||document.documentElement.clientHeight||640;
+    var s=Math.min(lerp(w,W_MIN,W_MAX,WS_MIN,WS_MAX), lerp(h,H_MIN,H_MAX,HS_MIN,HS_MAX));
+    return Math.round(s*1000)/1000; // 3dp — avoids sub-pixel jitter on resize
+  }
+  function apply(){
+    try{ document.documentElement.style.setProperty('--device-scale', String(compute())); }catch(e){}
+  }
+  apply();
+  window.addEventListener('resize', apply);
+  window.addEventListener('orientationchange', apply);
+})();
+</script>
 </head>
 <body>
 <div class="bg-stars"></div>
@@ -6838,13 +6999,32 @@ const APP_ZOOM_DEFAULT = 1.2;
 const APP_ZOOM_MIN = 0.8;
 const APP_ZOOM_MAX = 1.5;
 const APP_ZOOM_STEP = 0.1;
+/* Device/orientation-aware DEFAULT for the A-/A/A+ text size, used only when
+ * the user hasn't explicitly picked a size. Phones get a smaller default so
+ * the retro UI isn't oversized on small screens:
+ *   • mobile PORTRAIT  → 1.0  (2 steps below the 1.2 baseline)
+ *   • mobile LANDSCAPE → 1.1  (1 step below)
+ *   • desktop / tablet → 1.2  (unchanged)
+ * We gate on innerWidth + a matchMedia orientation check (NOT innerHeight) so
+ * an on-screen keyboard, which only shrinks height, can't flip the size.
+ * Phone portrait is ≤640px wide; phone landscape is ≤960px wide (the long
+ * side: phones top out ~956px, the next tablet up — iPad mini landscape — is
+ * 1133px, so 960 cleanly separates them). */
+function _defaultZoomForViewport(){
+  var w = window.innerWidth || document.documentElement.clientWidth || 1024;
+  var portrait = !window.matchMedia || window.matchMedia('(orientation: portrait)').matches;
+  if (portrait) return (w <= 640) ? 1.0 : APP_ZOOM_DEFAULT;   // mobile portrait
+  return (w <= 960) ? 1.1 : APP_ZOOM_DEFAULT;                  // mobile landscape
+}
 function _getZoom(){
-  var v = APP_ZOOM_DEFAULT;
-  try { var s = localStorage.getItem('appZoom'); if (s) v = parseFloat(s); } catch(e){}
-  if (isNaN(v) || v < APP_ZOOM_MIN) v = APP_ZOOM_DEFAULT;
+  // A stored value means the user explicitly chose a size — honor it.
+  // Otherwise fall back to the device/orientation default.
+  var v = _defaultZoomForViewport();
+  try { var s = localStorage.getItem('appZoom'); if (s !== null && s !== '') v = parseFloat(s); } catch(e){}
+  if (isNaN(v) || v < APP_ZOOM_MIN) v = _defaultZoomForViewport();
   return Math.max(APP_ZOOM_MIN, Math.min(APP_ZOOM_MAX, v));
 }
-function _applyZoom(v){
+function _applyZoom(v, persist){
   document.body.style.setProperty('--app-zoom', String(v));
   // Reveal card scales with the A-/A/A+ text setting too, but normalized so the
   // DEFAULT zoom (1.2) renders the card at its native size (scale 1.0). The card
@@ -6853,16 +7033,28 @@ function _applyZoom(v){
   var rs = v / APP_ZOOM_DEFAULT;
   rs = Math.max(0.82, Math.min(1.12, rs));
   document.body.style.setProperty('--reveal-scale', String(rs));
-  try { localStorage.setItem('appZoom', String(v)); } catch(e){}
+  // Persist ONLY an explicit user choice. Auto-applied defaults are left
+  // unsaved so they keep tracking the device + orientation — e.g. a phone
+  // rotating portrait↔landscape re-picks 1.0↔1.1 on its own.
+  if (persist) { try { localStorage.setItem('appZoom', String(v)); } catch(e){} }
 }
 function _fontDelta(steps){
   var v = _getZoom() + steps * APP_ZOOM_STEP;
   v = Math.round(v * 10) / 10; // avoid 1.0000001 drift
   v = Math.max(APP_ZOOM_MIN, Math.min(APP_ZOOM_MAX, v));
-  _applyZoom(v);
+  _applyZoom(v, true); // explicit choice → persist
 }
-function _fontReset(){ _applyZoom(APP_ZOOM_DEFAULT); }
-function _initFontSize(){ _applyZoom(_getZoom()); }
+function _fontReset(){
+  // "Reset" drops any custom size and returns to the smart device default,
+  // which then resumes tracking orientation.
+  try { localStorage.removeItem('appZoom'); } catch(e){}
+  _applyZoom(_defaultZoomForViewport(), false);
+}
+function _initFontSize(){ _applyZoom(_getZoom(), false); }
+// Re-evaluate on rotate/resize so the auto default tracks orientation. If the
+// user has an explicit saved size, _getZoom() returns it and this is a no-op.
+window.addEventListener('orientationchange', _initFontSize);
+window.addEventListener('resize', _initFontSize);
 window._fontDelta = _fontDelta;
 window._fontReset = _fontReset;
 
@@ -6877,7 +7069,7 @@ window._fontReset = _fontReset;
  * once, wipe the listed UI prefs, then write the new version stamp and
  * behave normally afterward.
  */
-const APP_SETTINGS_VERSION = '2026-05-12-b';
+const APP_SETTINGS_VERSION = '2026-06-07-a';
 const APP_SETTINGS_VERSION_KEY = 'appSettingsVersion';
 // List of localStorage keys to wipe on a forced reset. Add new UI prefs here
 // if they ever need to be force-cleared in a future version bump.
@@ -10574,7 +10766,7 @@ function _createEggOverlay(){
         '<div class="_gfl" id="_gfl"></div>' +
         '<div class="_glb" id="_glb"></div>' +
         '<div class="_ggrip" id="_ggrip"><div class="ring"></div><div class="ring"></div><div class="ring"></div><div class="ring"></div></div>' +
-        '<div style="position:relative;display:flex;flex-direction:column;align-items:center;z-index:1;">' +
+        '<div class="_gcol" style="position:relative;display:flex;flex-direction:column;align-items:center;z-index:1;">' +
             '<div id="_eggQueueInfo" class="_gqinfo"></div>' +
             '<div class="_gtimerbox" id="_gtimerbox">' +
                 '<div class="_gtbar" id="_gtbar"><div class="_gtfill" id="_gtfill"></div></div>' +
