@@ -9728,7 +9728,7 @@ function showCardDetail(idx){
   var closeBtnHtml = '<button id="_cdClose" class="_gpixelBtn" aria-label="Close" style="position:absolute;top:10px;right:10px;z-index:10;background:#ff4444;color:#fff;border:2px solid #cc2222;font-family:\'Press Start 2P\',monospace;font-size:12px;width:32px;height:32px;border-radius:2px;cursor:pointer;box-shadow:2px 2px 0 rgba(0,0,0,0.8);padding:0;line-height:1;display:flex;align-items:center;justify-content:center;text-shadow:-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000;">\u2715</button>';
 
   ro.innerHTML =
-    '<div class="_grc" data-rarity="' + color.rarity + '" style="position:relative;">' +
+    '<div class="_grc" data-rarity="' + color.rarity + '" style="position:relative;--gc-fs:' + (_gcFontScale || 1) + ';">' +
       closeBtnHtml +
       '<div class="_griw _detail _anim-' + animal.key + holoClass + glitterClass + '">' +
         '<div class="_gholoS"></div>' +
@@ -10703,6 +10703,7 @@ function _injectGachaStyle(){
         '@media(max-width:640px),(max-height:480px){._grov{align-items:flex-start;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 8px;}}',
         '@media(orientation:portrait) and (max-width:640px){._grc{width:98vw;}}',
         '@media(max-height:480px){._grc{width:96vw;max-width:none;}}',
+        '@media(max-width:640px),(max-height:480px){._grc{zoom:0.65;}}',
         '@media(orientation:portrait) and (max-width:640px){._grrw{flex-wrap:wrap;align-items:center;padding:8px 12px;gap:calc(6px * var(--gc-fs));}}',
         '@media(orientation:portrait) and (max-width:640px){._grrw ._grrl{flex:0 0 100%;width:100%;border-right:none;border-bottom:1px solid #333;padding-right:0;padding-bottom:5px;margin-bottom:3px;}}',
         '@media(orientation:portrait) and (max-width:640px){._grrw ._grrn{flex:1 1 auto;text-align:left;white-space:normal;word-break:normal;overflow-wrap:break-word;}}'
@@ -11423,10 +11424,14 @@ var _eggPreloadImg = null;   // persistent ref for the early monster-image prelo
 function _gachaIsMobileViewport(){
   return (window.innerWidth <= 640) || (window.innerHeight <= 480);
 }
-// Default card font scale (--gc-fs). Bigger on mobile so the card text reads
-// close to the egg-crack "CLICK TO CRACK" size (~20% smaller); 1 elsewhere.
+// Default card font scale (--gc-fs). On mobile the card no longer shrinks to
+// fit (the overlay scrolls), so the base scale already reads at full size — 1.0
+// keeps the contents from feeling oversized. (Was 1.35; trimmed ~25% per feel.)
 function _gachaDefaultFontScale(){
-  return _gachaIsMobileViewport() ? 1.35 : 1;
+  // Card overall size on mobile is handled by the CSS zoom on ._grc (injected
+  // responsive block). Font scale stays at 1 so the in-card A-/A+ remains a
+  // pure text-size control layered on top of that.
+  return 1;
 }
 
 // Per-session font scale for the reveal card's inner contents. Applied via the
@@ -11434,7 +11439,7 @@ function _gachaDefaultFontScale(){
 // persists across rolls in the session. Larger values overflow the card body
 // into a scroll region rather than rescaling the whole card.
 var _gcFontScale = _gachaDefaultFontScale();
-var _GC_FS_MIN = 0.8, _GC_FS_MAX = 1.8, _GC_FS_STEP = 0.1;
+var _GC_FS_MIN = 0.55, _GC_FS_MAX = 1.8, _GC_FS_STEP = 0.1;
 function _gcAdjustFont(dir){
     _gcFontScale = Math.max(_GC_FS_MIN, Math.min(_GC_FS_MAX,
         Math.round((_gcFontScale + dir * _GC_FS_STEP) * 10) / 10));
