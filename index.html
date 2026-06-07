@@ -163,6 +163,9 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 
 /* ─── INBOX screen ─── */
 #inboxScreen{padding:20px;max-width:780px;margin:0 auto;}
+/* Crossfade between the list and a single message (and back). */
+#inboxHost{transition:opacity .18s ease;}
+#inboxHost.inbox-fading{opacity:0;}
 .inbox-list{display:flex;flex-direction:column;gap:10px;margin-top:14px;}
 .inbox-empty{text-align:center;padding:60px 20px;color:#888;font-family:var(--vt);font-size:17px;}
 .inbox-empty .big{font-family:'Press Start 2P',monospace;font-size:14px;color:#666;margin-bottom:10px;letter-spacing:1px;}
@@ -299,7 +302,10 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
   color:#000;
   text-shadow:var(--ps-outline-white-12),3px 5px 0 rgba(5,5,8,0.7);
   outline:3px solid transparent;
-  box-shadow:0 5px 0 #000;
+  /* Subtle soft shadow: a tight 1px line hugging every edge where the banner
+     meets the card, plus a gentle drop that falls onto the card body. Replaces
+     the old hard 5px offset band. */
+  box-shadow:0 0 0 1px rgba(0,0,0,0.30), 0 2px 5px 0 rgba(0,0,0,0.45);
   z-index:5;
   pointer-events:none;
 }
@@ -344,6 +350,25 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .points-info-close{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:6px;background:#7f1d1d;border:2px solid #dc2626;color:#fff;font-family:'Press Start 2P',monospace;font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:2px 2px 0 rgba(0,0,0,0.6);transition:background 0.15s,transform 0.1s;}
 .points-info-close:hover{background:#dc2626;transform:translate(-1px,-1px);box-shadow:3px 3px 0 rgba(0,0,0,0.6);}
 .points-info-close:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(0,0,0,0.6);}
+
+/* ── MOTIVATIONAL TIP OF THE DAY ──
+ * Once-per-day popup (resets 3am NY). Mirrors the points-info modal: dark
+ * gradient container with a hard pixel drop shadow, a Press Start gradient
+ * header in the DAILY ACTIVITIES / POINT SHOP style, and a VCR Mono tip line.
+ * Backdrop dims + blurs the menu behind it, same as the app's other modals. */
+.mtip-modal{position:fixed;inset:0;z-index:100003;background:rgba(0,0,0,0);backdrop-filter:blur(0);-webkit-backdrop-filter:blur(0);display:none;align-items:center;justify-content:center;padding:20px;transition:background 0.22s ease,backdrop-filter 0.22s ease,-webkit-backdrop-filter 0.22s ease;}
+.mtip-modal.show{display:flex;}
+.mtip-modal.visible{background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
+.mtip-inner{position:relative;background:linear-gradient(135deg,#0f172a,#1e293b);border:2px solid var(--gold);border-radius:12px;padding:34px 28px 28px;max-width:520px;width:100%;box-shadow:6px 6px 0 rgba(0,0,0,0.6),0 0 0 1px rgba(255,215,0,0.18);transform:translateY(8px) scale(0.97);opacity:0;transition:transform 0.22s ease,opacity 0.22s ease;}
+.mtip-modal.visible .mtip-inner{transform:translateY(0) scale(1);opacity:1;}
+.mtip-title{font-family:var(--ps);font-size:clamp(12px,2.6vw,16px);letter-spacing:1px;line-height:1.6;text-align:center;margin-bottom:20px;background-image:linear-gradient(180deg,#fff0a0 0%,#FFD700 100%);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;color:transparent;filter:drop-shadow(1.5px 1.5px 0 #000024) drop-shadow(-1.5px -1.5px 0 #000024) drop-shadow(1.5px -1.5px 0 #000024) drop-shadow(-1.5px 1.5px 0 #000024);}
+.mtip-body{font-family:var(--vt);font-size:21px;line-height:1.6;color:#f1ead2;text-align:center;margin-bottom:24px;}
+.mtip-close{position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:6px;background:#7f1d1d;border:2px solid #dc2626;color:#fff;font-family:var(--ps);font-size:14px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:2px 2px 0 rgba(0,0,0,0.6);transition:background 0.15s,transform 0.1s;}
+.mtip-close:hover{background:#dc2626;transform:translate(-1px,-1px);box-shadow:3px 3px 0 rgba(0,0,0,0.6);}
+.mtip-close:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(0,0,0,0.6);}
+.mtip-btn{display:block;width:100%;font-family:var(--ps);font-size:12px;letter-spacing:1px;color:#1a1207;background:linear-gradient(180deg,#ffe27a,#ffc400);border:2px solid #b8860b;border-radius:8px;padding:14px;cursor:pointer;box-shadow:3px 3px 0 rgba(0,0,0,0.6);text-shadow:none;transition:transform 0.1s,box-shadow 0.1s;}
+.mtip-btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 rgba(0,0,0,0.6);}
+.mtip-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 rgba(0,0,0,0.6);}
 .dr-card{background:linear-gradient(135deg,rgba(255,140,60,0.15),rgba(255,90,30,0.08));border:3px solid #ff8c3c;border-radius:12px;padding:20px;margin-bottom:20px;position:relative;box-shadow:4px 4px 0 rgba(0,0,0,0.6);}
 .dr-card-title{font-family:'Press Start 2P',monospace;font-size:14px;color:#ff8c3c;text-shadow:var(--ps-outline-sm);margin-bottom:8px;}
 .dr-card-sub{font-family:var(--vt);font-size:13px;color:#aaa;margin-bottom:14px;line-height:1.5;}
@@ -3984,7 +4009,101 @@ function showMenu(){
   // Auto-complete any stale enrollments in the background
   _maybeExpireEnrollment();
   maybeShowMuteNudge();
+  // Motivational Tip of the Day — once per NY day (3am rollover). Slight delay
+  // so it lands after the menu fade; skips itself if the welcome modal is up.
+  setTimeout(_maybeShowDailyTip, 550);
 }
+
+// ── MOTIVATIONAL TIP OF THE DAY ──
+// One tip per NY day, cycling deterministically so every student sees the same
+// tip and it advances by one each day. Resets at 3am NY (shared _drTodayNYKey).
+var MOTIVATIONAL_TIPS = [
+  "Remember, consistency matters over perfection. Just 5 minutes per day is enough!",
+  "Small practice every day creates BIG progress over time!",
+  "Remember, your Korean does not need to be perfect to be worth practicing! Keep up the hard work.",
+  "Keep it up! Today's effort is building tomorrow's confidence.",
+  "Remember, practicing even 1 sentence in Korean is a win!",
+  "Mistakes mean your brain is learning something new! Let's keep studying together!",
+  "Every small win deserves to be noticed. Be proud of yourself for studying today!",
+  "Korean may feel hard today, but it'll feel easier with repetition. Let's get those reps in today!",
+  "Even when Korean gets boring, try to stick with it. Keeping the habit consistent is what matters!",
+  "REMINDER: Get yourself a sweet treat after you study today!",
+  "Progress is not always loud, but it is still happening in the background. Keep it up!",
+  "In case no one has told you today, you're awesome! Thanks for studying with us!",
+  "Your future self is cheering for you!!",
+  "Be proud of how far you have come!",
+  "You make a difference simply by being a part of our community! Thank you!",
+  "Take a deep breath and enjoy this moment!",
+  "Confidence comes from showing up, not from being perfect. You're doing great!",
+  "One new word today can become part of a REAL Korean conversation tomorrow. Keep up the hard work my friend.",
+  "May your day be full of peace, small happy moments, and huge Korean wins! You got this!",
+  "Korean fluency is built one tiny habit at a time. Consistency is what's most important.",
+  "Give yourself a little grace today. You are growing in your own time!",
+  "Today's practice counts, even if it feels tiny.",
+  "You are a bright part of someone's day, including ours! We appreciate your dedication!",
+  "No need to rush the process... Just remember, you are closer to becoming a Korean speaking monster than you were yesterday!",
+  "I hope you feel proud of yourself today!",
+  "Learning Korean is not a race; it is a rhythm! Keep up the tough work soldier.",
+  "Remember to celebrate the words you know instead of stressing over the ones you do not!",
+  "I hope something good surprises you today... like unlocking your next Korean class!"
+];
+
+// Day number from the NY-3am day key, so the tip advances once per day and is
+// identical for everyone on a given day.
+function _mtipTodayIndex(){
+  var parts = (_drTodayNYKey() || '').split('-');
+  var dayNum = Math.floor(Date.UTC(+parts[0], (+parts[1]) - 1, +parts[2]) / 86400000);
+  var n = MOTIVATIONAL_TIPS.length;
+  if (!n || isNaN(dayNum)) return 0;
+  return ((dayNum % n) + n) % n;
+}
+
+function _maybeShowDailyTip(){
+  if (!user) return;
+  // Don't stack on top of the new-account welcome modal; try again next menu view.
+  var fe = document.getElementById('freeEggsScreen');
+  if (fe && !fe.classList.contains('hidden')) return;
+  var key = _drTodayNYKey();
+  try { if (localStorage.getItem('klg_mtip_seen') === key) return; } catch(e){}
+  try { localStorage.setItem('klg_mtip_seen', key); } catch(e){}
+  _showDailyTip(MOTIVATIONAL_TIPS[_mtipTodayIndex()]);
+}
+
+function _showDailyTip(text){
+  var old = document.getElementById('mtipModal');
+  if (old) old.remove();
+  var modal = document.createElement('div');
+  modal.id = 'mtipModal';
+  modal.className = 'mtip-modal';
+  modal.innerHTML =
+    '<div class="mtip-inner">' +
+      '<button class="mtip-close" onclick="_closeDailyTip()" aria-label="Close">\u2715</button>' +
+      '<div class="mtip-title">\u2B50 MOTIVATIONAL TIP<br>OF THE DAY \u2B50</div>' +
+      '<div class="mtip-body">' + _esc(text || '') + '</div>' +
+      '<button class="mtip-btn" onclick="_closeDailyTip()">LET\'S STUDY! \u2192</button>' +
+    '</div>';
+  modal.addEventListener('click', function(e){ if (e.target === modal) _closeDailyTip(); });
+  document.body.appendChild(modal);
+  modal.classList.add('show');
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){ modal.classList.add('visible'); }); });
+  try { if (typeof playSelect === 'function') playSelect(); } catch(e){}
+}
+window._showDailyTip = _showDailyTip;
+
+function _closeDailyTip(){
+  var modal = document.getElementById('mtipModal');
+  if (!modal) return;
+  modal.classList.remove('visible');
+  setTimeout(function(){ if (modal && modal.parentNode) modal.parentNode.removeChild(modal); }, 240);
+}
+window._closeDailyTip = _closeDailyTip;
+
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape'){
+    var m = document.getElementById('mtipModal');
+    if (m && m.classList.contains('visible')) _closeDailyTip();
+  }
+});
 
 function _updateAdminTile(){
   var grid = document.querySelector('.menu-grid');
@@ -4324,7 +4443,7 @@ function _renderDailyPicker(){
   var readingDone = (user && user.dailyReadingDoneFor === todayKey);
   var readingBadge = readingDone
     ? '<div class="menu-count" style="border-color:var(--green);color:var(--green);">✅ DONE TODAY</div>'
-    : '<div class="menu-count">+1 EGG</div>';
+    : '<div class="menu-count">UP TO +2 EGGS</div>';
   // ─── Listening tile ───
   // Earned-today count = how many of L1..L4 the user has completed. Out of 4.
   var listening = (user && user.dailyListeningLevels) || {};
@@ -5345,7 +5464,8 @@ window._drToggleKeywords = _drToggleKeywords;
  *   - L1: record full passage → +1 egg, unlocks L2/L3/L4
  *   - L2: record one continuous reading of the 5 admin-picked target words → +1 egg
  *   - L3: re-record full passage (replaces L1 in the feed) → +1 egg
- *   - L4: unscramble one randomly-assigned sentence (no recording) → +1 egg
+ *   - L4: yodafy one randomly-assigned sentence — rearrange it into a different
+ *         valid (verb-final) word order, no recording → +1 egg
  *   - L1 must be done before L2/L3/L4. L2/L3/L4 are independent.
  *   - Daily reset: tevello_accounts/{uid}.dailyListeningLevels = { date, l1, l2, l3, l4 }
  *     gets cleared each new NY-3am day. Old recording docs persist until the
@@ -5429,8 +5549,18 @@ async function _dlRender(){
     if (_dlState.myRecording && typeof _dlState.myRecording.l4SentenceIndex === 'number'){
       _dlState.l4SentenceIndex = _dlState.myRecording.l4SentenceIndex;
     } else {
-      var sLen = (_dlState.passage.sentences || []).length;
-      _dlState.l4SentenceIndex = sLen > 0 ? Math.floor(Math.random() * sLen) : 0;
+      var sents = (_dlState.passage.sentences || []);
+      // Prefer a sentence that can actually be yodafied (>=3 chunks so there's a
+      // genuinely different verb-final order). Fall back to any sentence.
+      var eligible = [];
+      for (var si = 0; si < sents.length; si++){
+        if (_dlL4Plan(sents[si]).mode === 'yoda') eligible.push(si);
+      }
+      if (eligible.length){
+        _dlState.l4SentenceIndex = eligible[Math.floor(Math.random() * eligible.length)];
+      } else {
+        _dlState.l4SentenceIndex = sents.length > 0 ? Math.floor(Math.random() * sents.length) : 0;
+      }
     }
 
     _dlRenderUI(host);
@@ -5496,8 +5626,8 @@ function _dlRenderUI(host){
   var lvCards =
     _dlRenderLevelCard('l1', '1', 'RECORD FULL PASSAGE', 'Read the entire passage aloud.', levels.l1, true) +
     _dlRenderLevelCard('l2', '2', 'TARGET WORDS', 'Pronounce the 5 target words in one continuous reading.', levels.l2, levels.l1) +
-    _dlRenderLevelCard('l3', '3', 'CORRECTED VERSION', 'Re-record the full passage. This replaces your L1 recording in the feed.', levels.l3, levels.l1) +
-    _dlRenderLevelCard('l4', '4', 'UNSCRAMBLE A SENTENCE', 'Solve a scrambled sentence from the passage.', levels.l4, levels.l1);
+    _dlRenderLevelCard('l3', '3', 'POLISH YOUR READING', 'Re-record the full passage. Your polished version will appear in the class feed.', levels.l3, levels.l1) +
+    _dlRenderLevelCard('l4', '4', 'YODAFY THE SENTENCE', 'Rearrange a sentence into a different valid word order.', levels.l4, levels.l1);
 
   // Feed of all students' recordings
   var feedCards = _dlState.feed.map(_dlRenderFeedCard).join('');
@@ -5581,20 +5711,31 @@ function _dlRecHostHTML(key){
   '</div>';
 }
 
-// Build the L4 unscramble interface. Tokens are word-level chunks of the chosen
-// sentence, shuffled. User taps tokens in the bank to add them to the answer
-// row; tap a placed token to send it back. Submit checks order against the
-// sentence's actual word order.
+// L4 tokenization + grading mode for a sentence.
+//  - 'yoda'  (>=3 space-chunks): any verb-final reordering that DIFFERS from the
+//            original is accepted. Korean chunks carry their own particles, so
+//            any order ending in the predicate stays grammatical.
+//  - 'exact' (1-2 chunks): too short to yodafy, so we fall back to rebuilding the
+//            original order (word chunks for 2, characters for 1).
+function _dlL4Plan(target){
+  var t = (target || '').trim();
+  var chunks = t.split(/\s+/).filter(Boolean);
+  if (chunks.length >= 3) return { tokens: chunks, mode: 'yoda' };
+  if (chunks.length === 2) return { tokens: chunks, mode: 'exact' };
+  return { tokens: t.split(''), mode: 'exact' };
+}
+
+// Build the L4 yodafy interface. Tokens are the chunks of the chosen sentence,
+// shuffled. User taps tokens in the bank to add them to the answer row; tap a
+// placed token to send it back. Submit accepts any verb-final order that isn't
+// the original (yoda mode), or the exact original order (short-sentence fallback).
 function _dlRenderUnscrambleUI(){
   var sentences = (_dlState.passage && _dlState.passage.sentences) || [];
   var idx = _dlState.l4SentenceIndex;
   if (idx < 0 || idx >= sentences.length) return '<div class="dl-lv-locked-msg">Could not pick a sentence.</div>';
   var target = sentences[idx];
-  // Tokenize by whitespace (Korean uses spaces between phrases). If a sentence
-  // has only one chunk, fall back to character-level so there's something to
-  // unscramble.
-  var tokens = target.trim().split(/\s+/);
-  if (tokens.length < 2){ tokens = target.split(''); }
+  var plan = _dlL4Plan(target);
+  var tokens = plan.tokens;
 
   // Persist tokens in state on first build so re-renders keep order
   if (!_dlState.l4Tokens.length){
@@ -5621,8 +5762,12 @@ function _dlRenderUnscrambleUI(){
     return '<button class="dl-l4-placed" onclick="_dlL4Unpick(' + slotIdx + ')">' + _esc(_dlState.l4Tokens[tokIdx]) + ' <span class="x">×</span></button>';
   }).join('');
 
+  var instr = (plan.mode === 'yoda')
+    ? 'Rearrange the words into a DIFFERENT order — just keep the verb at the end.'
+    : 'Arrange the words in the correct order to make this sentence.';
+
   return '<div class="dl-l4-host">' +
-    '<div class="dl-l4-instr">Arrange the words in the correct order to make this sentence.</div>' +
+    '<div class="dl-l4-instr">' + instr + '</div>' +
     '<div class="dl-l4-answer-row">' + (answerHtml || '<span class="dl-l4-placeholder">Tap words below to add them here…</span>') + '</div>' +
     '<div class="dl-l4-bank">' + bankHtml + '</div>' +
     '<div class="dl-l4-actions">' +
@@ -5658,22 +5803,36 @@ async function _dlL4Submit(){
   var idx = _dlState.l4SentenceIndex;
   if (idx < 0 || idx >= sentences.length) return;
   var target = sentences[idx];
-  var targetTokens = target.trim().split(/\s+/);
-  if (targetTokens.length < 2) targetTokens = target.split('');
+  var plan = _dlL4Plan(target);
+  var targetTokens = plan.tokens;
   var userTokens = _dlState.l4UserOrder.map(function(i){ return _dlState.l4Tokens[i]; });
+  var st = document.getElementById('dlL4Status');
   if (userTokens.length !== targetTokens.length){
-    var st = document.getElementById('dlL4Status');
     if (st){ st.style.color = '#ff8a8a'; st.textContent = 'Use all the words.'; }
     return;
   }
-  var correct = userTokens.join(' ') === targetTokens.join(' ');
-  var st2 = document.getElementById('dlL4Status');
-  if (!correct){
-    if (st2){ st2.style.color = '#ff8a8a'; st2.textContent = 'Not quite. Try rearranging again.'; }
-    return;
+  if (plan.mode === 'yoda'){
+    // Valid if the predicate (original last chunk) stays at the end AND the order
+    // isn't just the original sentence rebuilt.
+    var verbLast = userTokens[userTokens.length - 1] === targetTokens[targetTokens.length - 1];
+    var sameAsOriginal = userTokens.join(' ') === targetTokens.join(' ');
+    if (!verbLast){
+      if (st){ st.style.color = '#ff8a8a'; st.textContent = 'Keep the verb at the end.'; }
+      return;
+    }
+    if (sameAsOriginal){
+      if (st){ st.style.color = '#ff8a8a'; st.textContent = "That's the original order — rearrange it into a different one."; }
+      return;
+    }
+  } else {
+    // Short sentence fallback: must rebuild the original order.
+    if (userTokens.join(' ') !== targetTokens.join(' ')){
+      if (st){ st.style.color = '#ff8a8a'; st.textContent = 'Not quite. Try rearranging again.'; }
+      return;
+    }
   }
   // Correct! Persist + award egg.
-  if (st2){ st2.style.color = '#39ff14'; st2.textContent = 'Correct! +1 egg awarded.'; }
+  if (st){ st.style.color = '#39ff14'; st.textContent = 'Correct! +1 egg awarded.'; }
   await _dlMarkLevelDone('l4', { l4SentenceIndex: idx });
   playSfx(SOUND_WIN, 0.9);
   setTimeout(function(){ _dlRender(); }, 1200);
@@ -5688,8 +5847,8 @@ function _dlRefreshLevelCard(key){
   // Find the same args as the original render call
   var titles = { l1:['1','RECORD FULL PASSAGE','Read the entire passage aloud.'],
                  l2:['2','TARGET WORDS','Pronounce the 5 target words in one continuous reading.'],
-                 l3:['3','CORRECTED VERSION','Re-record the full passage. This replaces your L1 recording in the feed.'],
-                 l4:['4','UNSCRAMBLE A SENTENCE','Solve a scrambled sentence from the passage.'] };
+                 l3:['3','POLISH YOUR READING','Re-record the full passage. Your polished version will appear in the class feed.'],
+                 l4:['4','YODAFY THE SENTENCE','Rearrange a sentence into a different valid word order.'] };
   var t = titles[key];
   var unlocked = (key === 'l1') ? true : levels.l1;
   card.outerHTML = _dlRenderLevelCard(key, t[0], t[1], t[2], levels[key], unlocked);
@@ -14854,6 +15013,7 @@ async function _inboxRender(){
           '<div class="big">📭 NO MESSAGES YET</div>' +
           '<div>Feedback from your teacher and activity grades will arrive here.</div>' +
         '</div>';
+      _inboxFadeIn(host);
       return;
     }
     var msgs = [];
@@ -14884,20 +15044,37 @@ async function _inboxRender(){
       '</div>';
     }).join('');
     host.innerHTML = '<div class="inbox-list">' + listHtml + '</div>';
+    _inboxFadeIn(host);
   } catch(e){
     console.error('inbox render:', e);
     host.innerHTML = '<div style="color:#ff8a8a;padding:20px;">Couldn\'t load inbox: ' + _esc(e.message || e) + '</div>';
+    _inboxFadeIn(host);
   }
 }
 window._inboxRender = _inboxRender;
 
+// Fade the host back to visible after its content is swapped in.
+function _inboxFadeIn(host){ if (!host) return; void host.offsetWidth; host.classList.remove('inbox-fading'); }
+
+// Back button: fade the open message out, then re-render the list (which fades in).
+function _inboxBack(){
+  var host = document.getElementById('inboxHost');
+  if (host) host.classList.add('inbox-fading');
+  setTimeout(function(){ _inboxRender(); }, 180);
+}
+window._inboxBack = _inboxBack;
+
 async function _inboxOpenMessage(id){
   var host = document.getElementById('inboxHost');
   if (!host || !user) return;
+  // Start the fade-out immediately on tap; run it alongside the fetch.
+  host.classList.add('inbox-fading');
+  var fadeWait = new Promise(function(r){ setTimeout(r, 180); });
   try {
     var ref = db.collection(TC).doc(user.id).collection(INBOX_SUBCOL).doc(id);
     var snap = await ref.get();
     if (!snap.exists){
+      _inboxFadeIn(host);
       toast('Message not found.', 'var(--pink)');
       return;
     }
@@ -14919,9 +15096,10 @@ async function _inboxOpenMessage(id){
       ? '<div class="inbox-voice-player"><audio controls src="' + _esc(m.voiceUrl) + '"></audio></div>'
       : '';
     var bodyHtml = _inboxFormatBody(m.body || '');
+    await fadeWait;
     host.innerHTML =
       '<div style="margin-bottom:10px;">' +
-        '<button class="btn btn-ghost btn-sm" onclick="_inboxRender()">← BACK TO INBOX</button>' +
+        '<button class="btn btn-ghost btn-sm" onclick="_inboxBack()">← BACK TO INBOX</button>' +
       '</div>' +
       '<div class="inbox-detail">' +
         '<div class="inbox-detail-head">' +
@@ -14932,9 +15110,11 @@ async function _inboxOpenMessage(id){
         voiceHtml +
         '<div class="inbox-detail-body">' + bodyHtml + '</div>' +
       '</div>';
+    _inboxFadeIn(host);
     try { window.scrollTo(0, 0); } catch(e){}
   } catch(e){
     console.error('inbox open msg:', e);
+    _inboxFadeIn(host);
     toast('Couldn\'t open message.', 'var(--pink)');
   }
 }
