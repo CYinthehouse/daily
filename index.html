@@ -19,16 +19,12 @@
   --border:rgba(255,255,255,0.15);--ps:'Press Start 2P',monospace;
   --ns:'Noto Sans',sans-serif;--vt:'VCR OSD Mono',monospace;
   --shadow:2px 2px 0 rgba(0,0,0,0.6);
-  /* Continuous device scale, set by JS (head script) from viewport width +
-   * orientation. Multiplies with --app-zoom in the  body > div  zoom rule, so
-   * one value scales every visible element. 1 = no scaling (desktop default). */
-  --device-scale:1;
   --ps-outline:-2px -2px 0 #000024,2px -2px 0 #000024,-2px 2px 0 #000024,2px 2px 0 #000024,0 -2px 0 #000024,0 2px 0 #000024,-2px 0 0 #000024,2px 0 0 #000024;
   --ps-outline-sm:-1px -1px 0 #000024,1px -1px 0 #000024,-1px 1px 0 #000024,1px 1px 0 #000024;
   /* 12-direction hard WHITE pixel outline, used by the daily difficulty ribbons. */
   --ps-outline-white-12:-2px 0 0 #fff,2px 0 0 #fff,0 -2px 0 #fff,0 2px 0 #fff,-2px -1px 0 #fff,-2px 1px 0 #fff,2px -1px 0 #fff,2px 1px 0 #fff,-1px -2px 0 #fff,1px -2px 0 #fff,-1px 2px 0 #fff,1px 2px 0 #fff;
 }
-html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt);overflow-x:hidden;font-size:18px;line-height:1.6;}
+html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt);overflow-x:hidden;font-size:18px;line-height:1.6;-webkit-text-size-adjust:100%;text-size-adjust:100%;}
 .bg-stars{position:fixed;top:0;left:0;width:100%;height:100%;background-color:var(--bg);background-image:linear-gradient(rgba(65,192,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(65,192,255,0.03) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;z-index:0;}
 #app{position:relative;z-index:1;min-height:calc(100vh / 1.2);}
 
@@ -109,11 +105,11 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .form-expanding{animation:formExpand 0.35s ease-out both;overflow:hidden;}
 
 /* ── TOP BAR ── */
-#topBar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:#08081a;border-bottom:2px solid rgba(255,255,255,0.2);position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:10px;zoom:calc(1.2 * var(--device-scale, 1));}
+#topBar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:#08081a;border-bottom:2px solid rgba(255,255,255,0.2);position:sticky;top:0;z-index:100;flex-wrap:wrap;gap:10px;zoom:1.2;}
 .topbar-logo img{height:44px;width:auto;display:block;}
 .topbar-user{font-family:var(--ps);font-size:11px;color:var(--green);display:flex;align-items:center;gap:12px;text-shadow:var(--ps-outline-sm);flex-wrap:wrap;}
 /* Font-size controls row, sits beneath the topBar, right-aligned. Hidden on login. */
-#fontControlsRow{display:flex;justify-content:flex-end;padding:6px 24px;background:#08081a;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;z-index:99;zoom:calc(1.2 * var(--device-scale, 1));}
+#fontControlsRow{display:flex;justify-content:flex-end;padding:6px 24px;background:#08081a;border-bottom:1px solid rgba(255,255,255,0.08);position:sticky;top:0;z-index:99;zoom:1.2;}
 .font-ctrls{display:flex;align-items:center;gap:6px;}
 .font-ctrls .tfc-label{font-family:var(--ps);font-size:9px;color:#9aa3b8;text-shadow:var(--ps-outline-sm);}
 .font-ctrls .tfc-btn{background:#1e293b;color:#e8eaf2;border:1px solid #2a3650;border-radius:5px;padding:5px 9px;font-family:'Noto Sans',sans-serif;font-weight:700;font-size:11px;cursor:pointer;transition:background 0.15s;min-width:30px;line-height:1;}
@@ -1381,13 +1377,10 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
  * runtime (policy modal, ea-modal date/level pickers, drm modals,
  * freeEggsScreen, etc.)
  *
- * The zoom is the PRODUCT of two independent multipliers:
+ * The zoom follows the user's A-/A/A+ text-size preference:
  *   --app-zoom      the user's A-/A/A+ text-size preference (0.8–1.5, default 1.2)
- *   --device-scale  the viewport/orientation scale set by the head script
- * so the layout scales with the device while still honoring the user's
- * chosen text size. Desktop keeps --device-scale = 1, i.e. exactly the prior
- * behavior (net zoom 1.2). */
-body > div { zoom: calc(var(--app-zoom, 1.2) * var(--device-scale, 1)); }
+ */
+body > div { zoom: var(--app-zoom, 1.2); }
 
 /* The gacha reveal sequence (egg crack, monster reveal, win popup, rarity
  * tables, epic-effects opt-in) must ALWAYS render at native scale, never
@@ -2782,44 +2775,6 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   #dailyPickerGrid .menu-card.daily .daily-ribbon::before{ inset:2px 0 auto 0; height:1px; }
 }
 </style>
-<script>
-/* ── DEVICE SCALE (continuous, viewport + orientation aware) ──────────────
- * Sets the inherited custom property --device-scale on <html>. The stylesheet
- * rule  body > div { zoom: calc(var(--app-zoom) * var(--device-scale)) }
- * multiplies it with the user's text-size preference, scaling every visible
- * element proportionally. Lives in <head> so it runs BEFORE first paint (no
- * layout flash); re-runs on resize / orientationchange.
- *
- * Model: take the GENTLER of a width-driven and a height-driven scale, so
- * whichever dimension is more constrained wins — portrait phones are sized by
- * width, SHORT landscape phones are compressed by height. Capped at 1.0 (never
- * magnifies past the app's baseline) with a hard 360px floor. The four anchor
- * pairs below are the only tuning knobs.
- */
-(function(){
-  // width:  360px → 0.70   …   1080px+ → 1.00
-  var W_MIN=360, W_MAX=1080, WS_MIN=0.70, WS_MAX=1.00;
-  // height: 380px → 0.62   …    820px+ → 1.00   (landscape-phone guard)
-  var H_MIN=380, H_MAX=820, HS_MIN=0.62, HS_MAX=1.00;
-  function lerp(v,inA,inB,outA,outB){
-    if(v<=inA) return outA;
-    if(v>=inB) return outB;
-    return outA + (v-inA)*(outB-outA)/(inB-inA);
-  }
-  function compute(){
-    var w=window.innerWidth||document.documentElement.clientWidth||360;
-    var h=window.innerHeight||document.documentElement.clientHeight||640;
-    var s=Math.min(lerp(w,W_MIN,W_MAX,WS_MIN,WS_MAX), lerp(h,H_MIN,H_MAX,HS_MIN,HS_MAX));
-    return Math.round(s*1000)/1000; // 3dp — avoids sub-pixel jitter on resize
-  }
-  function apply(){
-    try{ document.documentElement.style.setProperty('--device-scale', String(compute())); }catch(e){}
-  }
-  apply();
-  window.addEventListener('resize', apply);
-  window.addEventListener('orientationchange', apply);
-})();
-</script>
 </head>
 <body>
 <div class="bg-stars"></div>
@@ -6987,10 +6942,9 @@ const APP_ZOOM_STEP = 0.1;
  * side: phones top out ~956px, the next tablet up — iPad mini landscape — is
  * 1133px, so 960 cleanly separates them). */
 function _defaultZoomForViewport(){
-  var w = window.innerWidth || document.documentElement.clientWidth || 1024;
-  var portrait = !window.matchMedia || window.matchMedia('(orientation: portrait)').matches;
-  if (portrait) return (w <= 640) ? 1.0 : APP_ZOOM_DEFAULT;   // mobile portrait
-  return (w <= 960) ? 1.1 : APP_ZOOM_DEFAULT;                  // mobile landscape
+  // Mobile now uses the same baseline zoom as desktop; the per-orientation
+  // shrink was removed. Kept as a function so existing callers are unaffected.
+  return APP_ZOOM_DEFAULT;
 }
 function _getZoom(){
   // A stored value means the user explicitly chose a size — honor it.
