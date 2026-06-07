@@ -2687,90 +2687,19 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   .chip.cyan{display:inline-block;} /* keep rolls visible */
 }
 
-/* ════════════════════════════════════════════════════════════════════
-   RESPONSIVE / MULTI-DEVICE LAYER
-   ────────────────────────────────────────────────────────────────────
-   Proportional scaling is handled CONTINUOUSLY by --device-scale (set in
-   the head script) multiplying the existing  body > div { zoom: … }  rule,
-   so every visible element scales with the viewport in one place. That
-   zoom mechanism is the same one the app already shipped at 1.2, so fixed
-   overlays/modals behave exactly as before — only the multiplier is now
-   viewport-aware. Hard design floor: 360px (Samsung Galaxy base).
-
-   The rules below cover ONLY what proportional zoom can't:
-     • structural reflow of the few fixed-column grids,
-     • landscape phones (height ≤480px, e.g. iPhone landscape ~390px tall),
-     • touch tablets that sit in the desktop width bucket (iPad / Android
-       landscape 1024–1376px) where :hover sticks and tap targets shrink.
-   ════════════════════════════════════════════════════════════════════ */
-
-/* ── Fixed-column grids that don't auto-reflow ── */
-@media(max-width:560px){
-  /* Active Recall match-up: 5 columns → 3 so cells stay finger-tappable. */
-  .rg-arrows,.rg-row{grid-template-columns:repeat(3,1fr);}
-}
-@media(max-width:768px){
-  /* Admin conjugation manager (6-col verb grid): scroll horizontally rather
-     than crush each cell. .advm-verbs is the scroll container around them. */
-  .advm-verbs{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .advm-verbs-head,.advm-verb-row{min-width:560px;}
-}
-
-/* ════ SHORT VIEWPORT — landscape phones (height ≤480px) ════
-   iPhone/Galaxy landscape are only ~360–440px TALL. A modal centered in
-   that height overflows above/below and can't be reached, so switch the
-   class-based fixed overlays to top-aligned + internally scrollable and
-   trim the vertical chrome. (Game/reveal overlays are pinned to zoom:1 and
-   keep their own fit logic — intentionally untouched here.) */
-@media(max-height:480px){
-  #topBar{padding:6px 14px;}
-  .topbar-logo img{height:28px;}
-  #fontControlsRow{padding:3px 14px;}
-  .sub-screen{padding:12px 16px;}
-  .menu-header{margin-bottom:14px;}
-  .points-info-modal,.mtip-modal,.prof-overlay,.drm-modal,
-  .subrev-overlay,.policy-overlay,#freeEggsScreen{
-    align-items:flex-start;
-    overflow-y:auto;
-    padding:10px;
-  }
-  .policy-modal{max-height:calc(100vh - 20px);}
-}
-
-/* ════ TOUCH DEVICES (no hover + coarse pointer) ════
-   Fires on phones AND on iPad / Android tablets that land in the desktop
-   width bucket but are finger-driven. (1) Cancel hover transforms that
-   stick after a tap; (2) ensure the smaller controls clear ~44px. */
-@media(hover:none) and (pointer:coarse){
-  .btn:hover,.tab-toggle-btn:hover,.menu-card:hover,.sc-card:hover,
-  .inbox-card:hover,.weekly-bonus-banner:hover,.weekly-bonus-container:hover,
-  .dr-rec-btn:hover,.prof-avatar-wrap .btn:hover,.points-info-close:hover,
-  .mtip-btn:hover,.mtip-close:hover,.subrev-close:hover,
-  ._grevbtn:hover,._gsrb:hover,._gnxtb:hover,._gpixelBtn:hover,._ghoverlift:hover{
-    transform:none;
-  }
-  .tfc-btn{min-width:40px;min-height:40px;}
-  .filter-chip,.sc-dd-trigger,.sc-dd-opt{min-height:40px;}
-  .points-info-close,.mtip-close,.subrev-close{min-width:40px;min-height:40px;}
-}
-
 /* ════ EGG-CRACK GAME — landscape phones ════
-   At native scale the egg column (roll counter + egg + "TAP TO CRACK" hint +
-   "X / 5") is taller than a ~390px landscape phone, so the bottom items fall
-   below the fold (you only see the egg + timer). Scale just the CONTENT COLUMN
-   down on short viewports — the ._gov overlay itself stays full-viewport so its
-   opaque background keeps covering the screen behind it (no edge leak). */
+   Scale just the egg content column down on short viewports so the counter,
+   egg, hint and "X / 5" all fit; the ._gov overlay stays full-viewport. */
 @media(max-height:480px){
   #_gachaOverlay ._gcol{ transform:scale(0.70); transform-origin:center center; }
 }
 
-/* ════ DIFFICULTY RIBBON — phone portrait ════
-   The corner difficulty band reads oversized on narrow portrait tiles. Shrink
-   it ~30%; the geometry stays centered on the same corner (band centre is
-   preserved: scaling width/height/top/left together by ~0.70). */
-@media(orientation:portrait) and (max-width:640px){
+/* ════ DIFFICULTY RIBBON — phones (both orientations) ════
+   The corner difficulty band reads oversized on phone tiles. Shrink it a bit;
+   geometry stays centered on the same corner. */
+@media(max-width:640px),(max-height:480px){
   #dailyPickerGrid .menu-card.daily .daily-ribbon{
-    width:196px; height:24px; top:37px; left:-49px; font-size:9px; letter-spacing:.5px;
+    width:176px; height:22px; top:33px; left:-44px; font-size:8px; letter-spacing:.5px;
   }
   #dailyPickerGrid .menu-card.daily .daily-ribbon::before{ inset:2px 0 auto 0; height:1px; }
 }
@@ -6942,9 +6871,16 @@ const APP_ZOOM_STEP = 0.1;
  * side: phones top out ~956px, the next tablet up — iPad mini landscape — is
  * 1133px, so 960 cleanly separates them). */
 function _defaultZoomForViewport(){
-  // Mobile now uses the same baseline zoom as desktop; the per-orientation
-  // shrink was removed. Kept as a function so existing callers are unaffected.
-  return APP_ZOOM_DEFAULT;
+  // Mobile defaults (used only when the user hasn't picked a size via A-/A/A+):
+  //   • phone PORTRAIT  → 1.0  (2 steps below the 1.2 baseline)
+  //   • phone LANDSCAPE → 1.1  (1 step below)
+  //   • desktop/tablet  → 1.2  (unchanged)
+  // Gated on innerWidth + matchMedia orientation (not innerHeight) so an
+  // on-screen keyboard can't flip the size.
+  var w = window.innerWidth || document.documentElement.clientWidth || 1024;
+  var portrait = !window.matchMedia || window.matchMedia('(orientation: portrait)').matches;
+  if (portrait) return (w <= 640) ? 1.0 : APP_ZOOM_DEFAULT;
+  return (w <= 960) ? 1.1 : APP_ZOOM_DEFAULT;
 }
 function _getZoom(){
   // A stored value means the user explicitly chose a size — honor it.
