@@ -8334,6 +8334,32 @@ function _classLabel(c){
   return (c.level || c.classType || 'Class') + ' · starts ' + _fmtDate(c.startISO || c.startDate);
 }
 
+/* ── 6-Week picker helpers (level-first, two-step) ──
+ * The student first picks a LEVEL, then only that level's open cohorts appear
+ * in the class select. Keeps each list short no matter how many classes open. */
+function _sixWeekOpenForLevel(level){
+  var list = (typeof OPEN_CLASSES !== 'undefined' ? OPEN_CLASSES : []).filter(function(c){
+    return _seatsLeft(c) > 0 && ((c.level || c.classType || 'Class') === level);
+  });
+  list.sort(function(a, b){ return String(a.startISO || '').localeCompare(String(b.startISO || '')); });
+  return list;
+}
+// Date-focused <option>s for the class select (level is already chosen above).
+function _sixWeekClassOptions(level){
+  return _sixWeekOpenForLevel(level).map(function(c){
+    var left = _seatsLeft(c);
+    return '<option value="' + esc(c.id) + '">starts ' + esc(_fmtDate(c.startISO || c.startDate)) +
+      ' — ' + left + ' seat' + (left === 1 ? '' : 's') + ' left</option>';
+  }).join('');
+}
+// Repopulate the class select whenever the level select changes.
+window._sixWeekOnLevel = function(){
+  var lvlSel = document.getElementById('sixWeekLevelSel');
+  var clsSel = document.getElementById('sixWeekLevel');
+  if (!lvlSel || !clsSel) return;
+  clsSel.innerHTML = _sixWeekClassOptions(lvlSel.value) || '<option value="">— none open —</option>';
+};
+
 function _drawShop(){
   var grid = $('shopGrid');
   if (!grid) return;
@@ -8423,10 +8449,32 @@ function _drawShop(){
   else if (!hasOpen) sixReason = 'No classes are open for enrollment right now.';
   else if (!canBuy6NoFunds) sixReason = 'Not enough points.';
 
-  var classOptions = _openList.map(function(c){
-    var left = _seatsLeft(c);
-    return '<option value="' + esc(c.id) + '">' + esc(_classLabel(c)) + ' — ' + left + ' seat' + (left === 1 ? '' : 's') + ' left</option>';
-  }).join('');
+  // Distinct levels among open classes, ordered by teaching sequence (unknown
+  // levels fall to the end, alphabetical). Drives the first select.
+  var _levelRank = { 'Absolute Beginner':0, 'Beginner':1, 'Novice':1, 'Intermediate':2, 'Upper Intermediate':3, 'Advanced':4 };
+  var _levels = [];
+  _openList.forEach(function(c){
+    var lv = c.level || c.classType || 'Class';
+    if (_levels.indexOf(lv) === -1) _levels.push(lv);
+  });
+  _levels.sort(function(a, b){
+    var ra = (a in _levelRank) ? _levelRank[a] : 99;
+    var rb = (b in _levelRank) ? _levelRank[b] : 99;
+    return (ra !== rb) ? (ra - rb) : a.localeCompare(b);
+  });
+  var _defLevel = _levels[0] || '';
+  var multiLevel = _levels.length > 1;
+  var levelSelectHtml = multiLevel
+    ? '<label class="shop-level-label">1 · CHOOSE LEVEL</label>' +
+      '<select id="sixWeekLevelSel" class="shop-level-select" onchange="_sixWeekOnLevel()" ' + (canBuy6All ? '' : 'disabled') + '>' +
+        _levels.map(function(lv){
+          var n = _sixWeekOpenForLevel(lv).length;
+          return '<option value="' + esc(lv) + '">' + esc(lv) + ' (' + n + ')</option>';
+        }).join('') +
+      '</select>'
+    : '';
+  var classSelectLabel = multiLevel ? '2 · CHOOSE CLASS' : 'CHOOSE A CLASS';
+  var classOptions = _sixWeekClassOptions(_defLevel);
 
   var openCountLine = hasOpen
     ? '<div style="font-size:12px;color:var(--cyan,#41c0ff);margin-bottom:6px;">' + _openList.length + ' class' + (_openList.length === 1 ? '' : 'es') + ' open for enrollment</div>'
@@ -8440,7 +8488,8 @@ function _drawShop(){
       '<div class="shop-price"><span style="color:var(--gold);">⭐ ' + PRICE_SIX_WEEK + '</span> <span style="color:#888;font-size:13px;">pts</span></div>' +
       openCountLine +
       '<div class="shop-level-wrap">' +
-        '<label class="shop-level-label">CHOOSE A CLASS</label>' +
+        levelSelectHtml +
+        '<label class="shop-level-label">' + classSelectLabel + '</label>' +
         '<select id="sixWeekLevel" class="shop-level-select" ' + (canBuy6All ? '' : 'disabled') + '>' +
           (hasOpen ? classOptions : '<option value="">— none open —</option>') +
         '</select>' +
