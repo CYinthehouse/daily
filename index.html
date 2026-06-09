@@ -8343,20 +8343,40 @@ function _classLabel(c){
 }
 
 /* ── 6-Week picker helpers (level-first, two-step) ──
- * The student first picks a LEVEL, then only that level's open cohorts appear
- * in the class select. Keeps each list short no matter how many classes open. */
+ * The student first picks a LEVEL, then only that level's open classes appear
+ * in the class select. The 4 levels are a fixed set; each open class is sorted
+ * under a level by KEYWORD MATCH on its name (the `level` field, e.g.
+ * "novicecolors" / "Novice" both → Novice). Order matters: "Absolute Beginner"
+ * and "Advanced Beginner" are checked before plain "Beginner" so they aren't
+ * swallowed by it. Anything with no keyword match falls under "Other" so a
+ * class can never silently disappear from the shop. */
+var LEVEL_FILTERS = [
+  { name: 'Absolute Beginner', kw: 'absolute' },
+  { name: 'Advanced Beginner', kw: 'advanced' },
+  { name: 'Novice',            kw: 'novice'   },
+  { name: 'Beginner',          kw: 'beginner' }
+];
+function _classFilterLevel(c){
+  var s = String((c && (c.level || c.classType)) || '').toLowerCase();
+  for (var i = 0; i < LEVEL_FILTERS.length; i++){
+    if (s.indexOf(LEVEL_FILTERS[i].kw) !== -1) return LEVEL_FILTERS[i].name;
+  }
+  return 'Other';
+}
+// Open classes (seats > 0) that fall under a given level filter, soonest first.
 function _sixWeekOpenForLevel(level){
   var list = (typeof OPEN_CLASSES !== 'undefined' ? OPEN_CLASSES : []).filter(function(c){
-    return _seatsLeft(c) > 0 && ((c.level || c.classType || 'Class') === level);
+    return _seatsLeft(c) > 0 && _classFilterLevel(c) === level;
   });
   list.sort(function(a, b){ return String(a.startISO || '').localeCompare(String(b.startISO || '')); });
   return list;
 }
-// Date-focused <option>s for the class select (level is already chosen above).
+// <option>s for the class select: class name + start date (level already chosen).
 function _sixWeekClassOptions(level){
   return _sixWeekOpenForLevel(level).map(function(c){
     var left = _seatsLeft(c);
-    return '<option value="' + esc(c.id) + '">starts ' + esc(_fmtDate(c.startISO || c.startDate)) +
+    var nm = String(c.level || c.classType || 'Class');
+    return '<option value="' + esc(c.id) + '">' + esc(nm) + ' · starts ' + esc(_fmtDate(c.startISO || c.startDate)) +
       ' — ' + left + ' seat' + (left === 1 ? '' : 's') + ' left</option>';
   }).join('');
 }
@@ -8457,19 +8477,13 @@ function _drawShop(){
   else if (!hasOpen) sixReason = 'No classes are open for enrollment right now.';
   else if (!canBuy6NoFunds) sixReason = 'Not enough points.';
 
-  // Distinct levels among open classes, ordered by teaching sequence (unknown
-  // levels fall to the end, alphabetical). Drives the first select.
-  var _levelRank = { 'Absolute Beginner':0, 'Beginner':1, 'Novice':1, 'Intermediate':2, 'Upper Intermediate':3, 'Advanced':4 };
-  var _levels = [];
-  _openList.forEach(function(c){
-    var lv = c.level || c.classType || 'Class';
-    if (_levels.indexOf(lv) === -1) _levels.push(lv);
+  // The level select lists only the fixed LEVEL_FILTERS that actually have an
+  // open class right now, kept in their canonical order. "Other" is appended
+  // only if some open class matched no keyword (so nothing is ever hidden).
+  var _levels = LEVEL_FILTERS.map(function(f){ return f.name; }).filter(function(name){
+    return _openList.some(function(c){ return _classFilterLevel(c) === name; });
   });
-  _levels.sort(function(a, b){
-    var ra = (a in _levelRank) ? _levelRank[a] : 99;
-    var rb = (b in _levelRank) ? _levelRank[b] : 99;
-    return (ra !== rb) ? (ra - rb) : a.localeCompare(b);
-  });
+  if (_openList.some(function(c){ return _classFilterLevel(c) === 'Other'; })) _levels.push('Other');
   var _defLevel = _levels[0] || '';
   var levelSelectHtml =
     '<label class="shop-level-label">1 · CHOOSE LEVEL</label>' +
