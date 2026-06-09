@@ -8319,9 +8319,17 @@ function _seatsLeft(c){
   if (!c) return 0;
   // Absolute Beginner and Novice are sold as 2-seat classes in the arcade,
   // counting ONLY gacha purchases — students added by hand in the Class Manager
-  // don't use up these seats. Once 2 arcade purchases land, the class is full
-  // and drops out of the shop.
-  if (c.classType === 'absolute' || c.classType === 'novice'){
+  // increment seatsTaken (not gachaSeatsTaken), so they don't use up these
+  // arcade seats. Once 2 arcade purchases land, the class is full and drops out
+  // of the shop. The level is detected from classType OR the level label, since
+  // open_classes docs leave classType null and carry the level in `level`.
+  var ct = String(c.classType || '').trim().toLowerCase();
+  var lv = String(c.level || '').trim().toLowerCase();
+  function _capped(s){
+    return s === 'novice' || s.indexOf('novice') === 0 ||
+           s === 'absolute' || s.indexOf('absolute') === 0;
+  }
+  if (_capped(ct) || _capped(lv)){
     var gachaTaken = (typeof c.gachaSeatsTaken === 'number') ? c.gachaSeatsTaken : 0;
     return Math.max(0, 2 - gachaTaken);
   }
@@ -8463,22 +8471,15 @@ function _drawShop(){
     return (ra !== rb) ? (ra - rb) : a.localeCompare(b);
   });
   var _defLevel = _levels[0] || '';
-  var multiLevel = _levels.length > 1;
-  var levelSelectHtml = multiLevel
-    ? '<label class="shop-level-label">1 · CHOOSE LEVEL</label>' +
-      '<select id="sixWeekLevelSel" class="shop-level-select" onchange="_sixWeekOnLevel()" ' + (canBuy6All ? '' : 'disabled') + '>' +
-        _levels.map(function(lv){
-          var n = _sixWeekOpenForLevel(lv).length;
-          return '<option value="' + esc(lv) + '">' + esc(lv) + ' (' + n + ')</option>';
-        }).join('') +
-      '</select>'
-    : '';
-  var classSelectLabel = multiLevel ? '2 · CHOOSE CLASS' : 'CHOOSE A CLASS';
+  var levelSelectHtml =
+    '<label class="shop-level-label">1 · CHOOSE LEVEL</label>' +
+    '<select id="sixWeekLevelSel" class="shop-level-select" onchange="_sixWeekOnLevel()" ' + (canBuy6All ? '' : 'disabled') + '>' +
+      _levels.map(function(lv){
+        return '<option value="' + esc(lv) + '">' + esc(lv) + '</option>';
+      }).join('') +
+    '</select>';
+  var classSelectLabel = '2 · CHOOSE CLASS';
   var classOptions = _sixWeekClassOptions(_defLevel);
-
-  var openCountLine = hasOpen
-    ? '<div style="font-size:12px;color:var(--cyan,#41c0ff);margin-bottom:6px;">' + _openList.length + ' class' + (_openList.length === 1 ? '' : 'es') + ' open for enrollment</div>'
-    : '';
 
   var sixCardHtml =
     '<div class="shop-card"' + (sixReason ? ' title="' + esc(sixReason) + '"' : '') + '>' +
@@ -8486,7 +8487,6 @@ function _drawShop(){
       '<div class="shop-name">6-WEEK<br>PROGRAM</div>' +
       '<div class="shop-desc">Full cohort class, 6 weeks of live instruction.</div>' +
       '<div class="shop-price"><span style="color:var(--gold);">⭐ ' + PRICE_SIX_WEEK + '</span> <span style="color:#888;font-size:13px;">pts</span></div>' +
-      openCountLine +
       '<div class="shop-level-wrap">' +
         levelSelectHtml +
         '<label class="shop-level-label">' + classSelectLabel + '</label>' +
