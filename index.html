@@ -2613,7 +2613,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
  * area. Hard `max-height` cap makes the scrollable area predictable.
  * Custom gold scrollbar so students can see at a glance that the body scrolls
  * (default scrollbars on dark bg are nearly invisible). */
-.policy-body{padding:18px 24px;overflow-y:auto;flex:1 1 auto;min-height:0;max-height:42vh;font-size:14px;color:#ddd;line-height:1.7;scrollbar-width:thin;scrollbar-color:var(--gold) rgba(255,215,0,0.08);}
+.policy-body{padding:18px 24px;overflow-y:auto;flex:1 1 auto;min-height:0;max-height:42vh;font-family:monospace;font-size:14px;color:#ddd;line-height:1.7;scrollbar-width:thin;scrollbar-color:var(--gold) rgba(255,215,0,0.08);}
 .policy-body::-webkit-scrollbar{width:10px;}
 .policy-body::-webkit-scrollbar-track{background:rgba(255,215,0,0.06);border-left:1px solid rgba(255,215,0,0.15);}
 .policy-body::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#ffe066,#cc9900);border-radius:0;border:2px solid #0d0d1f;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.4);}
@@ -3731,6 +3731,7 @@ async function _loadUserProfile(authUser){
       : (d.gachaCollection || []).length,
     extraHelpCredits: typeof d.extraHelpCredits === 'number' ? d.extraHelpCredits : 0,
     enrollment: d.enrollment || null,
+    sixWeekPurchases: (typeof d.sixWeekPurchases === 'number') ? d.sixWeekPurchases : 0,
     dailyReadingDoneFor: d.dailyReadingDoneFor || null,
     dailyListeningLevels: d.dailyListeningLevels || null,
     dailyAdvancedSubmittedFor: d.dailyAdvancedSubmittedFor || null,
@@ -8249,6 +8250,12 @@ function _enrollmentState(){
 }
 
 /* Whether user can purchase a new 6-week (no active/pending, OR admin override granted) */
+// The first in-app 6-week enrollment a student ever makes is free of charge;
+// every one after that costs points. Tracked by the sixWeekPurchases counter
+// on the user doc (incremented on each completed 6-week purchase).
+function _sixWeekIsFirstFree(){ return !!user && (user.sixWeekPurchases || 0) === 0; }
+function _sixWeekCost(){ return _sixWeekIsFirstFree() ? 0 : PRICE_SIX_WEEK; }
+
 function _canBuySixWeek(){
   var st = _enrollmentState();
   if (st === 'none' || st === 'completed' || st === 'cancelled') return true;
@@ -8468,7 +8475,8 @@ function _drawShop(){
     '</div>';
 
   // ── 6-Week Program card (enroll into an open prescheduled class) ──
-  var canBuy6NoFunds = pts >= PRICE_SIX_WEEK;
+  var sixFree = _sixWeekIsFirstFree();
+  var canBuy6NoFunds = sixFree || (pts >= PRICE_SIX_WEEK);
   var _openList = (typeof OPEN_CLASSES !== 'undefined' ? OPEN_CLASSES : []).filter(function(c){ return _seatsLeft(c) > 0; });
   var hasOpen = _openList.length > 0;
   var canBuy6All = canBuy6 && canBuy6NoFunds && hasOpen;
@@ -8476,6 +8484,13 @@ function _drawShop(){
   if (!canBuy6) sixReason = 'You already have an active enrollment. Finish it first.';
   else if (!hasOpen) sixReason = 'No classes are open for enrollment right now.';
   else if (!canBuy6NoFunds) sixReason = 'Not enough points.';
+
+  var sixPriceHtml = sixFree
+    ? '<span style="color:var(--green);">FREE</span> <span style="color:#888;font-size:13px;text-decoration:line-through;">' + PRICE_SIX_WEEK + ' pts</span>'
+    : '<span style="color:var(--gold);">⭐ ' + PRICE_SIX_WEEK + '</span> <span style="color:#888;font-size:13px;">pts</span>';
+  var firstFreeBadge = sixFree
+    ? '<div style="font-family:var(--ps);font-size:9px;color:var(--green);text-align:center;letter-spacing:.5px;line-height:1.5;margin-bottom:8px;">1ST IN-APP PURCHASE: FREE</div>'
+    : '';
 
   // The level select lists only the fixed LEVEL_FILTERS that actually have an
   // open class right now, kept in their canonical order. "Other" is appended
@@ -8500,8 +8515,9 @@ function _drawShop(){
       '<div class="shop-icon">📚</div>' +
       '<div class="shop-name">6-WEEK<br>PROGRAM</div>' +
       '<div class="shop-desc">Full cohort class, 6 weeks of live instruction.</div>' +
-      '<div class="shop-price"><span style="color:var(--gold);">⭐ ' + PRICE_SIX_WEEK + '</span> <span style="color:#888;font-size:13px;">pts</span></div>' +
+      '<div class="shop-price">' + sixPriceHtml + '</div>' +
       '<div class="shop-level-wrap">' +
+        firstFreeBadge +
         levelSelectHtml +
         '<label class="shop-level-label">' + classSelectLabel + '</label>' +
         '<select id="sixWeekLevel" class="shop-level-select" ' + (canBuy6All ? '' : 'disabled') + '>' +
@@ -8592,6 +8608,8 @@ window.buyExtraHelp = buyExtraHelp;
 /* ═══ POLICY TEXT (6-Week) ═══ */
 var SIX_WEEK_POLICY_TEXT =
   "To keep our 6-week programs fair and available for all students, each student may only be enrolled in one 6-week program at a time.\n\n" +
+  "FIRST PROGRAM FREE\n" +
+  "Your first in-app 6-week program enrollment is free of charge. This one-time free enrollment applies only to the first 6-week program you purchase through the app; every 6-week program after that is purchased with points.\n\n" +
   "Once you enroll in a 6-week program, you must complete that program before enrolling in another 6-week program. Additional 6-week program purchases will be unavailable until your current program has ended.\n\n" +
   "RE-ENROLLMENT\n" +
   "Students may enroll in another 6-week program only after their current 6-week program is fully completed. This helps ensure that students do not reserve multiple spots, switch programs repeatedly, or prevent other students from joining available classes.\n\n" +
@@ -8607,7 +8625,7 @@ var SIX_WEEK_POLICY_TEXT =
 async function buySixWeek(){
   if (!user) return;
   if (!_canBuySixWeek()){ toast('Finish your current enrollment first.', 'var(--pink)'); return; }
-  if ((user.points||0) < PRICE_SIX_WEEK){ toast('Not enough points.', 'var(--pink)'); return; }
+  if (_sixWeekCost() > 0 && (user.points||0) < _sixWeekCost()){ toast('Not enough points.', 'var(--pink)'); return; }
   var sel = document.getElementById('sixWeekLevel');
   var slotId = sel ? sel.value : '';
   var chosen = (typeof OPEN_CLASSES !== 'undefined' ? OPEN_CLASSES : []).filter(function(c){ return c.id === slotId; })[0];
@@ -8653,7 +8671,9 @@ function _showSixWeekPolicyModal(slotId){
         '<div class="policy-summary">' +
           'Class: <b>' + esc(_classLabel(chosen)) + '</b><br>' +
           'Seats left: <b>' + _seatsLeft(chosen) + '</b><br>' +
-          'Cost: <b style="color:var(--gold);">' + PRICE_SIX_WEEK + ' pts</b>' +
+          'Cost: ' + (_sixWeekCost() === 0
+            ? '<b style="color:var(--green);">FREE — 1st in-app purchase</b>'
+            : '<b style="color:var(--gold);">' + PRICE_SIX_WEEK + ' pts</b>') +
         '</div>' +
       '</div>' +
       '<div class="policy-actions">' +
@@ -8702,7 +8722,8 @@ window._closePolicyModal = _closePolicyModal;
 async function _confirmSixWeekPurchase(slotId){
   if (!user) return;
   if (!_canBuySixWeek()){ toast('Finish your current enrollment first.', 'var(--pink)'); _closePolicyModal(); return; }
-  if ((user.points||0) < PRICE_SIX_WEEK){ toast('Not enough points.', 'var(--pink)'); _closePolicyModal(); return; }
+  var cost = _sixWeekCost();
+  if (cost > 0 && (user.points||0) < cost){ toast('Not enough points.', 'var(--pink)'); _closePolicyModal(); return; }
   var chosen = (typeof OPEN_CLASSES !== 'undefined' ? OPEN_CLASSES : []).filter(function(c){ return c.id === slotId; })[0];
   if (!chosen){ toast('That class is no longer available.', 'var(--pink)'); _closePolicyModal(); _drawShop(); return; }
   if (_seatsLeft(chosen) <= 0){ toast('That class just filled up.', 'var(--pink)'); _closePolicyModal(); _drawShop(); return; }
@@ -8731,8 +8752,9 @@ async function _confirmSixWeekPurchase(slotId){
     };
     var batch = db.batch();
     batch.update(db.collection(TC).doc(user.id), {
-      points: firebase.firestore.FieldValue.increment(-PRICE_SIX_WEEK),
-      enrollment: enrollment
+      points: firebase.firestore.FieldValue.increment(-cost),
+      enrollment: enrollment,
+      sixWeekPurchases: firebase.firestore.FieldValue.increment(1)
     });
     batch.set(db.collection('enrollment_requests').doc(), {
       uid: user.id,
@@ -8742,8 +8764,15 @@ async function _confirmSixWeekPurchase(slotId){
       status: 'pending',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
+    // Claim the gacha seat on the class so the menu count drops (2→1→0). Only
+    // gacha enrollments touch gachaSeatsTaken; the open_classes onSnapshot then
+    // re-renders the shop with the reduced seat count.
+    batch.update(db.collection('open_classes').doc(chosen.id), {
+      gachaSeatsTaken: firebase.firestore.FieldValue.increment(1)
+    });
     await batch.commit();
-    user.points -= PRICE_SIX_WEEK;
+    user.points -= cost;
+    user.sixWeekPurchases = (user.sixWeekPurchases || 0) + 1;
     user.enrollment = enrollment;
     _closePolicyModal();
     toast('ENROLLED in ' + (chosen.level || 'your class') + '! Calvin will message you soon.', 'var(--gold)');
@@ -8752,7 +8781,7 @@ async function _confirmSixWeekPurchase(slotId){
       classType: chosen.level || chosen.classType || '',
       classDate: chosen.startISO || null,
       sourceSlotId: chosen.id,
-      pointsSpent: PRICE_SIX_WEEK,
+      pointsSpent: cost,
       item: 'six_week_program',
       enrollment: enrollment,
       remainingPoints: user.points,
