@@ -8251,9 +8251,10 @@ function _enrollmentState(){
 
 /* Whether user can purchase a new 6-week (no active/pending, OR admin override granted) */
 // The first in-app 6-week enrollment a student ever makes is free of charge;
-// every one after that costs points. Tracked by the sixWeekPurchases counter
-// on the user doc (incremented on each completed 6-week purchase).
-function _sixWeekIsFirstFree(){ return !!user && (user.sixWeekPurchases || 0) === 0; }
+// every one after that costs points. "First" means the purchase counter is 0
+// AND there's no enrollment already on file (so a student who enrolled before
+// this counter existed, or who currently holds one, isn't offered it free).
+function _sixWeekIsFirstFree(){ return !!user && (user.sixWeekPurchases || 0) === 0 && !user.enrollment; }
 function _sixWeekCost(){ return _sixWeekIsFirstFree() ? 0 : PRICE_SIX_WEEK; }
 
 function _canBuySixWeek(){
