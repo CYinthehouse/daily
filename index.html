@@ -8255,7 +8255,69 @@ function _enrollmentState(){
 // AND there's no enrollment already on file (so a student who enrolled before
 // this counter existed, or who currently holds one, isn't offered it free).
 function _sixWeekIsFirstFree(){ return !!user && (user.sixWeekPurchases || 0) === 0 && !user.enrollment; }
-function _sixWeekCost(){ return _sixWeekIsFirstFree() ? 0 : PRICE_SIX_WEEK; }
+
+// Mr. Calvin's classes carry a +450-point premium. A class's teacher comes from
+// the open_classes doc (synced from Class Manager); read it defensively.
+var MR_CALVIN_PREMIUM = 450;
+function _classTeacher(c){ var t = c && (c.teacher || c.teacherName || c.instructor); return t ? String(t) : ''; }
+function _isMrCalvinClass(c){ return /calvin/i.test(_classTeacher(c)); }
+function _isWonjooClass(c){ return /wonjoo/i.test(_classTeacher(c)); }
+function _sixWeekPremium(c){ return _isMrCalvinClass(c) ? MR_CALVIN_PREMIUM : 0; }
+// Gacha seat cap per class: Miss Wonjoo's classes seat up to 5 arcade students;
+// everyone else's cap at 2. (Real seats / Class-Manager students are separate.)
+function _gachaSeatCap(c){ return _isWonjooClass(c) ? 5 : 2; }
+// The free first-purchase benefit applies ONLY to Miss Wonjoo's classes. Mr.
+// Calvin's classes always carry the +450 premium and are never free.
+function _sixWeekIsFreeFor(c){ return _sixWeekIsFirstFree() && _isWonjooClass(c); }
+function _sixWeekCost(c){ return _sixWeekIsFreeFor(c) ? 0 : (PRICE_SIX_WEEK + _sixWeekPremium(c)); }
+
+// Price label for a class: FREE on a first Wonjoo purchase, otherwise base +
+// premium (with a "+450 · Mr. Calvin" note when it applies).
+function _sixWeekPriceHtml(c){
+  if (_sixWeekIsFreeFor(c)){
+    return '<span style="color:var(--green);">FREE</span> <span style="color:#888;font-size:13px;text-decoration:line-through;">' + (PRICE_SIX_WEEK + _sixWeekPremium(c)) + ' pts</span>';
+  }
+  var prem = _sixWeekPremium(c);
+  var html = '<span style="color:var(--gold);">⭐ ' + (PRICE_SIX_WEEK + prem) + '</span> <span style="color:#888;font-size:13px;">pts</span>';
+  if (prem > 0) html += ' <span style="color:var(--green);font-size:12px;">(+' + prem + ' · Mr. Calvin)</span>';
+  return html;
+}
+function _sixWeekSelectedClass(){
+  var sel = document.getElementById('sixWeekLevel');
+  if (!sel) return null;
+  var id = sel.value;
+  return (typeof OPEN_CLASSES !== 'undefined' ? OPEN_CLASSES : []).filter(function(c){ return c.id === id; })[0] || null;
+}
+// Re-render the price + buy button to match the currently selected class — the
+// teacher premium changes both the price shown and whether it's affordable.
+window._sixWeekRefreshPrice = function(){
+  var c = _sixWeekSelectedClass();
+  var priceEl = document.getElementById('sixWeekPriceDisplay');
+  if (priceEl) priceEl.innerHTML = _sixWeekPriceHtml(c);
+  var btn = document.getElementById('sixWeekBuyBtn');
+  var reasonEl = document.getElementById('sixWeekReason');
+  if (!btn) return;
+  var cost = _sixWeekCost(c);
+  var afford = !!user && (user.points || 0) >= cost;
+  var seatsOk = !!c && _seatsLeft(c) > 0;
+  var enrollOk = _canBuySixWeek();
+  var ok = enrollOk && seatsOk && afford;
+  btn.disabled = !ok;
+  btn.textContent = ok ? 'PURCHASE' : 'LOCKED';
+  if (ok) btn.classList.add('sparkle-btn'); else btn.classList.remove('sparkle-btn');
+  var badgeEl = document.getElementById('sixWeekFreeBadge');
+  if (badgeEl){
+    if (_sixWeekIsFreeFor(c)){ badgeEl.textContent = '1ST IN-APP PURCHASE: FREE'; badgeEl.style.marginBottom = '8px'; }
+    else { badgeEl.textContent = ''; badgeEl.style.marginBottom = '0'; }
+  }
+  if (reasonEl){
+    var reason = '';
+    if (!enrollOk) reason = 'You already have an active enrollment. Finish it first.';
+    else if (!seatsOk) reason = 'That class is full.';
+    else if (!afford) reason = 'Not enough points.';
+    reasonEl.textContent = reason;
+  }
+};
 
 function _canBuySixWeek(){
   var st = _enrollmentState();
@@ -8325,12 +8387,12 @@ function _subOpenClasses(){
 }
 function _seatsLeft(c){
   if (!c) return 0;
-  // Absolute Beginner and Novice are sold as 2-seat classes in the arcade,
+  // Novice / Absolute Beginner classes are sold as capped arcade classes,
   // counting ONLY gacha purchases — students added by hand in the Class Manager
   // increment seatsTaken (not gachaSeatsTaken), so they don't use up these
-  // arcade seats. Once 2 arcade purchases land, the class is full and drops out
-  // of the shop. The level is detected from classType OR the level label, since
-  // open_classes docs leave classType null and carry the level in `level`.
+  // arcade seats. The cap is 5 for Miss Wonjoo's classes and 2 for everyone
+  // else's (see _gachaSeatCap). Level is detected from classType OR the level
+  // label, since open_classes docs leave classType null and carry it in `level`.
   var ct = String(c.classType || '').trim().toLowerCase();
   var lv = String(c.level || '').trim().toLowerCase();
   function _capped(s){
@@ -8339,7 +8401,7 @@ function _seatsLeft(c){
   }
   if (_capped(ct) || _capped(lv)){
     var gachaTaken = (typeof c.gachaSeatsTaken === 'number') ? c.gachaSeatsTaken : 0;
-    return Math.max(0, 2 - gachaTaken);
+    return Math.max(0, _gachaSeatCap(c) - gachaTaken);
   }
   var seats = (typeof c.seats === 'number') ? c.seats : 0;
   var taken = (typeof c.seatsTaken === 'number') ? c.seatsTaken : 0;
@@ -8379,13 +8441,18 @@ function _sixWeekOpenForLevel(level){
   list.sort(function(a, b){ return String(a.startISO || '').localeCompare(String(b.startISO || '')); });
   return list;
 }
-// <option>s for the class select: class name + start date (level already chosen).
+// <option>s for the class select: class name + teacher + start date. Mr. Calvin
+// classes also show the +450 premium (unless this is the free first purchase).
 function _sixWeekClassOptions(level){
   return _sixWeekOpenForLevel(level).map(function(c){
     var left = _seatsLeft(c);
     var nm = String(c.level || c.classType || 'Class');
-    return '<option value="' + esc(c.id) + '">' + esc(nm) + ' · starts ' + esc(_fmtDate(c.startISO || c.startDate)) +
-      ' — ' + left + ' seat' + (left === 1 ? '' : 's') + ' left</option>';
+    var tch = _classTeacher(c);
+    var prem = (!_sixWeekIsFirstFree() && _isMrCalvinClass(c)) ? ' · +' + MR_CALVIN_PREMIUM + ' pts' : '';
+    return '<option value="' + esc(c.id) + '">' + esc(nm) +
+      (tch ? ' · ' + esc(tch) : '') +
+      ' · starts ' + esc(_fmtDate(c.startISO || c.startDate)) +
+      ' — ' + left + ' seat' + (left === 1 ? '' : 's') + ' left' + prem + '</option>';
   }).join('');
 }
 // Repopulate the class select whenever the level select changes.
@@ -8394,6 +8461,7 @@ window._sixWeekOnLevel = function(){
   var clsSel = document.getElementById('sixWeekLevel');
   if (!lvlSel || !clsSel) return;
   clsSel.innerHTML = _sixWeekClassOptions(lvlSel.value) || '<option value="">— none open —</option>';
+  _sixWeekRefreshPrice();
 };
 
 function _drawShop(){
@@ -8476,34 +8544,41 @@ function _drawShop(){
     '</div>';
 
   // ── 6-Week Program card (enroll into an open prescheduled class) ──
-  var sixFree = _sixWeekIsFirstFree();
-  var canBuy6NoFunds = sixFree || (pts >= PRICE_SIX_WEEK);
   var _openList = (typeof OPEN_CLASSES !== 'undefined' ? OPEN_CLASSES : []).filter(function(c){ return _seatsLeft(c) > 0; });
   var hasOpen = _openList.length > 0;
-  var canBuy6All = canBuy6 && canBuy6NoFunds && hasOpen;
-  var sixReason = '';
-  if (!canBuy6) sixReason = 'You already have an active enrollment. Finish it first.';
-  else if (!hasOpen) sixReason = 'No classes are open for enrollment right now.';
-  else if (!canBuy6NoFunds) sixReason = 'Not enough points.';
 
-  var sixPriceHtml = sixFree
-    ? '<span style="color:var(--green);">FREE</span> <span style="color:#888;font-size:13px;text-decoration:line-through;">' + PRICE_SIX_WEEK + ' pts</span>'
-    : '<span style="color:var(--gold);">⭐ ' + PRICE_SIX_WEEK + '</span> <span style="color:#888;font-size:13px;">pts</span>';
-  var firstFreeBadge = sixFree
-    ? '<div style="font-family:var(--ps);font-size:9px;color:var(--green);text-align:center;letter-spacing:.5px;line-height:1.5;margin-bottom:8px;">1ST IN-APP PURCHASE: FREE</div>'
-    : '';
-
-  // The level select lists only the fixed LEVEL_FILTERS that actually have an
-  // open class right now, kept in their canonical order. "Other" is appended
-  // only if some open class matched no keyword (so nothing is ever hidden).
+  // Level filters that have an open class (fixed order); "Other" appended last
+  // if some open class matched no keyword, so nothing is ever hidden.
   var _levels = LEVEL_FILTERS.map(function(f){ return f.name; }).filter(function(name){
     return _openList.some(function(c){ return _classFilterLevel(c) === name; });
   });
   if (_openList.some(function(c){ return _classFilterLevel(c) === 'Other'; })) _levels.push('Other');
   var _defLevel = _levels[0] || '';
+  var _defClass = _sixWeekOpenForLevel(_defLevel)[0] || null;
+
+  // Selects stay usable whenever there's an open class and no active enrollment,
+  // so a student can browse across classes even if the default one (e.g. a
+  // pricier Mr. Calvin class) is over budget. The BUTTON reflects the currently
+  // selected class's price/affordability, kept live by _sixWeekRefreshPrice().
+  var canBrowse = canBuy6 && hasOpen;
+  var _defCost = _sixWeekCost(_defClass);
+  var _defAfford = (pts >= _defCost);
+  var canBuy6All = canBrowse && _defAfford;
+  var sixReason = '';
+  if (!canBuy6) sixReason = 'You already have an active enrollment. Finish it first.';
+  else if (!hasOpen) sixReason = 'No classes are open for enrollment right now.';
+  else if (!_defAfford) sixReason = 'Not enough points.';
+
+  var sixPriceHtml = _sixWeekPriceHtml(_defClass);
+  var _defFree = _sixWeekIsFreeFor(_defClass);
+  var firstFreeBadge =
+    '<div id="sixWeekFreeBadge" style="font-family:var(--ps);font-size:9px;color:var(--green);text-align:center;letter-spacing:.5px;line-height:1.5;margin-bottom:' + (_defFree ? '8px' : '0') + ';">' +
+      (_defFree ? '1ST IN-APP PURCHASE: FREE' : '') +
+    '</div>';
+
   var levelSelectHtml =
     '<label class="shop-level-label">1 · CHOOSE LEVEL</label>' +
-    '<select id="sixWeekLevelSel" class="shop-level-select" onchange="_sixWeekOnLevel()" ' + (canBuy6All ? '' : 'disabled') + '>' +
+    '<select id="sixWeekLevelSel" class="shop-level-select" onchange="_sixWeekOnLevel()" ' + (canBrowse ? '' : 'disabled') + '>' +
       _levels.map(function(lv){
         return '<option value="' + esc(lv) + '">' + esc(lv) + '</option>';
       }).join('') +
@@ -8516,21 +8591,19 @@ function _drawShop(){
       '<div class="shop-icon">📚</div>' +
       '<div class="shop-name">6-WEEK<br>PROGRAM</div>' +
       '<div class="shop-desc">Full cohort class, 6 weeks of live instruction.</div>' +
-      '<div class="shop-price">' + sixPriceHtml + '</div>' +
+      '<div class="shop-price" id="sixWeekPriceDisplay">' + sixPriceHtml + '</div>' +
       '<div class="shop-level-wrap">' +
         firstFreeBadge +
         levelSelectHtml +
         '<label class="shop-level-label">' + classSelectLabel + '</label>' +
-        '<select id="sixWeekLevel" class="shop-level-select" ' + (canBuy6All ? '' : 'disabled') + '>' +
+        '<select id="sixWeekLevel" class="shop-level-select" onchange="_sixWeekRefreshPrice()" ' + (canBrowse ? '' : 'disabled') + '>' +
           (hasOpen ? classOptions : '<option value="">— none open —</option>') +
         '</select>' +
       '</div>' +
-      '<button class="btn btn-gold btn-md ' + (canBuy6All ? 'sparkle-btn' : '') + '" onclick="buySixWeek()" ' + (canBuy6All ? '' : 'disabled') + '>' +
+      '<button id="sixWeekBuyBtn" class="btn btn-gold btn-md ' + (canBuy6All ? 'sparkle-btn' : '') + '" onclick="buySixWeek()" ' + (canBuy6All ? '' : 'disabled') + '>' +
         (canBuy6All ? 'PURCHASE' : 'LOCKED') +
       '</button>' +
-      (sixReason
-        ? '<div class="shop-locked-reason">' + esc(sixReason) + '</div>'
-        : '<div class="shop-locked-spacer" aria-hidden="true"></div>') +
+      '<div class="shop-locked-reason" id="sixWeekReason">' + esc(sixReason) + '</div>' +
     '</div>';
 
   var itemsHtml = helpCardHtml + sixCardHtml;
@@ -8609,8 +8682,10 @@ window.buyExtraHelp = buyExtraHelp;
 /* ═══ POLICY TEXT (6-Week) ═══ */
 var SIX_WEEK_POLICY_TEXT =
   "To keep our 6-week programs fair and available for all students, each student may only be enrolled in one 6-week program at a time.\n\n" +
-  "FIRST PROGRAM FREE\n" +
-  "Your first in-app 6-week program enrollment is free of charge. This one-time free enrollment applies only to the first 6-week program you purchase through the app; every 6-week program after that is purchased with points.\n\n" +
+  "FIRST PROGRAM FREE — MISS WONJOO'S CLASSES\n" +
+  "Your first in-app 6-week program enrollment is free of charge when you enroll in one of Miss Wonjoo's classes. This one-time free enrollment applies only to your first 6-week purchase through the app and only to Miss Wonjoo's classes; every 6-week program after that is purchased with points.\n\n" +
+  "MR. CALVIN'S CLASSES\n" +
+  "Mr. Calvin's classes cost an additional 450 points and are never free — including on a first purchase. The first-program-free benefit applies only to Miss Wonjoo's classes and does not apply to Mr. Calvin's classes.\n\n" +
   "Once you enroll in a 6-week program, you must complete that program before enrolling in another 6-week program. Additional 6-week program purchases will be unavailable until your current program has ended.\n\n" +
   "RE-ENROLLMENT\n" +
   "Students may enroll in another 6-week program only after their current 6-week program is fully completed. This helps ensure that students do not reserve multiple spots, switch programs repeatedly, or prevent other students from joining available classes.\n\n" +
@@ -8626,12 +8701,13 @@ var SIX_WEEK_POLICY_TEXT =
 async function buySixWeek(){
   if (!user) return;
   if (!_canBuySixWeek()){ toast('Finish your current enrollment first.', 'var(--pink)'); return; }
-  if (_sixWeekCost() > 0 && (user.points||0) < _sixWeekCost()){ toast('Not enough points.', 'var(--pink)'); return; }
   var sel = document.getElementById('sixWeekLevel');
   var slotId = sel ? sel.value : '';
   var chosen = (typeof OPEN_CLASSES !== 'undefined' ? OPEN_CLASSES : []).filter(function(c){ return c.id === slotId; })[0];
   if (!chosen){ toast('Pick a class to enroll in.', 'var(--pink)'); return; }
   if (_seatsLeft(chosen) <= 0){ toast('That class is full.', 'var(--pink)'); return; }
+  var cost = _sixWeekCost(chosen);
+  if (cost > 0 && (user.points||0) < cost){ toast('Not enough points.', 'var(--pink)'); return; }
   playSelect();
   // Open policy modal, actual purchase happens after sign-off
   _showSixWeekPolicyModal(slotId);
@@ -8672,9 +8748,10 @@ function _showSixWeekPolicyModal(slotId){
         '<div class="policy-summary">' +
           'Class: <b>' + esc(_classLabel(chosen)) + '</b><br>' +
           'Seats left: <b>' + _seatsLeft(chosen) + '</b><br>' +
-          'Cost: ' + (_sixWeekCost() === 0
+          'Cost: ' + (_sixWeekCost(chosen) === 0
             ? '<b style="color:var(--green);">FREE — 1st in-app purchase</b>'
-            : '<b style="color:var(--gold);">' + PRICE_SIX_WEEK + ' pts</b>') +
+            : '<b style="color:var(--gold);">' + _sixWeekCost(chosen) + ' pts</b>'
+              + (_sixWeekPremium(chosen) > 0 ? ' <span style="color:var(--green);font-size:12px;">(+' + _sixWeekPremium(chosen) + ' · Mr. Calvin)</span>' : '')) +
         '</div>' +
       '</div>' +
       '<div class="policy-actions">' +
@@ -8723,10 +8800,10 @@ window._closePolicyModal = _closePolicyModal;
 async function _confirmSixWeekPurchase(slotId){
   if (!user) return;
   if (!_canBuySixWeek()){ toast('Finish your current enrollment first.', 'var(--pink)'); _closePolicyModal(); return; }
-  var cost = _sixWeekCost();
-  if (cost > 0 && (user.points||0) < cost){ toast('Not enough points.', 'var(--pink)'); _closePolicyModal(); return; }
   var chosen = (typeof OPEN_CLASSES !== 'undefined' ? OPEN_CLASSES : []).filter(function(c){ return c.id === slotId; })[0];
   if (!chosen){ toast('That class is no longer available.', 'var(--pink)'); _closePolicyModal(); _drawShop(); return; }
+  var cost = _sixWeekCost(chosen);
+  if (cost > 0 && (user.points||0) < cost){ toast('Not enough points.', 'var(--pink)'); _closePolicyModal(); return; }
   if (_seatsLeft(chosen) <= 0){ toast('That class just filled up.', 'var(--pink)'); _closePolicyModal(); _drawShop(); return; }
   var chk = document.getElementById('policyAgreeChk');
   var nameInput = document.getElementById('policyNameInput');
