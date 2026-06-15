@@ -8259,7 +8259,7 @@ function _sixWeekIsFirstFree(){ return !!user && (user.sixWeekPurchases || 0) ==
 // Mr. Calvin's classes carry a +450-point premium. A class's teacher comes from
 // the open_classes doc (synced from Class Manager); read it defensively.
 var MR_CALVIN_PREMIUM = 450;
-function _classTeacher(c){ var t = c && (c.teacher || c.teacherName || c.instructor); return t ? String(t) : ''; }
+function _classTeacher(c){ var t = c && (c.teacherName || c.teacher || c.instructor || c.teacher_name || c.tutorName || c.tutor); return t ? String(t) : ''; }
 function _isMrCalvinClass(c){ return /calvin/i.test(_classTeacher(c)); }
 function _isWonjooClass(c){ return /wonjoo/i.test(_classTeacher(c)); }
 function _sixWeekPremium(c){ return _isMrCalvinClass(c) ? MR_CALVIN_PREMIUM : 0; }
@@ -8387,25 +8387,12 @@ function _subOpenClasses(){
 }
 function _seatsLeft(c){
   if (!c) return 0;
-  // Novice / Absolute Beginner classes are sold as capped arcade classes,
-  // counting ONLY gacha purchases — students added by hand in the Class Manager
-  // increment seatsTaken (not gachaSeatsTaken), so they don't use up these
-  // arcade seats. The cap is 5 for Miss Wonjoo's classes and 2 for everyone
-  // else's (see _gachaSeatCap). Level is detected from classType OR the level
-  // label, since open_classes docs leave classType null and carry it in `level`.
-  var ct = String(c.classType || '').trim().toLowerCase();
-  var lv = String(c.level || '').trim().toLowerCase();
-  function _capped(s){
-    return s === 'novice' || s.indexOf('novice') === 0 ||
-           s === 'absolute' || s.indexOf('absolute') === 0;
-  }
-  if (_capped(ct) || _capped(lv)){
-    var gachaTaken = (typeof c.gachaSeatsTaken === 'number') ? c.gachaSeatsTaken : 0;
-    return Math.max(0, _gachaSeatCap(c) - gachaTaken);
-  }
-  var seats = (typeof c.seats === 'number') ? c.seats : 0;
-  var taken = (typeof c.seatsTaken === 'number') ? c.seatsTaken : 0;
-  return Math.max(0, seats - taken);
+  // Every arcade class is gacha-capped, counting ONLY gacha purchases: Miss
+  // Wonjoo's classes seat up to 5, everyone else's up to 2 — all levels (see
+  // _gachaSeatCap). Students added by hand in the Class Manager bump seatsTaken
+  // (not gachaSeatsTaken), so they don't consume these arcade seats.
+  var gachaTaken = (typeof c.gachaSeatsTaken === 'number') ? c.gachaSeatsTaken : 0;
+  return Math.max(0, _gachaSeatCap(c) - gachaTaken);
 }
 function _classLabel(c){
   if (!c) return 'Class';
@@ -8818,6 +8805,8 @@ async function _confirmSixWeekPurchase(slotId){
     var enrollment = {
       type: 'six_week',
       classLevel: chosen.level || chosen.classType || '',
+      teacher: _classTeacher(chosen) || '',
+      pricePaid: cost,
       sourceSlotId: chosen.id,
       status: 'pending',
       purchasedAt: new Date().toISOString(),
@@ -8880,6 +8869,7 @@ async function cancelEnrollment(){
   var policy = _cancelPolicy();
   if (!policy.canCancel){ toast(policy.reason, 'var(--pink)'); return; }
   var refund = PRICE_SIX_WEEK - CANCEL_FEE_POINTS;
+  var slotId = user.enrollment.sourceSlotId || null;
   if (!confirm('Cancel your 6-Week Program enrollment?\n\n' +
                '• Refund: +' + refund + ' points\n' +
                '• Cancellation fee: −' + CANCEL_FEE_POINTS + ' points\n' +
@@ -8897,8 +8887,43 @@ async function cancelEnrollment(){
     });
     user.points += refund;
     user.enrollment = cancelled;
+
+    // Release the arcade seat and signal the Class Manager to drop the student.
+    // The gacha app and Class Manager are SEPARATE Firebase projects, so we
+    // can't edit the slot's enrolledStudents directly. Instead we (a) free the
+    // gacha seat on open_classes so the menu count recovers, and (b) flip the
+    // SAME enrollment_requests doc the add-bridge consumed at purchase to
+    // status:'cancelled', so the bridge that added this student can remove them.
+    if (slotId){
+      try {
+        await db.collection('open_classes').doc(slotId).update({
+          gachaSeatsTaken: firebase.firestore.FieldValue.increment(-1)
+        });
+      } catch(e){ console.warn('seat release:', e); }
+      try {
+        var reqs = await db.collection('enrollment_requests')
+          .where('uid', '==', user.id)
+          .where('sourceSlotId', '==', slotId)
+          .get();
+        if (!reqs.empty){
+          var rb = db.batch();
+          reqs.forEach(function(d){
+            rb.update(d.ref, {
+              status: 'cancelled',
+              cancelledAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+          });
+          await rb.commit();
+        }
+      } catch(e){ console.warn('cancel enrollment_request:', e); }
+    }
+
     toast('Enrollment cancelled. +' + refund + ' pts refunded.', 'var(--gold)');
     fireWebhook('enrollment.cancelled', {
+      uid: user.id,
+      name: user.displayName || user.username || '',
+      email: user.username || user.displayName || '',
+      sourceSlotId: slotId,
       classType: cancelled.classLevel || null,
       classDate: cancelled.startDate || null,
       pointsSpent: -refund, // negative = they got points back
@@ -15016,6 +15041,16 @@ async function _profileSave(){
     await db.collection(TC).doc(user.id).update({
       displayName: name, photoURL: photoURL, aboutMe: about, monthlyGoal: goal
     });
+    // Keep the public boss_leaderboard doc's name/photo in sync so a rename or
+    // new avatar shows on the Boss Battle leaderboard. merge:true so we never
+    // clobber the score fields (bossWins/bossEasyBest/bossHardBest) it holds,
+    // and we don't create a doc for users who've never played (set on a missing
+    // doc with only these 2 fields is harmless, but guard anyway via merge).
+    try {
+      await db.collection('boss_leaderboard').doc(user.id).set({
+        displayName: name, photoURL: photoURL
+      }, { merge: true });
+    } catch(e){ console.warn('leaderboard name sync:', e); }
     user.displayName = name; user.photoURL = photoURL; user.aboutMe = about; user.monthlyGoal = goal;
     _profileClose();
     updateTopBar();
