@@ -2801,10 +2801,10 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
       <div class="menu-desc">Complete challenges to earn gacha eggs and points.</div>
       <span class="menu-count">Earn eggs &amp; points</span>
     </div>
-    <div class="menu-card shop" onclick="handleTileTap('shop')">
-      <span class="menu-emoji">🏪</span>
-      <div class="grad-wrap"><div class="menu-name grad-text grad-gold">POINT<br>SHOP</div></div>
-      <div class="menu-desc">Spend your hard-earned points on exclusive rewards.</div>
+    <div class="menu-card shop" id="menuCardShop" onclick="handleTileTap('shop')">
+      <span class="menu-emoji" id="menuShopEmoji">🎟️</span>
+      <div class="grad-wrap"><div class="menu-name grad-text grad-gold" id="menuShopName">GET<br>CLASS</div></div>
+      <div class="menu-desc" id="menuShopDesc">Register for class here.</div>
       <span class="menu-count" id="countShop">0 pts</span>
     </div>
     <div class="menu-card showcase" onclick="handleTileTap('showcase')">
@@ -2951,8 +2951,8 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 <div id="shopScreen" class="sub-screen hidden">
   <div class="back-row"><button class="btn btn-ghost btn-sm" onclick="goBackToMenu()">← BACK TO MENU</button></div>
   <div class="section-head shop">
-    <div class="sh-title">🏪 POINT SHOP</div>
-    <div class="sh-sub">Spend your hard-earned points on exclusive items.</div>
+    <div class="sh-title" id="shopHeaderTitle">🎟️ GET CLASS</div>
+    <div class="sh-sub" id="shopHeaderSub">Register for class here.</div>
   </div>
   <div class="weekly-bonus-container" id="shopLeaderboard">
     <div class="weekly-bonus-banner nested" style="cursor:default;">
@@ -2995,6 +2995,12 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   <div style="margin-bottom:18px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
     <button class="btn btn-cyan btn-md" id="toggleDailyBtn" onclick="toggleDailyEnabled()">⏳ TOGGLE DAILY WIP</button>
     <span id="toggleDailyStatus" style="font-family:var(--vt);font-size:14px;color:#aaa;"></span>
+  </div>
+
+  <!-- Shop mode toggle: OFF (default) = free "Get Class"; ON = paid "Point Shop". -->
+  <div style="margin-bottom:18px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+    <button class="btn btn-gold btn-md" id="toggleShopModeBtn" onclick="toggleShopMode()">🏪 TOGGLE SHOP MODE</button>
+    <span id="toggleShopModeStatus" style="font-family:var(--vt);font-size:14px;color:#aaa;"></span>
   </div>
 
   <!-- Per-activity WIP/LIVE toggles. Master switch above gates all of these. -->
@@ -3248,6 +3254,16 @@ function _isAdminEmail(email){
 const GACHA_CONFIG_DOC = { collection: 'gacha_config', id: 'main' };
 // Default: daily ON. Loaded from Firestore at app start; live-updated when admin toggles.
 var _dailyEnabled = true;
+// ── SHOP PAID MODE (single master switch for the "Get Class" repackaging) ──
+// When FALSE (the new default student-facing mode):
+//   • 6-Week Program is FREE for everyone (points cost suppressed)
+//   • Friday Extra Help card is HIDDEN from the shop
+//   • Shop header / menu tile / references read "GET CLASS" instead of "POINT SHOP"
+//   • Subtitle reads "Register for class here." instead of the spend-points copy
+// When TRUE (admin flips it back on): the original paid Point Shop behavior
+// returns exactly as before. Nothing is deleted — purely gated by this flag.
+// Persisted to gacha_config/main as `shopPaidMode`. Defaults false if missing.
+var _shopPaidMode = false;
 // Per-activity WIP/LIVE state. _dailyEnabled is the MASTER switch; each activity also
 // has its own flag. An activity is effectively LIVE only when BOTH the master is on AND
 // its own flag is on. Missing/undefined flags default to true (live). Keys match the
@@ -3270,6 +3286,9 @@ function _loadGachaConfig(){
         var d = snap.data() || {};
         // Default true if field missing, only flips off if explicitly false.
         _dailyEnabled = d.dailyEnabled !== false;
+        // Shop paid mode: default FALSE (new free "Get Class" mode) unless
+        // explicitly set true by admin.
+        _shopPaidMode = d.shopPaidMode === true;
         // Per-activity flags. Each missing key defaults to true (live).
         var da = d.dailyActivities || {};
         DAILY_ACTIVITY_KEYS.forEach(function(k){
@@ -3281,6 +3300,8 @@ function _loadGachaConfig(){
       try {
         if (typeof _updateDailyTile === 'function') _updateDailyTile();
         if (typeof _refreshDailyToggleUi === 'function') _refreshDailyToggleUi();
+        if (typeof _applyShopMode === 'function') _applyShopMode();
+        if (typeof _refreshShopModeToggleUi === 'function') _refreshShopModeToggleUi();
       } catch(e){}
     }).catch(function(e){ console.warn('Config load failed:', e); });
   } catch(e){ console.warn('Config load failed:', e); return Promise.resolve(); }
@@ -4028,6 +4049,8 @@ function showMenu(){
   _updateAdminTile();
   // Daily tile (toggled to "Work in Progress" for non-admins when admin disables it)
   _updateDailyTile();
+  // Shop/Get Class tile + header copy based on paid mode.
+  if (typeof _applyShopMode === 'function') _applyShopMode();
   // Auto-complete any stale enrollments in the background
   _maybeExpireEnrollment();
   maybeShowMuteNudge();
@@ -4170,6 +4193,67 @@ function _updateDailyTile(){
     tile.onclick = function(){ handleTileTap('daily'); };
   }
 }
+
+// ── SHOP MODE: swap student-facing copy + menu tile based on _shopPaidMode ──
+// Paid mode ON  → "POINT SHOP" / spend-points copy (original).
+// Paid mode OFF → "GET CLASS" / "Register for class here." (current default).
+function _applyShopMode(){
+  var paid = !!_shopPaidMode;
+  var set = function(id, txt){ var el = document.getElementById(id); if (el) el.textContent = txt; };
+  var setHtml = function(id, html){ var el = document.getElementById(id); if (el) el.innerHTML = html; };
+  // Shop screen header
+  set('shopHeaderTitle', paid ? '🏪 POINT SHOP' : '🎟️ GET CLASS');
+  set('shopHeaderSub',   paid ? 'Spend your hard-earned points on exclusive items.'
+                              : 'Register for class here.');
+  // Menu tile
+  set('menuShopEmoji', paid ? '🏪' : '🎟️');
+  setHtml('menuShopName', paid ? 'POINT<br>SHOP' : 'GET<br>CLASS');
+  set('menuShopDesc', paid ? 'Spend your hard-earned points on exclusive rewards.'
+                           : 'Register for class here.');
+  // Redraw the shop grid so card visibility / pricing reflects the mode.
+  if (typeof _drawShop === 'function') _drawShop();
+}
+
+// Admin toggle button + status for shop paid mode.
+function _refreshShopModeToggleUi(){
+  var btn = document.getElementById('toggleShopModeBtn');
+  var status = document.getElementById('toggleShopModeStatus');
+  if (btn){
+    btn.textContent = _shopPaidMode
+      ? '🎟️ SET SHOP → GET CLASS (FREE)'
+      : '🏪 SET SHOP → POINT SHOP (PAID)';
+  }
+  if (status){
+    status.textContent = _shopPaidMode
+      ? 'Shop is PAID: "Point Shop", 6-Week costs points, Friday Extra Help shown.'
+      : 'Shop is FREE: "Get Class", 6-Week free, Friday Extra Help hidden.';
+    status.style.setProperty('color', _shopPaidMode ? '#f5c842' : '#3eea4d', 'important');
+  }
+}
+
+// Admin-only: flip _shopPaidMode and persist to Firestore.
+async function toggleShopMode(){
+  if (!(user && user.isAdmin)){ return; }
+  var newVal = !_shopPaidMode;
+  var btn = document.getElementById('toggleShopModeBtn');
+  if (btn) btn.disabled = true;
+  try {
+    await db.collection(GACHA_CONFIG_DOC.collection).doc(GACHA_CONFIG_DOC.id).set({
+      shopPaidMode: newVal,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: (user && user.username) || ''
+    }, { merge: true });
+    _shopPaidMode = newVal;
+    _applyShopMode();
+    _refreshShopModeToggleUi();
+    playSelect();
+  } catch(e){
+    alert('Failed to save shop toggle: ' + (e && e.message ? e.message : e));
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+window.toggleShopMode = toggleShopMode;
 
 // Refresh the admin-screen toggle button label + status text to reflect current state.
 function _refreshDailyToggleUi(){
@@ -8269,11 +8353,19 @@ function _gachaSeatCap(c){ return _isWonjooClass(c) ? 5 : 2; }
 // The free first-purchase benefit applies ONLY to Miss Wonjoo's classes. Mr.
 // Calvin's classes always carry the +450 premium and are never free.
 function _sixWeekIsFreeFor(c){ return _sixWeekIsFirstFree() && _isWonjooClass(c); }
-function _sixWeekCost(c){ return _sixWeekIsFreeFor(c) ? 0 : (PRICE_SIX_WEEK + _sixWeekPremium(c)); }
+function _sixWeekCost(c){
+  // When paid mode is OFF, the 6-Week Program is completely free of charge.
+  if (!_shopPaidMode) return 0;
+  return _sixWeekIsFreeFor(c) ? 0 : (PRICE_SIX_WEEK + _sixWeekPremium(c));
+}
 
 // Price label for a class: FREE on a first Wonjoo purchase, otherwise base +
 // premium (with a "+450 · Mr. Calvin" note when it applies).
 function _sixWeekPriceHtml(c){
+  // Paid mode OFF → always FREE, no struck-through price.
+  if (!_shopPaidMode){
+    return '<span style="color:var(--green);">FREE</span>';
+  }
   if (_sixWeekIsFreeFor(c)){
     return '<span style="color:var(--green);">FREE</span> <span style="color:#888;font-size:13px;text-decoration:line-through;">' + (PRICE_SIX_WEEK + _sixWeekPremium(c)) + ' pts</span>';
   }
@@ -8307,7 +8399,7 @@ window._sixWeekRefreshPrice = function(){
   if (ok) btn.classList.add('sparkle-btn'); else btn.classList.remove('sparkle-btn');
   var badgeEl = document.getElementById('sixWeekFreeBadge');
   if (badgeEl){
-    if (_sixWeekIsFreeFor(c)){ badgeEl.textContent = '1ST IN-APP PURCHASE: FREE'; badgeEl.style.marginBottom = '8px'; }
+    if (_shopPaidMode && _sixWeekIsFreeFor(c)){ badgeEl.textContent = '1ST IN-APP PURCHASE: FREE'; badgeEl.style.marginBottom = '8px'; }
     else { badgeEl.textContent = ''; badgeEl.style.marginBottom = '0'; }
   }
   if (reasonEl){
@@ -8435,7 +8527,7 @@ function _sixWeekClassOptions(level){
     var left = _seatsLeft(c);
     var nm = String(c.level || c.classType || 'Class');
     var tch = _classTeacher(c);
-    var prem = (!_sixWeekIsFirstFree() && _isMrCalvinClass(c)) ? ' · +' + MR_CALVIN_PREMIUM + ' pts' : '';
+    var prem = (_shopPaidMode && !_sixWeekIsFirstFree() && _isMrCalvinClass(c)) ? ' · +' + MR_CALVIN_PREMIUM + ' pts' : '';
     return '<option value="' + esc(c.id) + '">' + esc(nm) +
       (tch ? ' · ' + esc(tch) : '') +
       ' · starts ' + esc(_fmtDate(c.startISO || c.startDate)) +
@@ -8557,7 +8649,7 @@ function _drawShop(){
   else if (!_defAfford) sixReason = 'Not enough points.';
 
   var sixPriceHtml = _sixWeekPriceHtml(_defClass);
-  var _defFree = _sixWeekIsFreeFor(_defClass);
+  var _defFree = _shopPaidMode && _sixWeekIsFreeFor(_defClass);
   var firstFreeBadge =
     '<div id="sixWeekFreeBadge" style="font-family:var(--ps);font-size:9px;color:var(--green);text-align:center;letter-spacing:.5px;line-height:1.5;margin-bottom:' + (_defFree ? '8px' : '0') + ';">' +
       (_defFree ? '1ST IN-APP PURCHASE: FREE' : '') +
@@ -8593,7 +8685,7 @@ function _drawShop(){
       '<div class="shop-locked-reason" id="sixWeekReason">' + esc(sixReason) + '</div>' +
     '</div>';
 
-  var itemsHtml = helpCardHtml + sixCardHtml;
+  var itemsHtml = (_shopPaidMode ? helpCardHtml : '') + sixCardHtml;
 
   grid.innerHTML = statusHtml + creditsHtml + '<div class="shop-grid">' + itemsHtml + '</div>';
 
@@ -8736,7 +8828,9 @@ function _showSixWeekPolicyModal(slotId){
           'Class: <b>' + esc(_classLabel(chosen)) + '</b><br>' +
           'Seats left: <b>' + _seatsLeft(chosen) + '</b><br>' +
           'Cost: ' + (_sixWeekCost(chosen) === 0
-            ? '<b style="color:var(--green);">FREE — 1st in-app purchase</b>'
+            ? (_shopPaidMode
+                ? '<b style="color:var(--green);">FREE — 1st in-app purchase</b>'
+                : '<b style="color:var(--green);">FREE</b>')
             : '<b style="color:var(--gold);">' + _sixWeekCost(chosen) + ' pts</b>'
               + (_sixWeekPremium(chosen) > 0 ? ' <span style="color:var(--green);font-size:12px;">(+' + _sixWeekPremium(chosen) + ' · Mr. Calvin)</span>' : '')) +
         '</div>' +
@@ -9138,6 +9232,8 @@ function renderAdmin(){
   if (typeof _adminRestoreSectionStates === 'function') _adminRestoreSectionStates();
   // Refresh the daily-toggle button label + status to reflect current state
   _refreshDailyToggleUi();
+  // Refresh the shop-mode toggle button label + status.
+  if (typeof _refreshShopModeToggleUi === 'function') _refreshShopModeToggleUi();
   // Render each manager (each one writes into its own host div)
   if (typeof _drmRenderManager === 'function') _drmRenderManager();
   if (typeof _advmRenderManager === 'function') _advmRenderManager();
