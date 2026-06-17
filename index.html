@@ -2716,6 +2716,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   <div class="login-box" style="margin-top:32px;">
     <div class="disclaimer">
       <strong>⚠️ NOTICE</strong> If you've attended Tuesday Reading on this platform, use that account. If not or you don't know, make a new account.
+      <div style="margin-top:10px;color:#ff5555;font-weight:700;">This app is for current Academy members only. If you're still in your first 6-week program, please don't sign up yet.</div>
     </div>
     <div class="tab-toggle">
       <button id="tabLoginBtn" class="tab-toggle-btn sparkle-btn" onclick="switchTab('login')">LOG IN</button>
@@ -4308,10 +4309,20 @@ async function toggleDailyActivity(key){
   var wrap = document.getElementById('dailyActivityToggles');
   if (wrap){ wrap.querySelectorAll('button').forEach(function(b){ b.disabled = true; }); }
   try {
-    var update = {};
-    update['dailyActivities.' + key] = newVal;
-    update.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
-    update.updatedBy = (user && user.username) || '';
+    // NOTE: dot-path keys ('dailyActivities.reading') do NOT create nested
+    // fields under set({merge:true}) — they create a literal top-level field
+    // with a dot in its name, so the change never persists into the real
+    // dailyActivities map and is lost on reload. Write the whole map (built
+    // from current in-memory state with this one flag flipped) instead.
+    var nextActivities = {};
+    DAILY_ACTIVITY_KEYS.forEach(function(k){
+      nextActivities[k] = (k === key) ? newVal : (_dailyActivities[k] !== false);
+    });
+    var update = {
+      dailyActivities: nextActivities,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: (user && user.username) || ''
+    };
     await db.collection(GACHA_CONFIG_DOC.collection).doc(GACHA_CONFIG_DOC.id).set(update, { merge: true });
     _dailyActivities[key] = newVal;
     _renderActivityToggles();
@@ -9060,7 +9071,6 @@ async function renderAccountsMgr(){
         photoURL: d.photoURL || null,
         isAdmin: !!d.isAdmin,
         disabled: !!d.disabled,
-        bonusOverride: d.bonusOverride === true,
         createdAt: (d.createdAt && d.createdAt.toMillis) ? d.createdAt.toMillis() : 0
       });
     });
@@ -9083,13 +9093,9 @@ function _acctRowHtml(r){
   var badges = '';
   if (r.isAdmin)  badges += '<span class="badge" style="background:rgba(65,192,255,0.15)!important;border:1px solid #2a6f9e!important;color:#7fd0ff!important;">ADMIN</span> ';
   if (r.disabled) badges += '<span class="badge expired">Disabled</span> ';
-  if (r.bonusOverride) badges += '<span class="badge" style="background:rgba(57,255,20,0.15)!important;border:1px solid #2e7d32!important;color:#7dffb0!important;">BONUS UNLOCKED</span> ';
   var disableBtn = r.disabled
     ? '<button class="btn btn-ghost" onclick="_acctToggleDisabled(\'' + r.id + '\',false)">✅ ENABLE</button>'
     : '<button class="btn btn-ghost" onclick="_acctToggleDisabled(\'' + r.id + '\',true)">🚫 DISABLE</button>';
-  var bonusBtn = r.bonusOverride
-    ? '<button class="btn btn-ghost" onclick="_acctToggleBonusOverride(\'' + r.id + '\',false)">🔒 LOCK BONUS</button>'
-    : '<button class="btn btn-ghost" onclick="_acctToggleBonusOverride(\'' + r.id + '\',true)">🔓 UNLOCK BONUS</button>';
   return '<div class="drm-row" id="acctRow_' + r.id + '">' +
     '<div class="drm-row-title" style="display:flex;align-items:center;gap:10px;"><span class="wbf-ava">' + avatar + '</span><span>' + _esc(r.displayName) + '</span></div>' +
     '<div class="drm-row-meta">' + badges +
@@ -9097,7 +9103,6 @@ function _acctRowHtml(r){
       '<span style="color:#ffd76b !important;">⭐ ' + r.points + ' pts</span></div>' +
     '<div class="drm-row-actions">' +
       '<button class="btn btn-cyan" onclick="_acctAdjustPoints(\'' + r.id + '\')">⭐ ADJUST POINTS</button>' +
-      bonusBtn +
       disableBtn +
       '<button class="btn btn-danger" onclick="_acctDelete(\'' + r.id + '\')">🗑 DELETE</button>' +
     '</div>' +
@@ -9205,21 +9210,6 @@ async function _acctToggleDisabled(uid, disable){
   } catch(e){ toast('Update failed: ' + (e.message || e), 'var(--pink)'); }
 }
 window._acctToggleDisabled = _acctToggleDisabled;
-
-async function _acctToggleBonusOverride(uid, grant){
-  var r = _acctCache.find(function(x){ return x.id === uid; });
-  var nm = r ? r.displayName : 'this account';
-  // Sets a top-level bonusOverride flag the Boss Battle app reads to unlock the
-  // Daily Activities button before the normal 40-day (post-program) wait.
-  if (grant && !confirm('Unlock Bonus Activities early for ' + nm + '?\n\nThis bypasses the 40-day wait so they can access Daily Activities now.')) return;
-  try {
-    await db.collection(TC).doc(uid).update({ bonusOverride: !!grant });
-    if (r) r.bonusOverride = !!grant;
-    _acctRerender();
-    toast(nm + (grant ? ' — bonus unlocked.' : ' — bonus re-locked.'), grant ? 'var(--green)' : 'var(--gold)');
-  } catch(e){ toast('Update failed: ' + (e.message || e), 'var(--pink)'); }
-}
-window._acctToggleBonusOverride = _acctToggleBonusOverride;
 
 async function _acctDelete(uid){
   var r = _acctCache.find(function(x){ return x.id === uid; });
