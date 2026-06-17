@@ -8788,6 +8788,25 @@ var SIX_WEEK_POLICY_TEXT =
   "ADMIN EXCEPTIONS\n" +
   "In rare cases, an administrator may manually override these restrictions. Admin approval is not automatic and is handled on a case-by-case basis.";
 
+// Policy shown when shop paid mode is OFF (the free "Get Class" mode).
+var SIX_WEEK_POLICY_TEXT_FREE =
+  "QUALIFYING FOR CLASS\n" +
+  "Students who are current KoreanLearnin Academy members may enroll in any 6-week program free of charge while their Academy membership is active.\n\n" +
+  "To qualify, students must be enrolled as continuing students in Tuesday and/or Friday classes.\n\n" +
+  "Students who are only enrolled in their first 6-week program and have not joined KoreanLearnin Academy as continuing students are not eligible for free additional 6-week program access until they enroll as Academy members.\n\n" +
+  "ONE 6-WEEK PROGRAM AT A TIME\n" +
+  "Once you enroll in a 6-week program, you must complete that program before enrolling in another 6-week program. Additional 6-week program enrollments will be unavailable until your current program has ended.\n\n" +
+  "ABUSE OF FREE OR PROMOTIONAL ACCESS\n" +
+  "Free 6-week program access is intended to help active Academy members participate in one complete program experience at a time. Students may not repeatedly enroll, cancel, restart, or reserve spots in multiple programs in a way that prevents other students from joining.\n\n" +
+  "If we notice repeated cancellations, unused enrollments, duplicate accounts, or other behavior that appears to misuse the program, we may limit or remove access to future 6-week programs.\n\n" +
+  "ADMIN EXCEPTIONS\n" +
+  "In rare cases, an administrator may manually override these restrictions. Admin approval is not automatic and is handled on a case-by-case basis.";
+
+// Returns the active policy text based on current shop mode.
+function _activeSixWeekPolicyText(){
+  return _shopPaidMode ? SIX_WEEK_POLICY_TEXT : SIX_WEEK_POLICY_TEXT_FREE;
+}
+
 async function buySixWeek(){
   if (!user) return;
   if (!_canBuySixWeek()){ toast('Finish your current enrollment first.', 'var(--pink)'); return; }
@@ -8810,7 +8829,7 @@ function _showSixWeekPolicyModal(slotId){
   var ex = document.getElementById('policyModalOverlay');
   if (ex) ex.remove();
 
-  var policyHtml = esc(SIX_WEEK_POLICY_TEXT).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
+  var policyHtml = esc(_activeSixWeekPolicyText()).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
   var legalName = (user.displayName || user.username || '').trim();
 
   var ov = document.createElement('div');
