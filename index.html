@@ -8446,6 +8446,7 @@ function _cancelPolicy(){
 function renderShop(){
   if (!user) return;
   _subOpenClasses();
+  _subWonjooBusy();
   // Refresh the top-10 points leaderboard banner (independent of enrollment).
   if (typeof _lbRender === 'function') _lbRender();
   // Pull a fresh copy of the user doc on every shop open. The admin may have
@@ -8488,6 +8489,50 @@ function _subOpenClasses(){
       }, function(e){ console.warn('open_classes sub:', e); });
   } catch(e){ console.warn('open_classes sub init:', e); }
 }
+
+/* ═══ 1:1 TUTORING: WONJOO FREE-TIME GRID ═══
+ * The Class Manager (separate project: korean-ta-evaluator) defines a fixed
+ * weekly grid. A `wonjoo_busy_mirror` Cloud Function in that project writes the
+ * set of (day-time) keys Miss Wonjoo is occupied (from scheduler_classes +
+ * prescheduled_slots) into THIS project at tutoring_availability/wonjoo. We
+ * read that doc and show every grid cell that ISN'T busy as a bookable time.
+ * These MUST match the Class Manager's DAYS / TIME_SLOTS exactly. */
+var TUTORING_DAYS = ['Friday', 'Saturday', 'Sunday'];
+var TUTORING_TIMES = ['6:10 PM', '7:20 PM', '8:30 PM', '9:50 PM', '11:00 PM'];
+var WONJOO_BUSY = {};           // { "Friday-8:30 PM": true, ... }
+var WONJOO_BUSY_LOADED = false; // false until first snapshot, so we don't show stale "all free"
+var _wonjooBusyUnsub = null;
+function _subWonjooBusy(){
+  if (_wonjooBusyUnsub) return;
+  try {
+    _wonjooBusyUnsub = db.collection('tutoring_availability').doc('wonjoo')
+      .onSnapshot(function(doc){
+        var d = doc.exists ? (doc.data() || {}) : {};
+        // busyKeys is an array of "Day-Time" strings written by the mirror fn.
+        var keys = Array.isArray(d.busyKeys) ? d.busyKeys : [];
+        WONJOO_BUSY = {};
+        keys.forEach(function(k){ WONJOO_BUSY[k] = true; });
+        WONJOO_BUSY_LOADED = true;
+        _drawShop();
+      }, function(e){ console.warn('wonjoo_busy sub:', e); });
+  } catch(e){ console.warn('wonjoo_busy sub init:', e); }
+}
+// Returns [{ day, time, key }] for every grid cell Wonjoo is currently free.
+// Hard-blocked (day-time) cells that must NEVER appear as bookable 1:1 slots,
+// regardless of the busy mirror. Brute-force exclusion.
+var TUTORING_BLOCKED = { 'Saturday-6:10 PM': true };
+function _wonjooFreeSlots(){
+  var out = [];
+  TUTORING_DAYS.forEach(function(day){
+    TUTORING_TIMES.forEach(function(time){
+      var key = day + '-' + time;
+      if (TUTORING_BLOCKED[key]) return;
+      if (!WONJOO_BUSY[key]) out.push({ day: day, time: time, key: key });
+    });
+  });
+  return out;
+}
+
 function _seatsLeft(c){
   if (!c) return 0;
   // Every arcade class is gacha-capped, counting ONLY gacha purchases: Miss
@@ -8567,24 +8612,36 @@ function _drawShop(){
   var statusHtml = '';
   if (enr && (enr.status === 'pending' || enr.status === 'active')){
     var policy = _cancelPolicy();
-    var startLine = enr.startDate
-      ? 'Class starts: <b>' + _fmtDate(enr.startDate) + '</b>'
-      : '<span class="awaiting">⏳ Awaiting start date from admin</span>';
-    var endLine = enr.endDate ? '<br>Ends: <b>' + _fmtDate(enr.endDate) + '</b>' : '';
-    var levelLine = enr.classLevel ? '<br>Level: <b>' + esc(enr.classLevel) + '</b>' : '';
+    var _isTut = enr.type === 'tutoring';
+    var _tutWhen = _isTut
+      ? [(enr.day || ''), (enr.time || '')].filter(Boolean).join(' @ ') + (enr.startDate ? ' · ' + _fmtDateShort(enr.startDate) : '')
+      : '';
+    var startLine = _isTut
+      ? (_tutWhen
+          ? 'Session: <b>' + esc(_tutWhen) + '</b>'
+          : '<span class="awaiting">⏳ Awaiting session time from admin</span>')
+      : (enr.startDate
+          ? 'Class starts: <b>' + _fmtDate(enr.startDate) + '</b>'
+          : '<span class="awaiting">⏳ Awaiting start date from admin</span>');
+    var endLine = (!_isTut && enr.endDate) ? '<br>Ends: <b>' + _fmtDate(enr.endDate) + '</b>' : '';
+    var levelLine = (!_isTut && enr.classLevel) ? '<br>Level: <b>' + esc(enr.classLevel) + '</b>' : '';
 
     // Cancel button + fee. Fee is plain text under the button (no box).
+    // Tutoring is free, so it carries no point fee — just the redeem warning.
     var cancelBtn;
     if (policy.canCancel){
+      var feeLine = _isTut
+        ? '<div class="enroll-cancel-fee">Cancel up to 24h before the session. After that your credit is redeemed.</div>'
+        : '<div class="enroll-cancel-fee">Cancellation fee: <span class="fee-amount">−' + CANCEL_FEE_POINTS + ' pts</span></div>';
       cancelBtn =
         '<div class="enroll-cancel-group">' +
-          '<button class="btn btn-danger btn-sm" onclick="cancelEnrollment()">✕ CANCEL ENROLLMENT</button>' +
-          '<div class="enroll-cancel-fee">Cancellation fee: <span class="fee-amount">−' + CANCEL_FEE_POINTS + ' pts</span></div>' +
+          '<button class="btn btn-danger btn-sm" onclick="cancelEnrollment()">✕ CANCEL ' + (_isTut ? 'SESSION' : 'ENROLLMENT') + '</button>' +
+          feeLine +
         '</div>';
     } else {
       cancelBtn =
         '<div class="enroll-cancel-group">' +
-          '<button class="btn btn-danger btn-sm" disabled title="' + esc(policy.reason) + '">✕ CANCEL ENROLLMENT</button>' +
+          '<button class="btn btn-danger btn-sm" disabled title="' + esc(policy.reason) + '">✕ CANCEL ' + (_isTut ? 'SESSION' : 'ENROLLMENT') + '</button>' +
           '<div class="enroll-cancel-fee locked-reason">' + esc(policy.reason) + '</div>' +
         '</div>';
     }
@@ -8595,7 +8652,7 @@ function _drawShop(){
     statusHtml =
       '<details class="enroll-card">' +
         '<summary>' +
-          '<div class="enroll-title">📚 YOUR 6-WEEK ENROLLMENT</div>' +
+          '<div class="enroll-title">' + (_isTut ? '🧑‍🏫 YOUR 1:1 TUTORING SESSION' : '📚 YOUR 6-WEEK ENROLLMENT') + '</div>' +
           '<div class="enroll-status ' + enr.status + '">' + enr.status.toUpperCase() + '</div>' +
           '<span class="enroll-chevron" aria-hidden="true">▾</span>' +
         '</summary>' +
@@ -8696,7 +8753,37 @@ function _drawShop(){
       '<div class="shop-locked-reason" id="sixWeekReason">' + esc(sixReason) + '</div>' +
     '</div>';
 
-  var itemsHtml = (_shopPaidMode ? helpCardHtml : '') + sixCardHtml;
+  // ── 1:1 Tutoring with Miss Wonjoo card (free mode only) ──
+  // Occupies the slot the Friday Extra Help card uses in paid mode. Counts as
+  // an enrollment, so it's gated by the same _canBuySixWeek() exclusion. Free,
+  // no points. Booking picks an open day/time from Wonjoo's free grid; that
+  // booking creates a prescheduled slot in the Class Manager (via Cloud Fn),
+  // so the chosen time disappears for the next student.
+  var _freeSlots = _wonjooFreeSlots();
+  var _hasFreeSlots = _freeSlots.length > 0;
+  var canBuyTutoring = canBuy6 && WONJOO_BUSY_LOADED && _hasFreeSlots;
+  var tutoringReason = '';
+  if (!canBuy6) tutoringReason = 'You already have an active enrollment. Finish it first.';
+  else if (!WONJOO_BUSY_LOADED) tutoringReason = 'Loading available times…';
+  else if (!_hasFreeSlots) tutoringReason = 'No open tutoring times right now. Check back soon.';
+  var tutoringBtnLabel = canBuyTutoring ? 'BOOK A TIME' : (!canBuy6 ? 'LOCKED' : (!WONJOO_BUSY_LOADED ? 'LOADING…' : 'NONE OPEN'));
+  var tutoringCardHtml =
+    '<div class="shop-card"' + (tutoringReason ? ' title="' + esc(tutoringReason) + '"' : '') + '>' +
+      '<div class="shop-icon">🧑‍🏫</div>' +
+      '<div class="shop-name">1:1 TUTORING<br>W/ MISS WONJOO</div>' +
+      '<div class="shop-desc">Can\'t make the 6-week program? Instead of taking a 6-week program, you may enroll in a 1:1 tutoring session with Miss Wonjoo (once in a 6-week period).</div>' +
+      '<div class="shop-price"><span style="color:var(--green);">FREE</span></div>' +
+      '<div class="shop-level-spacer" aria-hidden="true"></div>' +
+      '<button class="btn btn-cyan btn-md ' + (canBuyTutoring ? 'sparkle-btn' : '') + '" onclick="buyTutoring()" ' + (canBuyTutoring ? '' : 'disabled') + '>' +
+        tutoringBtnLabel +
+      '</button>' +
+      (tutoringReason
+        ? '<div class="shop-locked-reason">' + esc(tutoringReason) + '</div>'
+        : '<div class="shop-locked-spacer" aria-hidden="true"></div>') +
+    '</div>';
+
+  // Paid mode → Friday Extra Help; Free mode → 1:1 Tutoring (same slot).
+  var itemsHtml = (_shopPaidMode ? helpCardHtml : tutoringCardHtml) + sixCardHtml;
 
   grid.innerHTML = statusHtml + creditsHtml + '<div class="shop-grid">' + itemsHtml + '</div>';
 
@@ -8796,9 +8883,17 @@ var SIX_WEEK_POLICY_TEXT_FREE =
   "Students who are only enrolled in their first 6-week program and have not joined KoreanLearnin Academy as continuing students are not eligible for free additional 6-week program access until they enroll as Academy members.\n\n" +
   "ONE 6-WEEK PROGRAM AT A TIME\n" +
   "Once you enroll in a 6-week program, you must complete that program before enrolling in another 6-week program. Additional 6-week program enrollments will be unavailable until your current program has ended.\n\n" +
+  "NO TRANSFER\n" +
+  "Once purchased, this 6-week program cannot be transferred to a 1:1 tutoring session.\n\n" +
+  "CANCELLATION\n" +
+  "You may cancel your 6-week program enrollment up to 24 hours before the first class begins. If you do not cancel within this window, your free credit has been redeemed and will count as an enrollment.\n\n" +
   "ABUSE OF FREE OR PROMOTIONAL ACCESS\n" +
   "Free 6-week program access is intended to help active Academy members participate in one complete program experience at a time. Students may not repeatedly enroll, cancel, restart, or reserve spots in multiple programs in a way that prevents other students from joining.\n\n" +
   "If we notice repeated cancellations, unused enrollments, duplicate accounts, or other behavior that appears to misuse the program, we may limit or remove access to future 6-week programs.\n\n" +
+  "SCHEDULING & AVAILABILITY\n" +
+  "Classes are subject to schedule availability. The date and time of programs may vary by level and teacher availability.\n\n" +
+  "NO CASH VALUE\n" +
+  "Free 6-week program access has no cash value, and no refund or substitution is available.\n\n" +
   "ADMIN EXCEPTIONS\n" +
   "In rare cases, an administrator may manually override these restrictions. Admin approval is not automatic and is handled on a case-by-case basis.";
 
@@ -8806,6 +8901,30 @@ var SIX_WEEK_POLICY_TEXT_FREE =
 function _activeSixWeekPolicyText(){
   return _shopPaidMode ? SIX_WEEK_POLICY_TEXT : SIX_WEEK_POLICY_TEXT_FREE;
 }
+
+// Policy for the free 1:1 tutoring session with Miss Wonjoo (free mode only).
+// Mirrors the free 6-week policy, reworded for tutoring, plus the
+// no-transfer and 24-hour cancellation clauses.
+var TUTORING_POLICY_TEXT =
+  "QUALIFYING FOR A 1:1 TUTORING SESSION\n" +
+  "Students who are current KoreanLearnin Academy members may enroll in a 1:1 tutoring session with Miss Wonjoo free of charge while their Academy membership is active.\n\n" +
+  "To qualify, students must be enrolled as continuing students in Tuesday and/or Friday classes.\n\n" +
+  "Students who are only enrolled in their first 6-week program and have not joined KoreanLearnin Academy as continuing students are not eligible for free 1:1 tutoring access until they enroll as Academy members.\n\n" +
+  "ONE ENROLLMENT AT A TIME\n" +
+  "A 1:1 tutoring session counts as an enrollment. Once you enroll in a 1:1 tutoring session, you must complete it before enrolling in another 1:1 tutoring session or a 6-week program. You may enroll in a 1:1 tutoring session once in a 6-week period.\n\n" +
+  "NO TRANSFER\n" +
+  "Once purchased, this 1:1 tutoring session cannot be transferred to a 6-week program.\n\n" +
+  "CANCELLATION\n" +
+  "You may cancel your 1:1 tutoring session up to 24 hours before the session begins. If you do not cancel within this window, your free credit has been redeemed and will count as an enrollment.\n\n" +
+  "ABUSE OF FREE OR PROMOTIONAL ACCESS\n" +
+  "Free 1:1 tutoring access is intended to help active Academy members participate in one complete session at a time. Students may not repeatedly enroll, cancel, restart, or reserve spots in a way that prevents other students from joining.\n\n" +
+  "If we notice repeated cancellations, unused enrollments, duplicate accounts, or other behavior that appears to misuse the program, we may limit or remove access to future sessions.\n\n" +
+  "SCHEDULING & AVAILABILITY\n" +
+  "Sessions are subject to schedule availability. The date and time of sessions may vary by level and teacher availability.\n\n" +
+  "NO CASH VALUE\n" +
+  "Free 1:1 tutoring access has no cash value, and no refund or substitution is available.\n\n" +
+  "ADMIN EXCEPTIONS\n" +
+  "In rare cases, an administrator may manually override these restrictions. Admin approval is not automatic and is handled on a case-by-case basis.";
 
 async function buySixWeek(){
   if (!user) return;
@@ -8822,6 +8941,255 @@ async function buySixWeek(){
   _showSixWeekPolicyModal(slotId);
 }
 window.buySixWeek = buySixWeek;
+
+/* ═══ ENROLL: 1:1 TUTORING WITH MISS WONJOO (free mode) ═══ */
+function buyTutoring(){
+  if (!user) return;
+  if (!_canBuySixWeek()){ toast('Finish your current enrollment first.', 'var(--pink)'); return; }
+  if (!WONJOO_BUSY_LOADED){ toast('Still loading times — try again in a moment.', 'var(--pink)'); return; }
+  if (_wonjooFreeSlots().length === 0){ toast('No open tutoring times right now.', 'var(--pink)'); return; }
+  playSelect();
+  _showTutoringPolicyModal();
+}
+window.buyTutoring = buyTutoring;
+
+// Day-of-week name → 0..6 (Sun..Sat), matching JS Date.getDay().
+var _DOW_INDEX = { Sunday:0, Monday:1, Tuesday:2, Wednesday:3, Thursday:4, Friday:5, Saturday:6 };
+// Next N calendar dates (ISO yyyy-mm-dd) for a given weekday, starting tomorrow
+// so there's always >24h lead time before the session (matches cancel window).
+function _upcomingDatesForDay(dayName, n){
+  var target = _DOW_INDEX[dayName];
+  if (target === undefined) return [];
+  var out = [];
+  var d = new Date();
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + 1); // start tomorrow
+  var guard = 0;
+  while (out.length < n && guard < 60){
+    if (d.getDay() === target){
+      out.push(d.getFullYear() + '-' +
+        String(d.getMonth()+1).padStart(2,'0') + '-' +
+        String(d.getDate()).padStart(2,'0'));
+    }
+    d.setDate(d.getDate() + 1);
+    guard++;
+  }
+  return out;
+}
+function _fmtDateShort(iso){
+  try {
+    var parts = iso.split('-');
+    var d = new Date(Number(parts[0]), Number(parts[1])-1, Number(parts[2]));
+    return d.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+  } catch(e){ return iso; }
+}
+
+function _showTutoringPolicyModal(){
+  var ex = document.getElementById('policyModalOverlay');
+  if (ex) ex.remove();
+
+  var policyHtml = esc(TUTORING_POLICY_TEXT).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
+  var free = _wonjooFreeSlots();
+
+  // Distinct free days (preserve grid order), and a time list per day.
+  var daysWithFree = TUTORING_DAYS.filter(function(day){
+    return free.some(function(s){ return s.day === day; });
+  });
+  var defDay = daysWithFree[0] || '';
+
+  function timesForDay(day){
+    return TUTORING_TIMES.filter(function(t){
+      var key = day + '-' + t;
+      return !TUTORING_BLOCKED[key] && !WONJOO_BUSY[key];
+    });
+  }
+
+  var dayOptions = daysWithFree.map(function(day){
+    return '<option value="' + esc(day) + '">' + esc(day) + '</option>';
+  }).join('');
+
+  var ov = document.createElement('div');
+  ov.id = 'policyModalOverlay';
+  ov.className = 'policy-overlay';
+  ov.innerHTML =
+    '<div class="policy-modal" role="dialog" aria-labelledby="policyTitle">' +
+      '<div class="policy-head">' +
+        '<div class="policy-title" id="policyTitle">📋 1:1 TUTORING<br>BOOK & SIGN</div>' +
+        '<div class="policy-sub">Pick an open time, then review and sign.</div>' +
+      '</div>' +
+      '<div class="policy-body">' +
+        '<p>' + policyHtml + '</p>' +
+      '</div>' +
+      '<div class="policy-signoff">' +
+        '<div class="policy-name-row">' +
+          '<label class="policy-name-label">1 · CHOOSE DAY</label>' +
+          '<select id="tutDaySel" class="policy-name-input">' + dayOptions + '</select>' +
+        '</div>' +
+        '<div class="policy-name-row">' +
+          '<label class="policy-name-label">2 · CHOOSE TIME (Eastern / NY)</label>' +
+          '<select id="tutTimeSel" class="policy-name-input"></select>' +
+        '</div>' +
+        '<div class="policy-name-row">' +
+          '<label class="policy-name-label">3 · CHOOSE DATE</label>' +
+          '<select id="tutDateSel" class="policy-name-input"></select>' +
+        '</div>' +
+        '<label class="policy-check">' +
+          '<input type="checkbox" id="policyAgreeChk">' +
+          '<span class="policy-check-box" aria-hidden="true"></span>' +
+          '<span class="policy-check-text">I have read and agree to the 1:1 Tutoring Enrollment Policy. I understand this counts as an enrollment.</span>' +
+        '</label>' +
+        '<div class="policy-name-row">' +
+          '<label for="policyNameInput" class="policy-name-label">TYPE YOUR NAME TO SIGN</label>' +
+          '<input type="text" id="policyNameInput" class="policy-name-input" autocomplete="off" placeholder="Your full name" />' +
+        '</div>' +
+        '<div class="policy-summary">' +
+          'Session: <b>1:1 Tutoring with Miss Wonjoo</b><br>' +
+          'Frequency: <b>Once per 6-week period</b><br>' +
+          'Cost: <b style="color:var(--green);">FREE</b>' +
+        '</div>' +
+      '</div>' +
+      '<div class="policy-actions">' +
+        '<button class="btn btn-ghost btn-md" onclick="_closePolicyModal()">CANCEL</button>' +
+        '<button class="btn btn-gold btn-md" id="policyConfirmBtn" disabled onclick="_confirmTutoringEnroll()">BOOK SESSION</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(ov);
+
+  var daySel = document.getElementById('tutDaySel');
+  var timeSel = document.getElementById('tutTimeSel');
+  var dateSel = document.getElementById('tutDateSel');
+  var chk = document.getElementById('policyAgreeChk');
+  var nameInput = document.getElementById('policyNameInput');
+  var confirmBtn = document.getElementById('policyConfirmBtn');
+
+  function fillTimes(){
+    var day = daySel.value;
+    timeSel.innerHTML = timesForDay(day).map(function(t){
+      return '<option value="' + esc(t) + '">' + esc(t) + '</option>';
+    }).join('');
+    fillDates();
+  }
+  function fillDates(){
+    var day = daySel.value;
+    var dates = _upcomingDatesForDay(day, 4);
+    dateSel.innerHTML = dates.map(function(iso){
+      return '<option value="' + esc(iso) + '">' + esc(_fmtDateShort(iso)) + '</option>';
+    }).join('');
+  }
+  function validate(){
+    var typed = (nameInput.value || '').trim();
+    var ok = chk.checked && typed.length >= 2 && daySel.value && timeSel.value && dateSel.value;
+    confirmBtn.disabled = !ok;
+    confirmBtn.style.opacity = ok ? '1' : '0.45';
+    confirmBtn.style.cursor = ok ? 'pointer' : 'not-allowed';
+  }
+  daySel.addEventListener('change', function(){ fillTimes(); validate(); });
+  timeSel.addEventListener('change', validate);
+  dateSel.addEventListener('change', validate);
+  chk.addEventListener('change', validate);
+  nameInput.addEventListener('input', validate);
+  fillTimes();
+  validate();
+
+  ov.addEventListener('click', function(e){ if (e.target === ov) _closePolicyModal(); });
+  document.addEventListener('keydown', _policyEscHandler);
+  setTimeout(function(){ nameInput.focus(); }, 100);
+}
+
+async function _confirmTutoringEnroll(){
+  if (!user) return;
+  if (!_canBuySixWeek()){ toast('Finish your current enrollment first.', 'var(--pink)'); _closePolicyModal(); return; }
+  var daySel = document.getElementById('tutDaySel');
+  var timeSel = document.getElementById('tutTimeSel');
+  var dateSel = document.getElementById('tutDateSel');
+  var chk = document.getElementById('policyAgreeChk');
+  var nameInput = document.getElementById('policyNameInput');
+  var day = daySel && daySel.value;
+  var time = timeSel && timeSel.value;
+  var startDate = dateSel && dateSel.value;
+  if (!day || !time || !startDate){ toast('Pick a day, time, and date.', 'var(--pink)'); return; }
+  if (TUTORING_BLOCKED[day + '-' + time]){ toast('That time isn\'t available. Pick another.', 'var(--pink)'); return; }
+  // Guard against a race: the chosen cell may have filled since the modal opened.
+  if (WONJOO_BUSY[day + '-' + time]){ toast('That time was just taken. Pick another.', 'var(--pink)'); _closePolicyModal(); _drawShop(); return; }
+  if (!chk || !chk.checked){ toast('Please check the agreement box.', 'var(--pink)'); return; }
+  var signedName = (nameInput && nameInput.value || '').trim();
+  if (signedName.length < 2){ toast('Please type your name to sign.', 'var(--pink)'); return; }
+
+  var confirmBtn = document.getElementById('policyConfirmBtn');
+  if (confirmBtn){ confirmBtn.disabled = true; confirmBtn.textContent = 'BOOKING…'; }
+
+  try {
+    var nowIso = new Date().toISOString();
+    // Enrollment object (same field as 6-week → single-enrollment lock applies).
+    var enrollment = {
+      type: 'tutoring',
+      classLevel: '1:1 Tutoring (Miss Wonjoo)',
+      teacher: 'Miss Wonjoo',
+      pricePaid: 0,
+      sourceSlotId: null,        // set by the bridge fn once the slot is created
+      status: 'pending',
+      day: day,
+      time: time,
+      purchasedAt: nowIso,
+      startDate: startDate,      // concrete date the student chose
+      endDate: null,
+      adminOverride: false,
+      signedName: signedName,
+      signedAt: nowIso,
+      signedPolicyVersion: '2026-06-17-tutoring'
+    };
+
+    // Cross-project: the gacha app can't write prescheduled_slots in
+    // korean-ta-evaluator. Drop a request; a Cloud Fn there creates the slot
+    // (classType tutoring, teacherId=Wonjoo, maxSeats 1, student pre-enrolled)
+    // and mirrors the busy key back so this time disappears for others.
+    var reqRef = db.collection('tutoring_requests').doc();
+    var batch = db.batch();
+    batch.set(reqRef, {
+      uid: user.id,
+      name: user.displayName || user.username || '',
+      email: user.username || user.displayName || '',
+      day: day,
+      time: time,
+      startDate: startDate,
+      busyKey: day + '-' + time,
+      signedName: signedName,
+      status: 'pending',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    batch.update(db.collection(TC).doc(user.id), {
+      enrollment: enrollment,
+      tutoringEnrollments: firebase.firestore.FieldValue.increment(1)
+    });
+    await batch.commit();
+
+    user.enrollment = enrollment;
+    user.tutoringEnrollments = (user.tutoringEnrollments || 0) + 1;
+    // Optimistically hide the chosen cell locally until the mirror confirms.
+    WONJOO_BUSY[day + '-' + time] = true;
+
+    _closePolicyModal();
+    toast('BOOKED 1:1 tutoring for ' + _fmtDateShort(startDate) + '! Miss Wonjoo will confirm soon.', 'var(--gold)');
+    playSfx(SOUND_WIN, 0.95);
+    fireWebhook('purchase.tutoring', {
+      classType: '1:1 Tutoring (Miss Wonjoo)',
+      classDate: startDate,
+      day: day,
+      time: time,
+      pointsSpent: 0,
+      item: 'tutoring_session',
+      enrollment: enrollment,
+      remainingPoints: user.points,
+      signedName: signedName
+    });
+    updateTopBar(); updateCounts(); _drawShop();
+  } catch(e){
+    toast('Booking failed. Try again.', 'var(--pink)');
+    console.error('_confirmTutoringEnroll:', e);
+    if (confirmBtn){ confirmBtn.disabled = false; confirmBtn.textContent = 'BOOK SESSION'; }
+  }
+}
+window._confirmTutoringEnroll = _confirmTutoringEnroll;
 
 function _showSixWeekPolicyModal(slotId){
   var chosen = (typeof OPEN_CLASSES !== 'undefined' ? OPEN_CLASSES : []).filter(function(c){ return c.id === slotId; })[0] || {};
@@ -8992,6 +9360,71 @@ async function cancelEnrollment(){
   if (!user || !user.enrollment) return;
   var policy = _cancelPolicy();
   if (!policy.canCancel){ toast(policy.reason, 'var(--pink)'); return; }
+
+  // Tutoring is free with no class seat: cancelling simply clears the
+  // enrollment (no points refund, no open_classes seat to release).
+  if (user.enrollment.type === 'tutoring'){
+    if (!confirm('Cancel your 1:1 tutoring session?\n\n' +
+                 '• This frees you to enroll again.\n' +
+                 '• If you cancel within 24 hours of the session, your free credit is considered redeemed.\n\n' +
+                 'Proceed?')) return;
+    playSelect();
+    try {
+      var cancelledTut = Object.assign({}, user.enrollment, {
+        status: 'cancelled',
+        cancelledAt: new Date().toISOString()
+      });
+      await db.collection(TC).doc(user.id).update({ enrollment: cancelledTut });
+      user.enrollment = cancelledTut;
+
+      // Flip the tutoring_requests doc(s) to 'cancelled' so the bridge fn in
+      // korean-ta-evaluator deletes the prescheduled slot and frees the busy
+      // cell. (Cross-project: we can't delete the slot from here directly.)
+      try {
+        var treqs = await db.collection('tutoring_requests')
+          .where('uid', '==', user.id)
+          .where('status', '==', 'pending')
+          .get();
+        if (!treqs.empty){
+          var trb = db.batch();
+          treqs.forEach(function(d){
+            trb.update(d.ref, {
+              status: 'cancelled',
+              cancelledAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+          });
+          await trb.commit();
+        }
+      } catch(e){ console.warn('cancel tutoring_request:', e); }
+
+      // Optimistically free the cell locally.
+      if (cancelledTut.day && cancelledTut.time){
+        delete WONJOO_BUSY[cancelledTut.day + '-' + cancelledTut.time];
+      }
+
+      toast('Tutoring session cancelled.', 'var(--gold)');
+      fireWebhook('enrollment.cancelled', {
+        uid: user.id,
+        name: user.displayName || user.username || '',
+        email: user.username || user.displayName || '',
+        sourceSlotId: null,
+        classType: cancelledTut.classLevel || '1:1 Tutoring (Miss Wonjoo)',
+        classDate: cancelledTut.startDate || null,
+        item: 'tutoring_session',
+        pointsSpent: 0,
+        refund: 0,
+        fee: 0,
+        enrollment: cancelledTut,
+        remainingPoints: user.points
+      });
+      updateTopBar(); updateCounts(); _drawShop();
+    } catch(e){
+      toast('Cancel failed. Try again.', 'var(--pink)');
+      console.error('cancelEnrollment(tutoring):', e);
+    }
+    return;
+  }
+
   var refund = PRICE_SIX_WEEK - CANCEL_FEE_POINTS;
   var slotId = user.enrollment.sourceSlotId || null;
   if (!confirm('Cancel your 6-Week Program enrollment?\n\n' +
