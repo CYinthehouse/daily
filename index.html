@@ -9446,7 +9446,11 @@ function _showTutoringPolicyModal(){
 
   ov.addEventListener('click', function(e){ if (e.target === ov) _closePolicyModal(); });
   document.addEventListener('keydown', _policyEscHandler);
-  setTimeout(function(){ nameInput.focus(); }, 100);
+  // Short (landscape-phone) layouts scroll the whole modal; autofocusing the name
+  // field would scroll it into view past the header (and pop the keyboard). Open
+  // at the top of the policy and skip autofocus there — the student taps to sign.
+  if (window.matchMedia('(max-height:600px)').matches){ ov.scrollTop = 0; }
+  else { setTimeout(function(){ nameInput.focus(); }, 100); }
 }
 window._showTutoringBookModal = _showTutoringBookModal;
 
@@ -9612,8 +9616,11 @@ function _showSixWeekPolicyModal(slotId){
   });
   // Close on Escape
   document.addEventListener('keydown', _policyEscHandler);
-  // Focus the name input briefly for convenience (after policy is read)
-  setTimeout(function(){ nameInput.focus(); }, 100);
+  // Short (landscape-phone) layouts scroll the whole modal; autofocusing the name
+  // field would scroll it into view past the header (and pop the keyboard). Open
+  // at the top of the policy and skip autofocus there — the student taps to sign.
+  if (window.matchMedia('(max-height:600px)').matches){ ov.scrollTop = 0; }
+  else { setTimeout(function(){ nameInput.focus(); }, 100); }
 }
 
 function _policyEscHandler(e){
