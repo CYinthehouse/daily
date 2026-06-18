@@ -2703,9 +2703,15 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   }
   #dailyPickerGrid .menu-card.daily .daily-ribbon::before{ inset:2px 0 auto 0; height:1px; }
 }
+/* ── GACHA FRAMEWORK HIDDEN (master toggle OFF) ── */
+body.gacha-hidden #chipRolls,
+body.gacha-hidden #chipPoints,
+body.gacha-hidden .menu-card.showcase,
+body.gacha-hidden #drBanner,
+body.gacha-hidden .dr-banner-link { display: none !important; }
 </style>
 </head>
-<body>
+<body class="gacha-hidden">
 <div class="bg-stars"></div>
 <div id="toast">&nbsp;</div>
 <div id="app">
@@ -3004,6 +3010,12 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
     <span id="toggleShopModeStatus" style="font-family:var(--vt);font-size:14px;color:#aaa;"></span>
   </div>
 
+  <!-- Gacha framework toggle: OFF (default) hides showcase, signup eggs, eggs + points. -->
+  <div style="margin-bottom:18px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+    <button class="btn btn-purple btn-md" id="toggleGachaBtn" onclick="toggleGachaFramework()">🥚 TOGGLE GACHA FRAMEWORK</button>
+    <span id="toggleGachaStatus" style="font-family:var(--vt);font-size:14px;color:#aaa;"></span>
+  </div>
+
   <!-- Per-activity WIP/LIVE toggles. Master switch above gates all of these. -->
   <div style="margin-bottom:18px;">
     <div style="font-family:var(--vt);font-size:13px;color:#8a93a8;margin-bottom:8px;letter-spacing:0.5px;">PER-ACTIVITY TOGGLES, master switch above must be LIVE for these to take effect</div>
@@ -3265,6 +3277,18 @@ var _dailyEnabled = true;
 // returns exactly as before. Nothing is deleted — purely gated by this flag.
 // Persisted to gacha_config/main as `shopPaidMode`. Defaults false if missing.
 var _shopPaidMode = false;
+// ── GACHA FRAMEWORK MASTER SWITCH ──
+// When FALSE (default): hide the entire gacha layer from students —
+//   • Gacha Showcase (menu tile + screen)
+//   • Gacha-at-signup welcome egg flow
+//   • Eggs (top-bar EGGS chip + "+N EGGS" daily reward badges + crack action)
+//   • Points (top-bar POINTS chip + daily points banner + shop pts counts +
+//     "How do I earn Points?")
+// When TRUE: the full gacha framework returns exactly as before.
+// Nothing is deleted — gated by a <body class="gacha-hidden"> toggle (for static
+// UI) plus JS guards (signup flow / dynamic strings). Persisted to
+// gacha_config/main as `gachaFrameworkEnabled`. Defaults false if missing.
+var _gachaFrameworkEnabled = false;
 // Per-activity WIP/LIVE state. _dailyEnabled is the MASTER switch; each activity also
 // has its own flag. An activity is effectively LIVE only when BOTH the master is on AND
 // its own flag is on. Missing/undefined flags default to true (live). Keys match the
@@ -3290,6 +3314,7 @@ function _loadGachaConfig(){
         // Shop paid mode: default FALSE (new free "Get Class" mode) unless
         // explicitly set true by admin.
         _shopPaidMode = d.shopPaidMode === true;
+        _gachaFrameworkEnabled = d.gachaFrameworkEnabled === true;
         // Per-activity flags. Each missing key defaults to true (live).
         var da = d.dailyActivities || {};
         DAILY_ACTIVITY_KEYS.forEach(function(k){
@@ -3303,6 +3328,8 @@ function _loadGachaConfig(){
         if (typeof _refreshDailyToggleUi === 'function') _refreshDailyToggleUi();
         if (typeof _applyShopMode === 'function') _applyShopMode();
         if (typeof _refreshShopModeToggleUi === 'function') _refreshShopModeToggleUi();
+        if (typeof _applyGachaFramework === 'function') _applyGachaFramework();
+        if (typeof _refreshGachaToggleUi === 'function') _refreshGachaToggleUi();
       } catch(e){}
     }).catch(function(e){ console.warn('Config load failed:', e); });
   } catch(e){ console.warn('Config load failed:', e); return Promise.resolve(); }
@@ -4021,7 +4048,7 @@ function enterApp(){
   hide('loginScreen');
   show('topBar'); updateTopBar();
   // Welcome flow: any account that hasn't claimed the starter pack gets 5 free eggs
-  if (!user.freeEggsUsed){
+  if (!user.freeEggsUsed && _gachaFrameworkEnabled){
     // If they somehow don't have the rolls yet, grant them now (handles pre-existing accounts)
     if (user.gachaRolls < SIGNUP_BONUS_ROLLS){
       var topUp = SIGNUP_BONUS_ROLLS - user.gachaRolls;
@@ -4052,6 +4079,8 @@ function showMenu(){
   _updateDailyTile();
   // Shop/Get Class tile + header copy based on paid mode.
   if (typeof _applyShopMode === 'function') _applyShopMode();
+  // Gacha framework visibility (showcase, eggs, points).
+  if (typeof _applyGachaFramework === 'function') _applyGachaFramework();
   // Auto-complete any stale enrollments in the background
   _maybeExpireEnrollment();
   maybeShowMuteNudge();
@@ -4232,6 +4261,55 @@ function _refreshShopModeToggleUi(){
   }
 }
 
+// ── GACHA FRAMEWORK: show/hide the whole gacha layer ──
+function _applyGachaFramework(){
+  var hidden = !_gachaFrameworkEnabled;
+  if (document.body) document.body.classList.toggle('gacha-hidden', hidden);
+  // Re-render surfaces that build dynamic strings (egg badges, banners, counts).
+  try { if (typeof updateCounts === 'function' && user) updateCounts(); } catch(e){}
+  try { if (typeof _renderDailyPicker === 'function') _renderDailyPicker(); } catch(e){}
+  try { if (typeof renderDaily === 'function') renderDaily(); } catch(e){}
+}
+
+function _refreshGachaToggleUi(){
+  var btn = document.getElementById('toggleGachaBtn');
+  var status = document.getElementById('toggleGachaStatus');
+  if (btn){
+    btn.textContent = _gachaFrameworkEnabled
+      ? '🥚 HIDE GACHA FRAMEWORK'
+      : '🥚 SHOW GACHA FRAMEWORK';
+  }
+  if (status){
+    status.textContent = _gachaFrameworkEnabled
+      ? 'Gacha is VISIBLE: showcase, signup eggs, eggs + points all shown.'
+      : 'Gacha is HIDDEN: showcase, signup eggs, eggs + points all hidden.';
+    status.style.setProperty('color', _gachaFrameworkEnabled ? '#3eea4d' : '#f5c842', 'important');
+  }
+}
+
+async function toggleGachaFramework(){
+  if (!(user && user.isAdmin)){ return; }
+  var newVal = !_gachaFrameworkEnabled;
+  var btn = document.getElementById('toggleGachaBtn');
+  if (btn) btn.disabled = true;
+  try {
+    await db.collection(GACHA_CONFIG_DOC.collection).doc(GACHA_CONFIG_DOC.id).set({
+      gachaFrameworkEnabled: newVal,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      updatedBy: (user && user.username) || ''
+    }, { merge: true });
+    _gachaFrameworkEnabled = newVal;
+    _applyGachaFramework();
+    _refreshGachaToggleUi();
+    playSelect();
+  } catch(e){
+    alert('Failed to save gacha toggle: ' + (e && e.message ? e.message : e));
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+window.toggleGachaFramework = toggleGachaFramework;
+
 // Admin-only: flip _shopPaidMode and persist to Firestore.
 async function toggleShopMode(){
   if (!(user && user.isAdmin)){ return; }
@@ -4398,7 +4476,7 @@ function handleTileTap(which){
   catch(e){ window.scrollTo(0, 0); }
   if (which === 'daily')      { renderDaily();    hideAllScreens(); show('topBar'); showFade('dailyScreen');    _setBgmForScreen('dailyScreen'); }
   else if (which === 'shop')     { renderShop();     hideAllScreens(); show('topBar'); showFade('shopScreen');     _setBgmForScreen('shopScreen'); }
-  else if (which === 'showcase') { renderShowcase();  hideAllScreens(); show('topBar'); showFade('showcaseScreen'); _setBgmForScreen('showcaseScreen'); }
+  else if (which === 'showcase') { if (!_gachaFrameworkEnabled && !(user && user.isAdmin)) return; renderShowcase();  hideAllScreens(); show('topBar'); showFade('showcaseScreen'); _setBgmForScreen('showcaseScreen'); }
   else if (which === 'admin')    { renderAdmin();    hideAllScreens(); show('topBar'); showFade('adminScreen');    _setBgmForScreen('adminScreen'); }
 }
 window.handleTileTap = handleTileTap;
@@ -4450,7 +4528,7 @@ function updateCounts(){
     rollsChip.setAttribute('title', ready ? 'Click to crack an egg!' : '');
   }
   var pointsChip = $('chipPoints'); if (pointsChip) pointsChip.innerHTML = '<span class="chip-emoji">⭐</span> POINTS: ' + (user.points||0);
-  var cs = $('countShop'); if (cs) cs.textContent = (user.points||0) + ' pts';
+  var cs = $('countShop'); if (cs) cs.textContent = _gachaFrameworkEnabled ? ((user.points||0) + ' pts') : '';
   var csc = $('countShowcase'); if (csc) {
     // Prefer the cached count (works for users with thousands of cards in the
     // subcollection); fall back to the in-memory array for not-yet-migrated users.
@@ -4553,6 +4631,16 @@ document.addEventListener('keydown', function(e){
 function _renderDailyPicker(){
   var grid = document.getElementById('dailyPickerGrid');
   if (!grid) return;
+  // When the gacha framework is hidden, egg-reward badges shouldn't advertise
+  // eggs. This swaps any "+N EGGS" reward badge for a neutral practice label,
+  // while leaving completion (✅) badges untouched.
+  var _eggBadge = function(html){
+    if (_gachaFrameworkEnabled) return html;
+    if (/EGG/i.test(html) && html.indexOf('✅') === -1){
+      return '<div class="menu-count">DAILY PRACTICE</div>';
+    }
+    return html;
+  };
   // Add the has-yoda class so the CSS rule kicks in to center the 4th tile.
   grid.classList.add('has-yoda');
   var todayKey = _drTodayNYKey();
@@ -4603,35 +4691,35 @@ function _renderDailyPicker(){
       '<span class="menu-emoji">🔀</span>' +
       '<div class="grad-wrap"><div class="menu-name grad-text grad-purple">YODAFICATION</div></div>' +
       '<div class="menu-desc">Rewrite sentences in every valid word order.</div>' +
-      yodaBadge +
+      _eggBadge(yodaBadge) +
     '</div>' +
     '<div class="menu-card daily recall" onclick="_dailyOpen(\'recall\')">' +
       '<span class="daily-ribbon blue">ALL LEVELS</span>' +
       '<span class="menu-emoji">🧠</span>' +
       '<div class="grad-wrap"><div class="menu-name grad-text grad-cyan">ACTIVE<br>RECALL</div></div>' +
       '<div class="menu-desc">Flip through flashcards and test your memory.</div>' +
-      recallBadge +
+      _eggBadge(recallBadge) +
     '</div>' +
     '<div class="menu-card daily" onclick="_dailyOpen(\'reading\')">' +
       '<span class="daily-ribbon blue">ALL LEVELS</span>' +
       '<span class="menu-emoji">📖</span>' +
       '<div class="grad-wrap"><div class="menu-name grad-text grad-cyan">TEAMWORK<br>READING</div></div>' +
       '<div class="menu-desc">Pair up with a classmate and read a passage together.</div>' +
-      readingBadge +
+      _eggBadge(readingBadge) +
     '</div>' +
     '<div class="menu-card daily" onclick="_dailyOpen(\'listening\')">' +
       '<span class="daily-ribbon blue">ALL LEVELS</span>' +
       '<span class="menu-emoji">🎤</span>' +
       '<div class="grad-wrap"><div class="menu-name grad-text grad-pink">SOLO<br>READING</div></div>' +
       '<div class="menu-desc">Read aloud across four levels of difficulty.</div>' +
-      listeningBadge +
+      _eggBadge(listeningBadge) +
     '</div>' +
     '<div class="menu-card daily" onclick="_dailyOpen(\'advanced\')">' +
       '<span class="daily-ribbon red">ADVANCED</span>' +
       '<span class="menu-emoji">🏆</span>' +
       '<div class="grad-wrap"><div class="menu-name grad-text grad-gold">ADVANCED<br>TEAMWORK</div></div>' +
       '<div class="menu-desc">Conjugate verbs in four tenses. Bigger bonus when 10 students join.</div>' +
-      advBadge +
+      _eggBadge(advBadge) +
     '</div>';
   // Apply per-activity WIP styling. Admins always see normal tiles (so they can
   // preview/test); non-admins see greyed-out "Coming soon" tiles for any activity
@@ -9697,6 +9785,8 @@ function renderAdmin(){
   _refreshDailyToggleUi();
   // Refresh the shop-mode toggle button label + status.
   if (typeof _refreshShopModeToggleUi === 'function') _refreshShopModeToggleUi();
+  // Refresh the gacha-framework toggle button label + status.
+  if (typeof _refreshGachaToggleUi === 'function') _refreshGachaToggleUi();
   // Render each manager (each one writes into its own host div)
   if (typeof _drmRenderManager === 'function') _drmRenderManager();
   if (typeof _advmRenderManager === 'function') _advmRenderManager();
