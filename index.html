@@ -8823,9 +8823,24 @@ function _seatsLeft(c){
   var gachaTaken = (typeof c.gachaSeatsTaken === 'number') ? c.gachaSeatsTaken : 0;
   return Math.max(0, _gachaSeatCap(c) - gachaTaken);
 }
+// Class meeting day + clock-time, as synced from the Class Manager: `day` is a
+// weekday name ("Saturday"); `time` is stored WITHOUT "EST" (clean "7:00 PM" or
+// a legacy range "6:10 PM-7:10 PM"). Returns e.g. "Saturday @ 7:00 PM EST", a
+// partial if only one field is present, or '' if neither.
+function _classWhen(c){
+  if (!c) return '';
+  var t = String(c.time || '').trim();
+  var day = String(c.day || '').trim();
+  if (t && day) return day + ' @ ' + t + ' EST';
+  if (t) return t + ' EST';
+  return day;
+}
 function _classLabel(c){
   if (!c) return 'Class';
-  return (c.level || c.classType || 'Class') + ' · starts ' + _fmtDate(c.startISO || c.startDate);
+  var when = _classWhen(c);
+  return (c.level || c.classType || 'Class')
+    + (when ? ' · ' + when : '')
+    + ' · starts ' + _fmtDate(c.startISO || c.startDate);
 }
 
 /* ── 6-Week picker helpers (level-first, two-step) ──
@@ -8864,9 +8879,11 @@ function _sixWeekClassOptions(level){
     var left = _seatsLeft(c);
     var nm = String(c.level || c.classType || 'Class');
     var tch = _classTeacher(c);
+    var when = _classWhen(c);
     var prem = (_shopPaidMode && !_sixWeekIsFirstFree() && _isMrCalvinClass(c)) ? ' · +' + MR_CALVIN_PREMIUM + ' pts' : '';
     return '<option value="' + esc(c.id) + '">' + esc(nm) +
       (tch ? ' · ' + esc(tch) : '') +
+      (when ? ' · ' + esc(when) : '') +
       ' · starts ' + esc(_fmtDate(c.startISO || c.startDate)) +
       ' — ' + left + ' seat' + (left === 1 ? '' : 's') + ' left' + prem + '</option>';
   }).join('');
@@ -8897,13 +8914,15 @@ function _drawShop(){
     var _tutWhen = _isTut
       ? [(enr.day || ''), (enr.time || '')].filter(Boolean).join(' @ ') + (enr.startDate ? ' · ' + _fmtDateShort(enr.startDate) : '')
       : '';
+    var _sixWhen = _isTut ? '' : _classWhen({ day: enr.classDay, time: enr.classTime });
     var startLine = _isTut
       ? (_tutWhen
           ? 'Session: <b>' + esc(_tutWhen) + '</b>'
           : '<span class="awaiting">⏳ Awaiting session time from admin</span>')
-      : (enr.startDate
-          ? 'Class starts: <b>' + _fmtDate(enr.startDate) + '</b>'
-          : '<span class="awaiting">⏳ Awaiting start date from admin</span>');
+      : ((_sixWhen ? 'Meets: <b>' + esc(_sixWhen) + '</b><br>' : '')
+          + (enr.startDate
+              ? 'Class starts: <b>' + _fmtDate(enr.startDate) + '</b>'
+              : '<span class="awaiting">⏳ Awaiting start date from admin</span>'));
     var endLine = (!_isTut && enr.endDate) ? '<br>Ends: <b>' + _fmtDate(enr.endDate) + '</b>' : '';
     var levelLine = (!_isTut && enr.classLevel) ? '<br>Level: <b>' + esc(enr.classLevel) + '</b>' : '';
 
@@ -9662,6 +9681,8 @@ async function _confirmSixWeekPurchase(slotId){
       purchasedAt: new Date().toISOString(),
       startDate: chosen.startISO || null,
       endDate: chosen.endISO || null,
+      classDay: chosen.day || null,
+      classTime: chosen.time || null,
       adminOverride: false,
       signedName: signedName,
       signedAt: new Date().toISOString(),
