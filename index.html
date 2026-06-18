@@ -2489,8 +2489,8 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .enroll-card > summary{padding:18px 22px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:14px;flex-wrap:wrap;user-select:none;}
 .enroll-card > summary::-webkit-details-marker{display:none;}
 .enroll-card[open] > summary{padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.08);}
-.enroll-card .enroll-title{font-family:var(--ps);font-size:16px;color:#fff;text-shadow:var(--ps-outline-sm);letter-spacing:1px;}
-.enroll-card .enroll-status{display:inline-block;font-family:var(--ps);font-size:11px;padding:4px 10px;border-radius:2px;letter-spacing:1px;flex-shrink:0;}
+.enroll-card .enroll-title{font-family:var(--ps);font-size:12px;color:#fff;text-shadow:var(--ps-outline-sm);letter-spacing:1px;}
+.enroll-card .enroll-status{display:inline-block;font-family:var(--ps);font-size:9px;padding:4px 10px;border-radius:2px;letter-spacing:1px;flex-shrink:0;}
 .enroll-card .enroll-status.pending{background:rgba(245,200,66,0.15);color:var(--gold);border:1px solid var(--gold);}
 .enroll-card .enroll-status.active{background:rgba(57,255,20,0.15);color:var(--green);border:1px solid var(--green);}
 .enroll-card .enroll-status.completed{background:rgba(136,136,136,0.15);color:#888;border:1px solid #888;}
@@ -2531,10 +2531,10 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 }
 /* Chevron auto-pushes right via margin-left:auto so it sits at the far edge
  * of the summary row regardless of how wide the title + badge are. */
-.enroll-card .enroll-chevron{margin-left:auto;font-family:var(--ps);font-size:13px;color:#888;transition:transform 0.2s;flex-shrink:0;}
+.enroll-card .enroll-chevron{margin-left:auto;font-family:var(--ps);font-size:11px;color:#888;transition:transform 0.2s;flex-shrink:0;}
 .enroll-card[open] .enroll-chevron{transform:rotate(180deg);color:#fff;}
 .enroll-card .enroll-body{padding:14px 22px 20px;}
-.enroll-card .enroll-meta{font-size:17px;color:#ddd;line-height:1.8;margin-bottom:14px;}
+.enroll-card .enroll-meta{font-size:15px;color:#ddd;line-height:1.8;margin-bottom:14px;}
 .enroll-card .enroll-meta .awaiting{color:#aaa;font-style:italic;}
 .enroll-card .enroll-actions{display:flex;flex-direction:column;align-items:center;gap:6px;}
 /* Cancel button + fee. Fee is plain centered text under the button, no
@@ -2639,7 +2639,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .policy-modal{zoom:calc(1 / var(--app-zoom, 1.2));background:#0d0d1f;border:3px solid var(--gold);border-radius:2px;max-width:560px;width:100%;max-height:calc(100vh - 40px);display:flex;flex-direction:column;box-shadow:0 0 40px rgba(255,215,0,0.35),6px 6px 0 rgba(0,0,0,0.85);overflow:hidden;animation:wePop 0.3s cubic-bezier(0.34,1.56,0.64,1) both;}
 .policy-head{padding:20px 24px 16px;border-bottom:2px solid rgba(255,215,0,0.25);background:#0a0a1a;flex-shrink:0;}
 .policy-title{font-family:var(--ps);font-size:15px;line-height:1.6;color:var(--gold);text-shadow:var(--ps-outline-sm);letter-spacing:1px;text-align:center;}
-.policy-sub{font-family:var(--vt);font-size:15px;color:#ccc;text-align:center;margin-top:8px;}
+.policy-sub{font-family:var(--vt);font-size:22px;color:#ccc;text-align:center;margin-top:8px;}
 /* Body is the ONLY scrollable region. `min-height:0` is the magic property
  * that makes flex children actually shrink and trigger overflow:auto, without
  * it, a flex child's default min-height:auto sizes to content and the overflow
@@ -2665,7 +2665,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .policy-name-label{font-family:var(--ps);font-size:11px;color:var(--gold);text-shadow:var(--ps-outline-sm);letter-spacing:1px;}
 .policy-name-input{width:100%;padding:12px 14px;background:#0d0d1f;border:2px solid rgba(255,215,0,0.4);border-radius:2px;color:#fff;font-family:var(--vt);font-size:18px;outline:none;box-shadow:2px 2px 0 rgba(0,0,0,0.8);box-sizing:border-box;}
 .policy-name-input:focus{border-color:var(--gold);}
-.policy-summary{font-size:16px;color:#ccc;background:rgba(255,215,0,0.06);border:1px dashed rgba(255,215,0,0.3);border-radius:2px;padding:12px 14px;line-height:1.7;}
+.policy-summary{font-size:24px;color:#ccc;background:rgba(255,215,0,0.06);border:1px dashed rgba(255,215,0,0.3);border-radius:2px;padding:12px 14px;line-height:1.7;}
 .policy-actions{padding:16px 24px 20px;display:flex;gap:12px;justify-content:flex-end;border-top:2px solid rgba(255,215,0,0.15);background:#0a0a1a;flex-wrap:wrap;flex-shrink:0;}
 .policy-actions .btn{min-width:130px;}
 
@@ -8592,10 +8592,33 @@ function _cancelPolicy(){
   // Pending (no startDate set yet), always cancellable (fee still applies per your rule)
   if (!e.startDate) return { canCancel: true, reason: '' };
   var now = new Date();
-  var start = new Date(e.startDate);
+  // Build the session's real start datetime. A bare "yyyy-mm-dd" parses as
+  // midnight UTC, which in NY shifts to the *previous* evening — making a
+  // just-booked session look <24h away. Parse as local time, and for tutoring
+  // fold in the actual clock time (e.g. "6:10 PM") so the window is correct.
+  var start = _enrollmentStartDateTime(e);
   var hoursUntil = (start - now) / 36e5;
   if (hoursUntil < CANCEL_WINDOW_HOURS) return { canCancel: false, reason: 'It is too late to cancel your enrollment.' };
   return { canCancel: true, reason: '' };
+}
+
+// Returns a Date for the session start, parsed in LOCAL time (not UTC) and,
+// for tutoring, including the chosen clock time. Falls back to local midnight.
+function _enrollmentStartDateTime(e){
+  var iso = e.startDate;
+  var y, mo, d;
+  var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso || '');
+  if (m){ y = +m[1]; mo = +m[2] - 1; d = +m[3]; }
+  else { var dd = new Date(iso); if (!isNaN(dd)) return dd; return new Date(8640000000000000); }
+  var hh = 0, mm = 0;
+  if (e.type === 'tutoring' && e.time){
+    var t = /(\d{1,2}):(\d{2})\s*([AP]M)/i.exec(e.time);
+    if (t){
+      hh = +t[1] % 12; if (/PM/i.test(t[3])) hh += 12;
+      mm = +t[2];
+    }
+  }
+  return new Date(y, mo, d, hh, mm, 0, 0);
 }
 
 function renderShop(){
@@ -8785,8 +8808,8 @@ function _drawShop(){
     // Tutoring is free, so it carries no point fee — just the redeem warning.
     var cancelBtn;
     if (policy.canCancel){
-      var feeLine = _isTut
-        ? '<div class="enroll-cancel-fee">Cancel up to 24h before the session. After that your credit is redeemed.</div>'
+      var feeLine = (_isTut || !_gachaFrameworkEnabled)
+        ? '<div class="enroll-cancel-fee">Cancel up to 24h before ' + (_isTut ? 'the session' : 'the first class') + '. After that your credit is redeemed.</div>'
         : '<div class="enroll-cancel-fee">Cancellation fee: <span class="fee-amount">−' + CANCEL_FEE_POINTS + ' pts</span></div>';
       cancelBtn =
         '<div class="enroll-cancel-group">' +
@@ -9638,24 +9661,31 @@ async function cancelEnrollment(){
     return;
   }
 
-  var refund = PRICE_SIX_WEEK - CANCEL_FEE_POINTS;
+  var pointsOn = _gachaFrameworkEnabled;
+  // When points are hidden, enrollment was free → no refund, no fee, no points language.
+  var refund = pointsOn ? (PRICE_SIX_WEEK - CANCEL_FEE_POINTS) : 0;
   var slotId = user.enrollment.sourceSlotId || null;
-  if (!confirm('Cancel your 6-Week Program enrollment?\n\n' +
-               '• Refund: +' + refund + ' points\n' +
-               '• Cancellation fee: −' + CANCEL_FEE_POINTS + ' points\n' +
-               '• Your seat will be released.\n\n' +
-               'Proceed?')) return;
+  var confirmMsg = pointsOn
+    ? ('Cancel your 6-Week Program enrollment?\n\n' +
+       '• Refund: +' + refund + ' points\n' +
+       '• Cancellation fee: −' + CANCEL_FEE_POINTS + ' points\n' +
+       '• Your seat will be released.\n\n' +
+       'Proceed?')
+    : ('Cancel your 6-Week Program enrollment?\n\n' +
+       '• Your seat will be released.\n' +
+       '• This frees you to enroll again.\n\n' +
+       'Proceed?');
+  if (!confirm(confirmMsg)) return;
   playSelect();
   try {
     var cancelled = Object.assign({}, user.enrollment, {
       status: 'cancelled',
       cancelledAt: new Date().toISOString()
     });
-    await db.collection(TC).doc(user.id).update({
-      points: firebase.firestore.FieldValue.increment(refund),
-      enrollment: cancelled
-    });
-    user.points += refund;
+    var cancelUpdate = { enrollment: cancelled };
+    if (refund > 0) cancelUpdate.points = firebase.firestore.FieldValue.increment(refund);
+    await db.collection(TC).doc(user.id).update(cancelUpdate);
+    if (refund > 0) user.points += refund;
     user.enrollment = cancelled;
 
     // Release the arcade seat and signal the Class Manager to drop the student.
@@ -9688,7 +9718,7 @@ async function cancelEnrollment(){
       } catch(e){ console.warn('cancel enrollment_request:', e); }
     }
 
-    toast('Enrollment cancelled. +' + refund + ' pts refunded.', 'var(--gold)');
+    toast(pointsOn ? ('Enrollment cancelled. +' + refund + ' pts refunded.') : 'Enrollment cancelled.', 'var(--gold)');
     // (Cancel webhook intentionally NOT fired — no Discord DM on cancel.
     // Class Manager removal is handled by the enrollmentRequestBridge function
     // consuming the enrollment_requests status:'cancelled' flip above.)
@@ -10221,12 +10251,18 @@ window.adminMarkComplete = adminMarkComplete;
 
 async function adminForceCancel(userId){
   if (!user || !user.isAdmin) return;
-  var refund = PRICE_SIX_WEEK - CANCEL_FEE_POINTS;
-  if (!confirm('Cancel this student\'s enrollment?\n\n' +
-               '• Refund: +' + refund + ' points to the student\n' +
-               '• Cancellation fee: −' + CANCEL_FEE_POINTS + ' points\n' +
-               '• Their seat will be released.\n\n' +
-               'Proceed?')) return;
+  var aPointsOn = _gachaFrameworkEnabled;
+  var refund = aPointsOn ? (PRICE_SIX_WEEK - CANCEL_FEE_POINTS) : 0;
+  var aMsg = aPointsOn
+    ? ('Cancel this student\'s enrollment?\n\n' +
+       '• Refund: +' + refund + ' points to the student\n' +
+       '• Cancellation fee: −' + CANCEL_FEE_POINTS + ' points\n' +
+       '• Their seat will be released.\n\n' +
+       'Proceed?')
+    : ('Cancel this student\'s enrollment?\n\n' +
+       '• Their seat will be released.\n\n' +
+       'Proceed?');
+  if (!confirm(aMsg)) return;
   try {
     // Read current enrollment so we can preserve fields + fire a proper webhook
     var snap = await db.collection(TC).doc(userId).get();
