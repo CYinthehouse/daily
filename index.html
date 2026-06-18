@@ -2707,6 +2707,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 body.gacha-hidden #chipRolls,
 body.gacha-hidden #chipPoints,
 body.gacha-hidden .menu-card.showcase,
+body.gacha-hidden #shopLeaderboard,
 body.gacha-hidden #drBanner,
 body.gacha-hidden .dr-banner-link { display: none !important; }
 </style>
@@ -3004,15 +3005,25 @@ body.gacha-hidden .dr-banner-link { display: none !important; }
     <span id="toggleDailyStatus" style="font-family:var(--vt);font-size:14px;color:#aaa;"></span>
   </div>
 
-  <!-- Shop mode toggle: OFF (default) = free "Get Class"; ON = paid "Point Shop". -->
+  <!-- Shop mode (three-state): OFF = free "Get Class"; ADMIN = paid for admins only; ALL = paid for everyone. -->
   <div style="margin-bottom:18px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-    <button class="btn btn-gold btn-md" id="toggleShopModeBtn" onclick="toggleShopMode()">🏪 TOGGLE SHOP MODE</button>
+    <label style="font-family:var(--vt);font-size:14px;color:#f5c842;">🏪 SHOP MODE:</label>
+    <select id="shopModeSelect" class="policy-name-input" style="width:auto;min-width:180px;" onchange="setShopMode(this.value)">
+      <option value="off">OFF (default)</option>
+      <option value="admin">ON for admin only</option>
+      <option value="all">ON for all</option>
+    </select>
     <span id="toggleShopModeStatus" style="font-family:var(--vt);font-size:14px;color:#aaa;"></span>
   </div>
 
-  <!-- Gacha framework toggle: OFF (default) hides showcase, signup eggs, eggs + points. -->
+  <!-- Gacha framework (three-state): OFF = hidden; ADMIN = visible to admins only; ALL = visible to everyone. -->
   <div style="margin-bottom:18px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-    <button class="btn btn-purple btn-md" id="toggleGachaBtn" onclick="toggleGachaFramework()">🥚 TOGGLE GACHA FRAMEWORK</button>
+    <label style="font-family:var(--vt);font-size:14px;color:#a855f7;">🥚 GACHA FRAMEWORK:</label>
+    <select id="gachaModeSelect" class="policy-name-input" style="width:auto;min-width:180px;" onchange="setGachaMode(this.value)">
+      <option value="off">OFF (default)</option>
+      <option value="admin">ON for admin only</option>
+      <option value="all">ON for all</option>
+    </select>
     <span id="toggleGachaStatus" style="font-family:var(--vt);font-size:14px;color:#aaa;"></span>
   </div>
 
@@ -3276,6 +3287,16 @@ var _dailyEnabled = true;
 // When TRUE (admin flips it back on): the original paid Point Shop behavior
 // returns exactly as before. Nothing is deleted — purely gated by this flag.
 // Persisted to gacha_config/main as `shopPaidMode`. Defaults false if missing.
+//
+// THREE-STATE MODE: each behavior toggle is now stored as a mode string —
+//   'off'   → feature OFF for everyone (default)
+//   'admin' → feature ON for admins only
+//   'all'   → feature ON for everyone
+// `_shopPaidMode` / `_gachaFrameworkEnabled` below remain the EFFECTIVE boolean
+// for the current viewer, computed by _resolveModes() from the stored mode plus
+// whether this user is an admin. All existing call sites keep using the boolean.
+var _shopPaidModeMode = 'off';      // stored mode for shop paid mode
+var _gachaFrameworkMode = 'off';    // stored mode for gacha framework
 var _shopPaidMode = false;
 // ── GACHA FRAMEWORK MASTER SWITCH ──
 // When FALSE (default): hide the entire gacha layer from students —
@@ -3287,8 +3308,29 @@ var _shopPaidMode = false;
 // When TRUE: the full gacha framework returns exactly as before.
 // Nothing is deleted — gated by a <body class="gacha-hidden"> toggle (for static
 // UI) plus JS guards (signup flow / dynamic strings). Persisted to
-// gacha_config/main as `gachaFrameworkEnabled`. Defaults false if missing.
+// gacha_config/main as `gachaFrameworkMode`. Defaults 'off' if missing.
 var _gachaFrameworkEnabled = false;
+
+// Normalize a stored value to a valid mode. Back-compat: an old boolean true
+// means 'all', false/missing means 'off'.
+function _normMode(v){
+  if (v === 'off' || v === 'admin' || v === 'all') return v;
+  if (v === true) return 'all';
+  return 'off';
+}
+// Whether a given mode is effectively ON for the current viewer.
+function _modeActiveFor(mode){
+  var isAdmin = !!(user && user.isAdmin);
+  if (mode === 'all') return true;
+  if (mode === 'admin') return isAdmin;
+  return false;
+}
+// Recompute the effective booleans from the stored modes + current user.
+// Call after config load, after a toggle change, and after login (admin known).
+function _resolveModes(){
+  _shopPaidMode = _modeActiveFor(_shopPaidModeMode);
+  _gachaFrameworkEnabled = _modeActiveFor(_gachaFrameworkMode);
+}
 // Per-activity WIP/LIVE state. _dailyEnabled is the MASTER switch; each activity also
 // has its own flag. An activity is effectively LIVE only when BOTH the master is on AND
 // its own flag is on. Missing/undefined flags default to true (live). Keys match the
@@ -3311,10 +3353,11 @@ function _loadGachaConfig(){
         var d = snap.data() || {};
         // Default true if field missing, only flips off if explicitly false.
         _dailyEnabled = d.dailyEnabled !== false;
-        // Shop paid mode: default FALSE (new free "Get Class" mode) unless
-        // explicitly set true by admin.
-        _shopPaidMode = d.shopPaidMode === true;
-        _gachaFrameworkEnabled = d.gachaFrameworkEnabled === true;
+        // Shop paid mode + gacha framework: three-state modes. Back-compat —
+        // fall back to the old boolean field if the new *Mode field is absent.
+        _shopPaidModeMode = _normMode(d.shopPaidModeMode !== undefined ? d.shopPaidModeMode : d.shopPaidMode);
+        _gachaFrameworkMode = _normMode(d.gachaFrameworkMode !== undefined ? d.gachaFrameworkMode : d.gachaFrameworkEnabled);
+        _resolveModes();
         // Per-activity flags. Each missing key defaults to true (live).
         var da = d.dailyActivities || {};
         DAILY_ACTIVITY_KEYS.forEach(function(k){
@@ -4038,6 +4081,9 @@ window.doLogout = doLogout;
 /* ═══ ROUTING ═══ */
 function enterApp(){
   if (!user) return;
+  // User (and admin status) is now known — recompute effective toggle booleans
+  // from the stored modes before any synchronous UI reads them.
+  if (typeof _resolveModes === 'function') _resolveModes();
   // Reload the daily WIP/LIVE config now that we're authenticated. The module-init
   // call to _loadGachaConfig() fires before Firebase Auth restores the session, so
   // if the gacha_config read is auth-gated it can be denied/race and _dailyEnabled
@@ -4244,20 +4290,17 @@ function _applyShopMode(){
   if (typeof _drawShop === 'function') _drawShop();
 }
 
-// Admin toggle button + status for shop paid mode.
+// Sync the shop-mode dropdown + status to the stored mode.
 function _refreshShopModeToggleUi(){
-  var btn = document.getElementById('toggleShopModeBtn');
+  var sel = document.getElementById('shopModeSelect');
   var status = document.getElementById('toggleShopModeStatus');
-  if (btn){
-    btn.textContent = _shopPaidMode
-      ? '🎟️ SET SHOP → GET CLASS (FREE)'
-      : '🏪 SET SHOP → POINT SHOP (PAID)';
-  }
+  if (sel) sel.value = _shopPaidModeMode;
   if (status){
-    status.textContent = _shopPaidMode
-      ? 'Shop is PAID: "Point Shop", 6-Week costs points, Friday Extra Help shown.'
-      : 'Shop is FREE: "Get Class", 6-Week free, Friday Extra Help hidden.';
-    status.style.setProperty('color', _shopPaidMode ? '#f5c842' : '#3eea4d', 'important');
+    var txt = { off:'OFF — free "Get Class" for everyone (default).',
+                admin:'ADMIN ONLY — paid "Point Shop" shows to admins only.',
+                all:'ON FOR ALL — paid "Point Shop" for everyone.' }[_shopPaidModeMode] || '';
+    status.textContent = txt;
+    status.style.setProperty('color', _shopPaidModeMode === 'off' ? '#3eea4d' : '#f5c842', 'important');
   }
 }
 
@@ -4271,68 +4314,51 @@ function _applyGachaFramework(){
   try { if (typeof renderDaily === 'function') renderDaily(); } catch(e){}
 }
 
+// Sync the gacha-framework dropdown + status to the stored mode.
 function _refreshGachaToggleUi(){
-  var btn = document.getElementById('toggleGachaBtn');
+  var sel = document.getElementById('gachaModeSelect');
   var status = document.getElementById('toggleGachaStatus');
-  if (btn){
-    btn.textContent = _gachaFrameworkEnabled
-      ? '🥚 HIDE GACHA FRAMEWORK'
-      : '🥚 SHOW GACHA FRAMEWORK';
-  }
+  if (sel) sel.value = _gachaFrameworkMode;
   if (status){
-    status.textContent = _gachaFrameworkEnabled
-      ? 'Gacha is VISIBLE: showcase, signup eggs, eggs + points all shown.'
-      : 'Gacha is HIDDEN: showcase, signup eggs, eggs + points all hidden.';
-    status.style.setProperty('color', _gachaFrameworkEnabled ? '#3eea4d' : '#f5c842', 'important');
+    var txt = { off:'OFF — gacha hidden for everyone (default).',
+                admin:'ADMIN ONLY — gacha visible to admins only.',
+                all:'ON FOR ALL — gacha visible to everyone.' }[_gachaFrameworkMode] || '';
+    status.textContent = txt;
+    status.style.setProperty('color', _gachaFrameworkMode === 'off' ? '#f5c842' : '#3eea4d', 'important');
   }
 }
 
-async function toggleGachaFramework(){
+// Persist a behavior toggle's mode ('off'|'admin'|'all') to Firestore, then
+// re-resolve effective booleans and re-apply UI. `which` is 'shop' or 'gacha'.
+async function _setBehaviorMode(which, mode){
   if (!(user && user.isAdmin)){ return; }
-  var newVal = !_gachaFrameworkEnabled;
-  var btn = document.getElementById('toggleGachaBtn');
-  if (btn) btn.disabled = true;
+  mode = _normMode(mode);
+  var field = (which === 'shop') ? 'shopPaidModeMode' : 'gachaFrameworkMode';
+  var selId = (which === 'shop') ? 'shopModeSelect' : 'gachaModeSelect';
+  var sel = document.getElementById(selId);
+  if (sel) sel.disabled = true;
   try {
-    await db.collection(GACHA_CONFIG_DOC.collection).doc(GACHA_CONFIG_DOC.id).set({
-      gachaFrameworkEnabled: newVal,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      updatedBy: (user && user.username) || ''
-    }, { merge: true });
-    _gachaFrameworkEnabled = newVal;
+    var update = { updatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedBy: (user && user.username) || '' };
+    update[field] = mode;
+    await db.collection(GACHA_CONFIG_DOC.collection).doc(GACHA_CONFIG_DOC.id).set(update, { merge: true });
+    if (which === 'shop') _shopPaidModeMode = mode; else _gachaFrameworkMode = mode;
+    _resolveModes();
+    _applyShopMode();
     _applyGachaFramework();
+    _refreshShopModeToggleUi();
     _refreshGachaToggleUi();
     playSelect();
   } catch(e){
-    alert('Failed to save gacha toggle: ' + (e && e.message ? e.message : e));
+    alert('Failed to save toggle: ' + (e && e.message ? e.message : e));
   } finally {
-    if (btn) btn.disabled = false;
+    if (sel) sel.disabled = false;
   }
 }
-window.toggleGachaFramework = toggleGachaFramework;
-
-// Admin-only: flip _shopPaidMode and persist to Firestore.
-async function toggleShopMode(){
-  if (!(user && user.isAdmin)){ return; }
-  var newVal = !_shopPaidMode;
-  var btn = document.getElementById('toggleShopModeBtn');
-  if (btn) btn.disabled = true;
-  try {
-    await db.collection(GACHA_CONFIG_DOC.collection).doc(GACHA_CONFIG_DOC.id).set({
-      shopPaidMode: newVal,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      updatedBy: (user && user.username) || ''
-    }, { merge: true });
-    _shopPaidMode = newVal;
-    _applyShopMode();
-    _refreshShopModeToggleUi();
-    playSelect();
-  } catch(e){
-    alert('Failed to save shop toggle: ' + (e && e.message ? e.message : e));
-  } finally {
-    if (btn) btn.disabled = false;
-  }
-}
-window.toggleShopMode = toggleShopMode;
+window._setBehaviorMode = _setBehaviorMode;
+function setShopMode(mode){ _setBehaviorMode('shop', mode); }
+function setGachaMode(mode){ _setBehaviorMode('gacha', mode); }
+window.setShopMode = setShopMode;
+window.setGachaMode = setGachaMode;
 
 // Refresh the admin-screen toggle button label + status text to reflect current state.
 function _refreshDailyToggleUi(){
@@ -4528,7 +4554,7 @@ function updateCounts(){
     rollsChip.setAttribute('title', ready ? 'Click to crack an egg!' : '');
   }
   var pointsChip = $('chipPoints'); if (pointsChip) pointsChip.innerHTML = '<span class="chip-emoji">⭐</span> POINTS: ' + (user.points||0);
-  var cs = $('countShop'); if (cs) cs.textContent = _gachaFrameworkEnabled ? ((user.points||0) + ' pts') : '';
+  var cs = $('countShop'); if (cs) cs.textContent = _gachaFrameworkEnabled ? ((user.points||0) + ' pts') : 'Sign Up';
   var csc = $('countShowcase'); if (csc) {
     // Prefer the cached count (works for users with thousands of cards in the
     // subcollection); fall back to the in-memory array for not-yet-migrated users.
@@ -8536,7 +8562,7 @@ function renderShop(){
   _subOpenClasses();
   _subWonjooBusy();
   // Refresh the top-10 points leaderboard banner (independent of enrollment).
-  if (typeof _lbRender === 'function') _lbRender();
+  if (_gachaFrameworkEnabled && typeof _lbRender === 'function') _lbRender();
   // Pull a fresh copy of the user doc on every shop open. The admin may have
   // set start/end dates, the class level, or admin override since the student
   // logged in, and renderShop reads from the local user object, without this
@@ -8608,7 +8634,7 @@ function _subWonjooBusy(){
 // Returns [{ day, time, key }] for every grid cell Wonjoo is currently free.
 // Hard-blocked (day-time) cells that must NEVER appear as bookable 1:1 slots,
 // regardless of the busy mirror. Brute-force exclusion.
-var TUTORING_BLOCKED = { 'Saturday-6:10 PM': true };
+var TUTORING_BLOCKED = { 'Saturday-6:10 PM': true, 'Friday-8:30 PM': true };
 function _wonjooFreeSlots(){
   var out = [];
   TUTORING_DAYS.forEach(function(day){
@@ -8871,7 +8897,7 @@ function _drawShop(){
     '</div>';
 
   // Paid mode → Friday Extra Help; Free mode → 1:1 Tutoring (same slot).
-  var itemsHtml = (_shopPaidMode ? helpCardHtml : tutoringCardHtml) + sixCardHtml;
+  var itemsHtml = _shopPaidMode ? (helpCardHtml + sixCardHtml) : (sixCardHtml + tutoringCardHtml);
 
   grid.innerHTML = statusHtml + creditsHtml + '<div class="shop-grid">' + itemsHtml + '</div>';
 
@@ -9037,7 +9063,8 @@ function buyTutoring(){
   if (!WONJOO_BUSY_LOADED){ toast('Still loading times — try again in a moment.', 'var(--pink)'); return; }
   if (_wonjooFreeSlots().length === 0){ toast('No open tutoring times right now.', 'var(--pink)'); return; }
   playSelect();
-  _showTutoringPolicyModal();
+  _tutoringBooking = { day: '', time: '', startDate: '' };
+  _showTutoringBookModal();
 }
 window.buyTutoring = buyTutoring;
 
@@ -9072,28 +9099,34 @@ function _fmtDateShort(iso){
   } catch(e){ return iso; }
 }
 
-function _showTutoringPolicyModal(){
+// Holds the chosen booking between step 1 (book) and step 2 (sign), so the
+// user can go Back from the policy page without losing their selection.
+var _tutoringBooking = { day: '', time: '', startDate: '' };
+
+function _tutTimesForDay(day){
+  return TUTORING_TIMES.filter(function(t){
+    var key = day + '-' + t;
+    return !TUTORING_BLOCKED[key] && !WONJOO_BUSY[key];
+  });
+}
+
+// ── STEP 1: BOOK A TIME ──
+function _showTutoringBookModal(){
   var ex = document.getElementById('policyModalOverlay');
   if (ex) ex.remove();
 
-  var policyHtml = esc(TUTORING_POLICY_TEXT).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
   var free = _wonjooFreeSlots();
-
-  // Distinct free days (preserve grid order), and a time list per day.
   var daysWithFree = TUTORING_DAYS.filter(function(day){
     return free.some(function(s){ return s.day === day; });
   });
-  var defDay = daysWithFree[0] || '';
+  if (daysWithFree.length === 0){ toast('No open tutoring times right now.', 'var(--pink)'); return; }
 
-  function timesForDay(day){
-    return TUTORING_TIMES.filter(function(t){
-      var key = day + '-' + t;
-      return !TUTORING_BLOCKED[key] && !WONJOO_BUSY[key];
-    });
-  }
+  // Default to any previously-chosen day if still valid, else first free day.
+  var startDay = (_tutoringBooking.day && daysWithFree.indexOf(_tutoringBooking.day) !== -1)
+    ? _tutoringBooking.day : daysWithFree[0];
 
   var dayOptions = daysWithFree.map(function(day){
-    return '<option value="' + esc(day) + '">' + esc(day) + '</option>';
+    return '<option value="' + esc(day) + '"' + (day === startDay ? ' selected' : '') + '>' + esc(day) + '</option>';
   }).join('');
 
   var ov = document.createElement('div');
@@ -9102,11 +9135,8 @@ function _showTutoringPolicyModal(){
   ov.innerHTML =
     '<div class="policy-modal" role="dialog" aria-labelledby="policyTitle">' +
       '<div class="policy-head">' +
-        '<div class="policy-title" id="policyTitle">📋 1:1 TUTORING<br>BOOK & SIGN</div>' +
-        '<div class="policy-sub">Pick an open time, then review and sign.</div>' +
-      '</div>' +
-      '<div class="policy-body">' +
-        '<p>' + policyHtml + '</p>' +
+        '<div class="policy-title" id="policyTitle">📅 1:1 TUTORING<br>BOOK A TIME</div>' +
+        '<div class="policy-sub">Pick an open time with Miss Wonjoo.</div>' +
       '</div>' +
       '<div class="policy-signoff">' +
         '<div class="policy-name-row">' +
@@ -9121,6 +9151,94 @@ function _showTutoringPolicyModal(){
           '<label class="policy-name-label">3 · CHOOSE DATE</label>' +
           '<select id="tutDateSel" class="policy-name-input"></select>' +
         '</div>' +
+        '<div class="policy-summary">' +
+          'Session: <b>1:1 Tutoring with Miss Wonjoo</b><br>' +
+          'Frequency: <b>Once per 6-week period</b><br>' +
+          'Cost: <b style="color:var(--green);">FREE</b>' +
+        '</div>' +
+      '</div>' +
+      '<div class="policy-actions">' +
+        '<button class="btn btn-ghost btn-md" onclick="_closePolicyModal()">CANCEL</button>' +
+        '<button class="btn btn-cyan btn-md" id="tutNextBtn" onclick="_tutoringBookNext()">NEXT: REVIEW &amp; SIGN</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(ov);
+
+  var daySel = document.getElementById('tutDaySel');
+  var timeSel = document.getElementById('tutTimeSel');
+  var dateSel = document.getElementById('tutDateSel');
+  var nextBtn = document.getElementById('tutNextBtn');
+
+  function fillTimes(){
+    var day = daySel.value;
+    var times = _tutTimesForDay(day);
+    timeSel.innerHTML = times.map(function(t){
+      var sel = (t === _tutoringBooking.time) ? ' selected' : '';
+      return '<option value="' + esc(t) + '"' + sel + '>' + esc(t) + '</option>';
+    }).join('');
+    fillDates();
+  }
+  function fillDates(){
+    var day = daySel.value;
+    var dates = _upcomingDatesForDay(day, 4);
+    dateSel.innerHTML = dates.map(function(iso){
+      var sel = (iso === _tutoringBooking.startDate) ? ' selected' : '';
+      return '<option value="' + esc(iso) + '"' + sel + '>' + esc(_fmtDateShort(iso)) + '</option>';
+    }).join('');
+  }
+  function validate(){
+    var ok = daySel.value && timeSel.value && dateSel.value;
+    nextBtn.disabled = !ok;
+    nextBtn.style.opacity = ok ? '1' : '0.45';
+    nextBtn.style.cursor = ok ? 'pointer' : 'not-allowed';
+  }
+  daySel.addEventListener('change', function(){ fillTimes(); validate(); });
+  timeSel.addEventListener('change', validate);
+  dateSel.addEventListener('change', validate);
+  fillTimes();
+  validate();
+
+  ov.addEventListener('click', function(e){ if (e.target === ov) _closePolicyModal(); });
+  document.addEventListener('keydown', _policyEscHandler);
+}
+
+function _tutoringBookNext(){
+  var daySel = document.getElementById('tutDaySel');
+  var timeSel = document.getElementById('tutTimeSel');
+  var dateSel = document.getElementById('tutDateSel');
+  if (!daySel || !timeSel || !dateSel) return;
+  var day = daySel.value, time = timeSel.value, startDate = dateSel.value;
+  if (!day || !time || !startDate){ toast('Pick a day, time, and date.', 'var(--pink)'); return; }
+  if (TUTORING_BLOCKED[day + '-' + time]){ toast('That time isn\'t available. Pick another.', 'var(--pink)'); return; }
+  if (WONJOO_BUSY[day + '-' + time]){ toast('That time was just taken. Pick another.', 'var(--pink)'); _showTutoringBookModal(); return; }
+  _tutoringBooking = { day: day, time: time, startDate: startDate };
+  playSelect();
+  _showTutoringPolicyModal();
+}
+window._tutoringBookNext = _tutoringBookNext;
+
+// ── STEP 2: REVIEW POLICY & SIGN ──
+function _showTutoringPolicyModal(){
+  var ex = document.getElementById('policyModalOverlay');
+  if (ex) ex.remove();
+
+  var b = _tutoringBooking;
+  var whenLabel = b.day + ' @ ' + b.time + ' · ' + _fmtDateShort(b.startDate);
+  var policyHtml = esc(TUTORING_POLICY_TEXT).replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>');
+
+  var ov = document.createElement('div');
+  ov.id = 'policyModalOverlay';
+  ov.className = 'policy-overlay';
+  ov.innerHTML =
+    '<div class="policy-modal" role="dialog" aria-labelledby="policyTitle">' +
+      '<div class="policy-head">' +
+        '<div class="policy-title" id="policyTitle">📋 1:1 TUTORING<br>REVIEW &amp; SIGN</div>' +
+        '<div class="policy-sub">Review the policy and sign to confirm.</div>' +
+      '</div>' +
+      '<div class="policy-body">' +
+        '<p>' + policyHtml + '</p>' +
+      '</div>' +
+      '<div class="policy-signoff">' +
         '<label class="policy-check">' +
           '<input type="checkbox" id="policyAgreeChk">' +
           '<span class="policy-check-box" aria-hidden="true"></span>' +
@@ -9132,73 +9250,50 @@ function _showTutoringPolicyModal(){
         '</div>' +
         '<div class="policy-summary">' +
           'Session: <b>1:1 Tutoring with Miss Wonjoo</b><br>' +
+          'Booked: <b style="color:var(--cyan);">' + esc(whenLabel) + '</b><br>' +
           'Frequency: <b>Once per 6-week period</b><br>' +
           'Cost: <b style="color:var(--green);">FREE</b>' +
         '</div>' +
       '</div>' +
       '<div class="policy-actions">' +
-        '<button class="btn btn-ghost btn-md" onclick="_closePolicyModal()">CANCEL</button>' +
+        '<button class="btn btn-ghost btn-md" onclick="_showTutoringBookModal()">← BACK</button>' +
         '<button class="btn btn-gold btn-md" id="policyConfirmBtn" disabled onclick="_confirmTutoringEnroll()">BOOK SESSION</button>' +
       '</div>' +
     '</div>';
   document.body.appendChild(ov);
 
-  var daySel = document.getElementById('tutDaySel');
-  var timeSel = document.getElementById('tutTimeSel');
-  var dateSel = document.getElementById('tutDateSel');
   var chk = document.getElementById('policyAgreeChk');
   var nameInput = document.getElementById('policyNameInput');
   var confirmBtn = document.getElementById('policyConfirmBtn');
-
-  function fillTimes(){
-    var day = daySel.value;
-    timeSel.innerHTML = timesForDay(day).map(function(t){
-      return '<option value="' + esc(t) + '">' + esc(t) + '</option>';
-    }).join('');
-    fillDates();
-  }
-  function fillDates(){
-    var day = daySel.value;
-    var dates = _upcomingDatesForDay(day, 4);
-    dateSel.innerHTML = dates.map(function(iso){
-      return '<option value="' + esc(iso) + '">' + esc(_fmtDateShort(iso)) + '</option>';
-    }).join('');
-  }
   function validate(){
     var typed = (nameInput.value || '').trim();
-    var ok = chk.checked && typed.length >= 2 && daySel.value && timeSel.value && dateSel.value;
+    var ok = chk.checked && typed.length >= 2;
     confirmBtn.disabled = !ok;
     confirmBtn.style.opacity = ok ? '1' : '0.45';
     confirmBtn.style.cursor = ok ? 'pointer' : 'not-allowed';
   }
-  daySel.addEventListener('change', function(){ fillTimes(); validate(); });
-  timeSel.addEventListener('change', validate);
-  dateSel.addEventListener('change', validate);
   chk.addEventListener('change', validate);
   nameInput.addEventListener('input', validate);
-  fillTimes();
   validate();
 
   ov.addEventListener('click', function(e){ if (e.target === ov) _closePolicyModal(); });
   document.addEventListener('keydown', _policyEscHandler);
   setTimeout(function(){ nameInput.focus(); }, 100);
 }
+window._showTutoringBookModal = _showTutoringBookModal;
 
 async function _confirmTutoringEnroll(){
   if (!user) return;
   if (!_canBuySixWeek()){ toast('Finish your current enrollment first.', 'var(--pink)'); _closePolicyModal(); return; }
-  var daySel = document.getElementById('tutDaySel');
-  var timeSel = document.getElementById('tutTimeSel');
-  var dateSel = document.getElementById('tutDateSel');
   var chk = document.getElementById('policyAgreeChk');
   var nameInput = document.getElementById('policyNameInput');
-  var day = daySel && daySel.value;
-  var time = timeSel && timeSel.value;
-  var startDate = dateSel && dateSel.value;
-  if (!day || !time || !startDate){ toast('Pick a day, time, and date.', 'var(--pink)'); return; }
-  if (TUTORING_BLOCKED[day + '-' + time]){ toast('That time isn\'t available. Pick another.', 'var(--pink)'); return; }
-  // Guard against a race: the chosen cell may have filled since the modal opened.
-  if (WONJOO_BUSY[day + '-' + time]){ toast('That time was just taken. Pick another.', 'var(--pink)'); _closePolicyModal(); _drawShop(); return; }
+  var day = _tutoringBooking.day;
+  var time = _tutoringBooking.time;
+  var startDate = _tutoringBooking.startDate;
+  if (!day || !time || !startDate){ toast('Pick a day, time, and date.', 'var(--pink)'); _showTutoringBookModal(); return; }
+  if (TUTORING_BLOCKED[day + '-' + time]){ toast('That time isn\'t available. Pick another.', 'var(--pink)'); _showTutoringBookModal(); return; }
+  // Guard against a race: the chosen cell may have filled since booking.
+  if (WONJOO_BUSY[day + '-' + time]){ toast('That time was just taken. Pick another.', 'var(--pink)'); _showTutoringBookModal(); _drawShop(); return; }
   if (!chk || !chk.checked){ toast('Please check the agreement box.', 'var(--pink)'); return; }
   var signedName = (nameInput && nameInput.value || '').trim();
   if (signedName.length < 2){ toast('Please type your name to sign.', 'var(--pink)'); return; }
@@ -15704,7 +15799,7 @@ async function _profileSave(){
     _profileClose();
     updateTopBar();
     var ss = document.getElementById('shopScreen');
-    if (ss && !ss.classList.contains('hidden') && typeof _lbRender === 'function') _lbRender();
+    if (ss && !ss.classList.contains('hidden') && _gachaFrameworkEnabled && typeof _lbRender === 'function') _lbRender();
     toast('Profile saved!', 'var(--green)');
   } catch(e){
     if (btn){ btn.disabled = false; btn.textContent = '💾 SAVE'; }
