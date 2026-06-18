@@ -2715,6 +2715,24 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   .policy-actions{padding:12px 18px 16px;}
   .policy-actions .btn{flex:1;min-width:0;}
 }
+/* Short viewports (landscape phones): the pinned-button flex layout can't fit
+ * header + sign-off + actions in the available height, so the policy body
+ * collapses to ~1 line and the action buttons get clipped by the modal's
+ * overflow:hidden. Fix: scroll the WHOLE modal (overlay becomes the scroller),
+ * while keeping the policy text in its own larger, internally-scrollable box.
+ * Height-based on purpose — landscape phones are short but often wide, so a
+ * max-width test misses them. Placed after the width queries so it wins the
+ * cascade when a device is both narrow and short. Applies to both the 6-Week
+ * and 1:1 Tutoring policy modals (shared .policy-* classes). */
+@media(max-height:600px){
+  /* top-align: centering a too-tall modal pushes its top off-screen, unreachable */
+  .policy-overlay{align-items:flex-start;overflow-y:auto;}
+  /* let the modal grow to natural height; margin-bottom guarantees breathing
+   * room under the buttons (scroll-container end padding is unreliable). */
+  .policy-modal{max-height:none;margin-bottom:20px;}
+  /* larger policy window that scrolls internally (~6-7 lines on a phone) */
+  .policy-body{max-height:55vh;}
+}
 @media(max-width:400px){
   .menu-card{padding:20px 14px;}
   .chip{display:none;}
@@ -4595,9 +4613,14 @@ function updateTopBar(){
   var display = user.displayName || user.username;
   if (display.indexOf('@') > 0) display = display.split('@')[0];
   if (display.length > 14) display = display.slice(0, 13) + '…';
+  // Full label, plus a 5-char stub applied ONLY when the top bar wraps to a
+  // second row on small / portrait screens (handled by fitTopBarUsername()).
+  var fullName  = display.toUpperCase();
+  var shortName = display.length > 5 ? display.slice(0, 5).toUpperCase() + '…' : fullName;
+  _topbarUserNames = { full: fullName, short: shortName };
   var r = $('topBarRight');
   r.innerHTML =
-    '<span class="chip cyan" id="chipUser" onclick="_profileOpen()" style="cursor:pointer;" title="Edit your profile"><span class="chip-emoji">👤</span> ' + esc(display.toUpperCase()) + '</span>' +
+    '<span class="chip cyan" id="chipUser" onclick="_profileOpen()" style="cursor:pointer;" title="Edit your profile"><span class="chip-emoji">👤</span> <span id="chipUserName"></span></span>' +
     '<span class="chip purple" id="chipRolls" onclick="_eggChipClick()"><span class="chip-emoji">🪺</span><span class="chip-label"> EGGS: ' + (user.gachaRolls||0) + '</span></span>' +
     '<span class="chip gold" id="chipPoints"><span class="chip-emoji">⭐</span> POINTS: ' + (user.points||0) + '</span>' +
     '<button class="icon-btn" id="inboxBtn" onclick="_inboxOpen()" title="Inbox">📬<span class="inbox-badge" id="inboxBadge">0</span></button>' +
@@ -4622,7 +4645,42 @@ function updateTopBar(){
   _inboxStartUnreadListener();
   // Apply egg-chip ready state / bang / point label immediately (no flash).
   updateCounts();
+  // Populate the username span and collapse it to a 5-char stub if the bar wrapped.
+  fitTopBarUsername();
 }
+
+/* The username label lives in its own span so a long name can be swapped for a
+ * 5-char stub (e.g. "TESTA…"). The stub is applied ONLY when the right-hand
+ * cluster actually wraps onto a second row — i.e. when the device is too narrow
+ * (typically mobile portrait). On wide layouts the full name is always shown. */
+var _topbarUserNames = { full: '', short: '' };
+function fitTopBarUsername(){
+  var cluster = document.getElementById('topBarRight');
+  var nameEl  = document.getElementById('chipUserName');
+  if (!cluster || !nameEl) return;
+  // Always reset to the full name, then measure from that baseline. This keeps
+  // the decision stable across resizes and prevents any flip-flop.
+  nameEl.textContent = _topbarUserNames.full;
+  if (_topbarUserNames.full === _topbarUserNames.short) return; // name already <=5
+  // Wrapped = not every visible child shares the first child's vertical offset.
+  var kids = cluster.children, topRef = null, wrapped = false;
+  for (var i = 0; i < kids.length; i++){
+    var k = kids[i];
+    if (k.offsetParent === null) continue;              // skip display:none chips
+    if (topRef === null) topRef = k.offsetTop;
+    else if (Math.abs(k.offsetTop - topRef) > 1){ wrapped = true; break; }
+  }
+  if (wrapped) nameEl.textContent = _topbarUserNames.short;
+}
+window.fitTopBarUsername = fitTopBarUsername;
+
+var _fitTopBarTimer = null;
+function _scheduleFitTopBar(){
+  if (_fitTopBarTimer) clearTimeout(_fitTopBarTimer);
+  _fitTopBarTimer = setTimeout(fitTopBarUsername, 120);
+}
+window.addEventListener('resize', _scheduleFitTopBar);
+window.addEventListener('orientationchange', _scheduleFitTopBar);
 
 function updateCounts(){
   if (!user) return;
