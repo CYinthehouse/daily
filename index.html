@@ -3062,7 +3062,16 @@ body.gacha-hidden .dr-banner-link { display: none !important; }
     <span id="toggleGachaStatus" style="font-family:var(--vt);font-size:14px;color:#aaa;"></span>
   </div>
 
-  <!-- Per-activity WIP/LIVE toggles. Master switch above gates all of these. -->
+  <!-- 1:1 Tutoring option (three-state): OFF = hidden; ADMIN = admins only; ALL = everyone. -->
+  <div style="margin-bottom:18px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+    <label style="font-family:var(--vt);font-size:14px;color:#41c0ff;">🧑‍🏫 1:1 TUTORING:</label>
+    <select id="tutoringModeSelect" class="policy-name-input" style="width:auto;min-width:180px;" onchange="setTutoringMode(this.value)">
+      <option value="off">OFF (default)</option>
+      <option value="admin">ON for admin only</option>
+      <option value="all">ON for all</option>
+    </select>
+    <span id="toggleTutoringStatus" style="font-family:var(--vt);font-size:14px;color:#aaa;"></span>
+  </div>
   <div style="margin-bottom:18px;">
     <div style="font-family:var(--vt);font-size:13px;color:#8a93a8;margin-bottom:8px;letter-spacing:0.5px;">PER-ACTIVITY TOGGLES, master switch above must be LIVE for these to take effect</div>
     <div id="dailyActivityToggles" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
@@ -3332,6 +3341,8 @@ var _dailyEnabled = true;
 // whether this user is an admin. All existing call sites keep using the boolean.
 var _shopPaidModeMode = 'off';      // stored mode for shop paid mode
 var _gachaFrameworkMode = 'off';    // stored mode for gacha framework
+var _tutoringMode = 'off';          // stored mode for the 1:1 Tutoring option
+var _tutoringEnabled = false;       // effective: is 1:1 Tutoring visible to this viewer
 var _shopPaidMode = false;
 // ── GACHA FRAMEWORK MASTER SWITCH ──
 // When FALSE (default): hide the entire gacha layer from students —
@@ -3365,6 +3376,7 @@ function _modeActiveFor(mode){
 function _resolveModes(){
   _shopPaidMode = _modeActiveFor(_shopPaidModeMode);
   _gachaFrameworkEnabled = _modeActiveFor(_gachaFrameworkMode);
+  _tutoringEnabled = _modeActiveFor(_tutoringMode);
 }
 // Per-activity WIP/LIVE state. _dailyEnabled is the MASTER switch; each activity also
 // has its own flag. An activity is effectively LIVE only when BOTH the master is on AND
@@ -3392,6 +3404,7 @@ function _loadGachaConfig(){
         // fall back to the old boolean field if the new *Mode field is absent.
         _shopPaidModeMode = _normMode(d.shopPaidModeMode !== undefined ? d.shopPaidModeMode : d.shopPaidMode);
         _gachaFrameworkMode = _normMode(d.gachaFrameworkMode !== undefined ? d.gachaFrameworkMode : d.gachaFrameworkEnabled);
+        _tutoringMode = _normMode(d.tutoringMode);
         _resolveModes();
         // Per-activity flags. Each missing key defaults to true (live).
         var da = d.dailyActivities || {};
@@ -3408,6 +3421,7 @@ function _loadGachaConfig(){
         if (typeof _refreshShopModeToggleUi === 'function') _refreshShopModeToggleUi();
         if (typeof _applyGachaFramework === 'function') _applyGachaFramework();
         if (typeof _refreshGachaToggleUi === 'function') _refreshGachaToggleUi();
+        if (typeof _refreshTutoringToggleUi === 'function') _refreshTutoringToggleUi();
       } catch(e){}
     }).catch(function(e){ console.warn('Config load failed:', e); });
   } catch(e){ console.warn('Config load failed:', e); return Promise.resolve(); }
@@ -4369,25 +4383,47 @@ function _refreshGachaToggleUi(){
   }
 }
 
+// Sync the 1:1 Tutoring dropdown + status to the stored mode.
+function _refreshTutoringToggleUi(){
+  var sel = document.getElementById('tutoringModeSelect');
+  var status = document.getElementById('toggleTutoringStatus');
+  if (sel) sel.value = _tutoringMode;
+  if (status){
+    var txt = { off:'OFF — 1:1 Tutoring hidden for everyone (default).',
+                admin:'ADMIN ONLY — 1:1 Tutoring visible to admins only.',
+                all:'ON FOR ALL — 1:1 Tutoring visible to everyone.' }[_tutoringMode] || '';
+    status.textContent = txt;
+    status.style.setProperty('color', _tutoringMode === 'off' ? '#f5c842' : '#3eea4d', 'important');
+  }
+}
+// Re-render the shop so the tutoring card appears/disappears.
+function _applyTutoring(){
+  if (typeof _drawShop === 'function') _drawShop();
+}
+
 // Persist a behavior toggle's mode ('off'|'admin'|'all') to Firestore, then
-// re-resolve effective booleans and re-apply UI. `which` is 'shop' or 'gacha'.
+// re-resolve effective booleans and re-apply UI. `which` is 'shop', 'gacha', or 'tutoring'.
 async function _setBehaviorMode(which, mode){
   if (!(user && user.isAdmin)){ return; }
   mode = _normMode(mode);
-  var field = (which === 'shop') ? 'shopPaidModeMode' : 'gachaFrameworkMode';
-  var selId = (which === 'shop') ? 'shopModeSelect' : 'gachaModeSelect';
+  var field = (which === 'shop') ? 'shopPaidModeMode' : (which === 'gacha') ? 'gachaFrameworkMode' : 'tutoringMode';
+  var selId = (which === 'shop') ? 'shopModeSelect' : (which === 'gacha') ? 'gachaModeSelect' : 'tutoringModeSelect';
   var sel = document.getElementById(selId);
   if (sel) sel.disabled = true;
   try {
     var update = { updatedAt: firebase.firestore.FieldValue.serverTimestamp(), updatedBy: (user && user.username) || '' };
     update[field] = mode;
     await db.collection(GACHA_CONFIG_DOC.collection).doc(GACHA_CONFIG_DOC.id).set(update, { merge: true });
-    if (which === 'shop') _shopPaidModeMode = mode; else _gachaFrameworkMode = mode;
+    if (which === 'shop') _shopPaidModeMode = mode;
+    else if (which === 'gacha') _gachaFrameworkMode = mode;
+    else _tutoringMode = mode;
     _resolveModes();
     _applyShopMode();
     _applyGachaFramework();
+    _applyTutoring();
     _refreshShopModeToggleUi();
     _refreshGachaToggleUi();
+    _refreshTutoringToggleUi();
     playSelect();
   } catch(e){
     alert('Failed to save toggle: ' + (e && e.message ? e.message : e));
@@ -4398,8 +4434,10 @@ async function _setBehaviorMode(which, mode){
 window._setBehaviorMode = _setBehaviorMode;
 function setShopMode(mode){ _setBehaviorMode('shop', mode); }
 function setGachaMode(mode){ _setBehaviorMode('gacha', mode); }
+function setTutoringMode(mode){ _setBehaviorMode('tutoring', mode); }
 window.setShopMode = setShopMode;
 window.setGachaMode = setGachaMode;
+window.setTutoringMode = setTutoringMode;
 
 // Refresh the admin-screen toggle button label + status text to reflect current state.
 function _refreshDailyToggleUi(){
@@ -8528,9 +8566,9 @@ function _sixWeekCost(c){
 // Price label for a class: FREE on a first Wonjoo purchase, otherwise base +
 // premium (with a "+450 · Mr. Calvin" note when it applies).
 function _sixWeekPriceHtml(c){
-  // Paid mode OFF → always FREE, no struck-through price.
+  // Paid mode OFF → always FREE WITH SUBSCRIPTION, no struck-through price.
   if (!_shopPaidMode){
-    return '<span style="color:var(--green);">FREE</span>';
+    return '<span style="color:var(--green);">FREE WITH SUBSCRIPTION</span>';
   }
   if (_sixWeekIsFreeFor(c)){
     return '<span style="color:var(--green);">FREE</span> <span style="color:#888;font-size:13px;text-decoration:line-through;">' + (PRICE_SIX_WEEK + _sixWeekPremium(c)) + ' pts</span>';
@@ -8661,7 +8699,11 @@ function _subOpenClasses(){
     _openClassesUnsub = db.collection('open_classes')
       .where('status', '==', 'open')
       .onSnapshot(function(snap){
-        OPEN_CLASSES = snap.docs.map(function(d){ return Object.assign({ id: d.id }, d.data()); });
+        OPEN_CLASSES = snap.docs.map(function(d){ return Object.assign({ id: d.id }, d.data()); })
+          // Tutoring slots are a separate 1:1 product (booked via the Tutoring
+          // card), not cohort classes — never list them in the 6-Week selector
+          // even if syncPrescheduledToGacha mirrors them into open_classes.
+          .filter(function(c){ return c.classType !== 'tutoring' && c.isTutoring !== true; });
         OPEN_CLASSES.sort(function(a, b){ return String(a.startISO || '').localeCompare(String(b.startISO || '')); });
         _drawShop(); // no-op when the shop isn't on screen ($('shopGrid') guard)
       }, function(e){ console.warn('open_classes sub:', e); });
@@ -8950,7 +8992,7 @@ function _drawShop(){
       '<div class="shop-icon">🧑‍🏫</div>' +
       '<div class="shop-name">1:1 TUTORING<br>W/ MISS WONJOO</div>' +
       '<div class="shop-desc">Can\'t make the 6-week program? Instead of taking a 6-week program, you may enroll in a 1:1 tutoring session with Miss Wonjoo (once in a 6-week period).</div>' +
-      '<div class="shop-price"><span style="color:var(--green);">FREE</span></div>' +
+      '<div class="shop-price"><span style="color:var(--green);">FREE WITH SUBSCRIPTION</span></div>' +
       '<div class="shop-level-spacer" aria-hidden="true"></div>' +
       '<button class="btn btn-cyan btn-md ' + (canBuyTutoring ? 'sparkle-btn' : '') + '" onclick="buyTutoring()" ' + (canBuyTutoring ? '' : 'disabled') + '>' +
         tutoringBtnLabel +
@@ -8961,7 +9003,7 @@ function _drawShop(){
     '</div>';
 
   // Paid mode → Friday Extra Help; Free mode → 1:1 Tutoring (same slot).
-  var itemsHtml = _shopPaidMode ? (helpCardHtml + sixCardHtml) : (sixCardHtml + tutoringCardHtml);
+  var itemsHtml = _shopPaidMode ? (helpCardHtml + sixCardHtml) : (sixCardHtml + (_tutoringEnabled ? tutoringCardHtml : ''));
 
   grid.innerHTML = statusHtml + creditsHtml + '<div class="shop-grid">' + itemsHtml + '</div>';
 
@@ -9123,6 +9165,7 @@ window.buySixWeek = buySixWeek;
 /* ═══ ENROLL: 1:1 TUTORING WITH MISS WONJOO (free mode) ═══ */
 function buyTutoring(){
   if (!user) return;
+  if (!_tutoringEnabled){ return; }
   if (!_canBuySixWeek()){ toast('Finish your current enrollment first.', 'var(--pink)'); return; }
   if (!WONJOO_BUSY_LOADED){ toast('Still loading times — try again in a moment.', 'var(--pink)'); return; }
   if (_wonjooFreeSlots().length === 0){ toast('No open tutoring times right now.', 'var(--pink)'); return; }
@@ -9218,7 +9261,7 @@ function _showTutoringBookModal(){
         '<div class="policy-summary">' +
           'Session: <b>1:1 Tutoring with Miss Wonjoo</b><br>' +
           'Frequency: <b>Once per 6-week period</b><br>' +
-          'Cost: <b style="color:var(--green);">FREE</b>' +
+          'Cost: <b style="color:var(--green);">FREE WITH SUBSCRIPTION</b>' +
         '</div>' +
       '</div>' +
       '<div class="policy-actions">' +
@@ -9316,7 +9359,7 @@ function _showTutoringPolicyModal(){
           'Session: <b>1:1 Tutoring with Miss Wonjoo</b><br>' +
           'Booked: <b style="color:var(--cyan);">' + esc(whenLabel) + '</b><br>' +
           'Frequency: <b>Once per 6-week period</b><br>' +
-          'Cost: <b style="color:var(--green);">FREE</b>' +
+          'Cost: <b style="color:var(--green);">FREE WITH SUBSCRIPTION</b>' +
         '</div>' +
       '</div>' +
       '<div class="policy-actions">' +
@@ -9475,7 +9518,7 @@ function _showSixWeekPolicyModal(slotId){
           'Cost: ' + (_sixWeekCost(chosen) === 0
             ? (_shopPaidMode
                 ? '<b style="color:var(--green);">FREE — 1st in-app purchase</b>'
-                : '<b style="color:var(--green);">FREE</b>')
+                : '<b style="color:var(--green);">FREE WITH SUBSCRIPTION</b>')
             : '<b style="color:var(--gold);">' + _sixWeekCost(chosen) + ' pts</b>'
               + (_sixWeekPremium(chosen) > 0 ? ' <span style="color:var(--green);font-size:12px;">(+' + _sixWeekPremium(chosen) + ' · Mr. Calvin)</span>' : '')) +
         '</div>' +
@@ -9628,19 +9671,26 @@ async function cancelEnrollment(){
       // korean-ta-evaluator deletes the prescheduled slot and frees the busy
       // cell. (Cross-project: we can't delete the slot from here directly.)
       try {
+        // A booked request is status:'created' (the bridge changed it from
+        // 'pending'); a not-yet-processed one is 'pending'. Match either, then
+        // flip to 'cancelled' so onTutoringRequest deletes the slot.
         var treqs = await db.collection('tutoring_requests')
           .where('uid', '==', user.id)
-          .where('status', '==', 'pending')
           .get();
         if (!treqs.empty){
           var trb = db.batch();
+          var trAny = false;
           treqs.forEach(function(d){
-            trb.update(d.ref, {
-              status: 'cancelled',
-              cancelledAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
+            var st = (d.data() || {}).status;
+            if (st === 'pending' || st === 'created'){
+              trb.update(d.ref, {
+                status: 'cancelled',
+                cancelledAt: firebase.firestore.FieldValue.serverTimestamp()
+              });
+              trAny = true;
+            }
           });
-          await trb.commit();
+          if (trAny) await trb.commit();
         }
       } catch(e){ console.warn('cancel tutoring_request:', e); }
 
@@ -9932,6 +9982,8 @@ function renderAdmin(){
   if (typeof _refreshShopModeToggleUi === 'function') _refreshShopModeToggleUi();
   // Refresh the gacha-framework toggle button label + status.
   if (typeof _refreshGachaToggleUi === 'function') _refreshGachaToggleUi();
+  // Refresh the 1:1 tutoring toggle dropdown + status.
+  if (typeof _refreshTutoringToggleUi === 'function') _refreshTutoringToggleUi();
   // Render each manager (each one writes into its own host div)
   if (typeof _drmRenderManager === 'function') _drmRenderManager();
   if (typeof _advmRenderManager === 'function') _advmRenderManager();
@@ -10311,14 +10363,18 @@ async function adminForceCancel(userId){
       try {
         var aTreqs = await db.collection('tutoring_requests')
           .where('uid', '==', userId)
-          .where('status', '==', 'pending')
           .get();
         if (!aTreqs.empty){
           var atb = db.batch();
+          var atAny = false;
           aTreqs.forEach(function(d){
-            atb.update(d.ref, { status: 'cancelled', cancelledAt: firebase.firestore.FieldValue.serverTimestamp() });
+            var st = (d.data() || {}).status;
+            if (st === 'pending' || st === 'created'){
+              atb.update(d.ref, { status: 'cancelled', cancelledAt: firebase.firestore.FieldValue.serverTimestamp() });
+              atAny = true;
+            }
           });
-          await atb.commit();
+          if (atAny) await atb.commit();
         }
       } catch(e){ console.warn('admin cancel tutoring_request:', e); }
     }
