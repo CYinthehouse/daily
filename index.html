@@ -8608,9 +8608,31 @@ function _sixWeekIsFirstFree(){ return !!user && (user.sixWeekPurchases || 0) ==
 // Mr. Calvin's classes carry a +450-point premium. A class's teacher comes from
 // the open_classes doc (synced from Class Manager); read it defensively.
 var MR_CALVIN_PREMIUM = 450;
-function _classTeacher(c){ var t = c && (c.teacherName || c.teacher || c.instructor || c.teacher_name || c.tutorName || c.tutor); return t ? String(t) : ''; }
-function _isMrCalvinClass(c){ return /calvin/i.test(_classTeacher(c)); }
-function _isWonjooClass(c){ return /wonjoo/i.test(_classTeacher(c)); }
+function _classTeacherId(c){ return c ? String(c.teacherId || c.teacher_id || c.teacherID || '') : ''; }
+// Known scheduler_teachers doc IDs (korean-ta-evaluator) → student-facing name.
+// Synced open_classes docs reliably carry teacherId but are often missing a
+// resolved teacherName, so the seat cap, pricing, AND the teacher label all key
+// off these IDs first. These friendly names also override the raw stored name
+// ("Wonjoo님" / "Calvin Yim") so students see "Miss Wonjoo" / "Mr. Calvin".
+var WONJOO_TEACHER_ID = 'fO3dgNMESMUd4G9eGvht';
+var CALVIN_TEACHER_ID = '3zIWVNEW8QXUtOzZZ5LP';
+var TEACHER_NAMES_BY_ID = {};
+TEACHER_NAMES_BY_ID[WONJOO_TEACHER_ID] = 'Miss Wonjoo';
+TEACHER_NAMES_BY_ID[CALVIN_TEACHER_ID] = 'Mr. Calvin';
+// Teacher label: a known teacherId wins (friendly name); otherwise fall back to
+// any name field on the doc; otherwise ''.
+function _classTeacher(c){
+  var known = TEACHER_NAMES_BY_ID[_classTeacherId(c)];
+  if (known) return known;
+  var t = c && (c.teacherName || c.teacher || c.instructor || c.teacher_name || c.tutorName || c.tutor);
+  return t ? String(t) : '';
+}
+// Normalized name-match fallback for unknown-ID classes: lowercase + drop every
+// non-letter so spacing / punctuation / honorifics compare equal — "Won Joo",
+// "Miss Wonjoo", "Wonjoo님" all reduce to contain "wonjoo".
+function _teacherKey(c){ return _classTeacher(c).toLowerCase().replace(/[^a-z]+/g, ''); }
+function _isMrCalvinClass(c){ return _classTeacherId(c) === CALVIN_TEACHER_ID || _teacherKey(c).indexOf('calvin') !== -1; }
+function _isWonjooClass(c){ return _classTeacherId(c) === WONJOO_TEACHER_ID || _teacherKey(c).indexOf('wonjoo') !== -1; }
 function _sixWeekPremium(c){ return _isMrCalvinClass(c) ? MR_CALVIN_PREMIUM : 0; }
 // Gacha seat cap per class: Miss Wonjoo's classes seat up to 5 arcade students;
 // everyone else's cap at 2. (Real seats / Class-Manager students are separate.)
@@ -8837,8 +8859,10 @@ function _classWhen(c){
 }
 function _classLabel(c){
   if (!c) return 'Class';
+  var tch = _classTeacher(c);
   var when = _classWhen(c);
   return (c.level || c.classType || 'Class')
+    + (tch ? ' · ' + tch : '')
     + (when ? ' · ' + when : '')
     + ' · starts ' + _fmtDate(c.startISO || c.startDate);
 }
