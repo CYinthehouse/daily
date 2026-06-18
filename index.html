@@ -2489,24 +2489,58 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .enroll-card > summary{padding:18px 22px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:14px;flex-wrap:wrap;user-select:none;}
 .enroll-card > summary::-webkit-details-marker{display:none;}
 .enroll-card[open] > summary{padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.08);}
-.enroll-card .enroll-title{font-family:var(--ps);font-size:14px;color:#fff;text-shadow:var(--ps-outline-sm);letter-spacing:1px;}
-.enroll-card .enroll-status{display:inline-block;font-family:var(--ps);font-size:9px;padding:4px 10px;border-radius:2px;letter-spacing:1px;flex-shrink:0;}
+.enroll-card .enroll-title{font-family:var(--ps);font-size:16px;color:#fff;text-shadow:var(--ps-outline-sm);letter-spacing:1px;}
+.enroll-card .enroll-status{display:inline-block;font-family:var(--ps);font-size:11px;padding:4px 10px;border-radius:2px;letter-spacing:1px;flex-shrink:0;}
 .enroll-card .enroll-status.pending{background:rgba(245,200,66,0.15);color:var(--gold);border:1px solid var(--gold);}
 .enroll-card .enroll-status.active{background:rgba(57,255,20,0.15);color:var(--green);border:1px solid var(--green);}
 .enroll-card .enroll-status.completed{background:rgba(136,136,136,0.15);color:#888;border:1px solid #888;}
 .enroll-card .enroll-status.cancelled{background:rgba(255,119,119,0.15);color:var(--pink);border:1px solid var(--pink);}
+/* ── ACTIVE ENROLLMENT: flashy, eye-catching, on-theme ── */
+.enroll-card.enroll-card--active{
+  border-color:var(--green);
+  box-shadow:4px 4px 0 rgba(0,0,0,0.8), 0 0 0 0 rgba(57,255,20,0.55);
+  animation:enrollActiveGlow 1.8s ease-in-out infinite;
+  position:relative;
+  overflow:hidden;
+}
+/* Animated scanline sheen sweeping across the card. */
+.enroll-card.enroll-card--active::after{
+  content:'';position:absolute;top:0;left:-60%;width:40%;height:100%;
+  background:linear-gradient(100deg,transparent,rgba(57,255,20,0.10),transparent);
+  transform:skewX(-18deg);animation:enrollActiveSheen 3.2s linear infinite;pointer-events:none;
+}
+.enroll-card.enroll-card--active > summary{position:relative;z-index:1;}
+.enroll-card.enroll-card--active .enroll-title{
+  color:var(--green);text-shadow:0 0 8px rgba(57,255,20,0.6),var(--ps-outline-sm);
+}
+.enroll-card.enroll-card--active .enroll-status.active{
+  animation:enrollActiveBadge 1.2s ease-in-out infinite;
+  box-shadow:0 0 6px rgba(57,255,20,0.5);
+}
+@keyframes enrollActiveGlow{
+  0%,100%{box-shadow:4px 4px 0 rgba(0,0,0,0.8), 0 0 6px 1px rgba(57,255,20,0.35);}
+  50%{box-shadow:4px 4px 0 rgba(0,0,0,0.8), 0 0 16px 3px rgba(57,255,20,0.65);}
+}
+@keyframes enrollActiveBadge{
+  0%,100%{opacity:1;}
+  50%{opacity:0.55;}
+}
+@keyframes enrollActiveSheen{
+  0%{left:-60%;}
+  60%,100%{left:140%;}
+}
 /* Chevron auto-pushes right via margin-left:auto so it sits at the far edge
  * of the summary row regardless of how wide the title + badge are. */
-.enroll-card .enroll-chevron{margin-left:auto;font-family:var(--ps);font-size:11px;color:#888;transition:transform 0.2s;flex-shrink:0;}
+.enroll-card .enroll-chevron{margin-left:auto;font-family:var(--ps);font-size:13px;color:#888;transition:transform 0.2s;flex-shrink:0;}
 .enroll-card[open] .enroll-chevron{transform:rotate(180deg);color:#fff;}
 .enroll-card .enroll-body{padding:14px 22px 20px;}
-.enroll-card .enroll-meta{font-size:15px;color:#ddd;line-height:1.8;margin-bottom:14px;}
+.enroll-card .enroll-meta{font-size:17px;color:#ddd;line-height:1.8;margin-bottom:14px;}
 .enroll-card .enroll-meta .awaiting{color:#aaa;font-style:italic;}
 .enroll-card .enroll-actions{display:flex;flex-direction:column;align-items:center;gap:6px;}
 /* Cancel button + fee. Fee is plain centered text under the button, no
  * boxed wrapper, no pink background. Reads as a caption, not as a callout. */
 .enroll-cancel-group{display:flex;flex-direction:column;align-items:stretch;max-width:340px;width:100%;margin:0 auto;gap:8px;}
-.enroll-cancel-fee{font-size:13px;color:#aaa;text-align:center;line-height:1.4;}
+.enroll-cancel-fee{font-size:15px;color:#aaa;text-align:center;line-height:1.4;}
 .enroll-cancel-fee .fee-amount{color:#ff7777;font-weight:600;}
 .enroll-cancel-fee.locked-reason{font-style:italic;color:#888;}
 
@@ -2604,8 +2638,8 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 }
 .policy-modal{zoom:calc(1 / var(--app-zoom, 1.2));background:#0d0d1f;border:3px solid var(--gold);border-radius:2px;max-width:560px;width:100%;max-height:calc(100vh - 40px);display:flex;flex-direction:column;box-shadow:0 0 40px rgba(255,215,0,0.35),6px 6px 0 rgba(0,0,0,0.85);overflow:hidden;animation:wePop 0.3s cubic-bezier(0.34,1.56,0.64,1) both;}
 .policy-head{padding:20px 24px 16px;border-bottom:2px solid rgba(255,215,0,0.25);background:#0a0a1a;flex-shrink:0;}
-.policy-title{font-family:var(--ps);font-size:13px;line-height:1.6;color:var(--gold);text-shadow:var(--ps-outline-sm);letter-spacing:1px;text-align:center;}
-.policy-sub{font-family:var(--vt);font-size:13px;color:#ccc;text-align:center;margin-top:8px;}
+.policy-title{font-family:var(--ps);font-size:15px;line-height:1.6;color:var(--gold);text-shadow:var(--ps-outline-sm);letter-spacing:1px;text-align:center;}
+.policy-sub{font-family:var(--vt);font-size:15px;color:#ccc;text-align:center;margin-top:8px;}
 /* Body is the ONLY scrollable region. `min-height:0` is the magic property
  * that makes flex children actually shrink and trigger overflow:auto, without
  * it, a flex child's default min-height:auto sizes to content and the overflow
@@ -2613,7 +2647,7 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
  * area. Hard `max-height` cap makes the scrollable area predictable.
  * Custom gold scrollbar so students can see at a glance that the body scrolls
  * (default scrollbars on dark bg are nearly invisible). */
-.policy-body{padding:18px 24px;overflow-y:auto;flex:1 1 auto;min-height:0;max-height:42vh;font-family:monospace;font-size:14px;color:#ddd;line-height:1.7;scrollbar-width:thin;scrollbar-color:var(--gold) rgba(255,215,0,0.08);}
+.policy-body{padding:18px 24px;overflow-y:auto;flex:1 1 auto;min-height:0;max-height:42vh;font-family:monospace;font-size:16px;color:#ddd;line-height:1.7;scrollbar-width:thin;scrollbar-color:var(--gold) rgba(255,215,0,0.08);}
 .policy-body::-webkit-scrollbar{width:10px;}
 .policy-body::-webkit-scrollbar-track{background:rgba(255,215,0,0.06);border-left:1px solid rgba(255,215,0,0.15);}
 .policy-body::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#ffe066,#cc9900);border-radius:0;border:2px solid #0d0d1f;box-shadow:inset 0 0 0 1px rgba(0,0,0,0.4);}
@@ -2626,12 +2660,12 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .policy-check-box{flex-shrink:0;width:22px;height:22px;border:2px solid var(--gold);background:#0d0d1f;display:inline-block;position:relative;margin-top:1px;box-shadow:2px 2px 0 rgba(0,0,0,0.8);}
 .policy-check input:checked + .policy-check-box::after{content:'\2713';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--gold);font-weight:bold;font-size:18px;line-height:1;}
 .policy-check input:focus + .policy-check-box{box-shadow:2px 2px 0 rgba(0,0,0,0.8),0 0 0 3px rgba(255,215,0,0.4);}
-.policy-check-text{font-size:14px;color:#fff;line-height:1.5;}
+.policy-check-text{font-size:16px;color:#fff;line-height:1.5;}
 .policy-name-row{display:flex;flex-direction:column;gap:6px;}
-.policy-name-label{font-family:var(--ps);font-size:9px;color:var(--gold);text-shadow:var(--ps-outline-sm);letter-spacing:1px;}
-.policy-name-input{width:100%;padding:12px 14px;background:#0d0d1f;border:2px solid rgba(255,215,0,0.4);border-radius:2px;color:#fff;font-family:var(--vt);font-size:16px;outline:none;box-shadow:2px 2px 0 rgba(0,0,0,0.8);box-sizing:border-box;}
+.policy-name-label{font-family:var(--ps);font-size:11px;color:var(--gold);text-shadow:var(--ps-outline-sm);letter-spacing:1px;}
+.policy-name-input{width:100%;padding:12px 14px;background:#0d0d1f;border:2px solid rgba(255,215,0,0.4);border-radius:2px;color:#fff;font-family:var(--vt);font-size:18px;outline:none;box-shadow:2px 2px 0 rgba(0,0,0,0.8);box-sizing:border-box;}
 .policy-name-input:focus{border-color:var(--gold);}
-.policy-summary{font-size:14px;color:#ccc;background:rgba(255,215,0,0.06);border:1px dashed rgba(255,215,0,0.3);border-radius:2px;padding:12px 14px;line-height:1.7;}
+.policy-summary{font-size:16px;color:#ccc;background:rgba(255,215,0,0.06);border:1px dashed rgba(255,215,0,0.3);border-radius:2px;padding:12px 14px;line-height:1.7;}
 .policy-actions{padding:16px 24px 20px;display:flex;gap:12px;justify-content:flex-end;border-top:2px solid rgba(255,215,0,0.15);background:#0a0a1a;flex-wrap:wrap;flex-shrink:0;}
 .policy-actions .btn{min-width:130px;}
 
@@ -2675,8 +2709,8 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
   .admin-summary{gap:6px;}
   .policy-modal{max-height:calc(100vh - 24px);}
   .policy-head{padding:16px 18px 12px;}
-  .policy-title{font-size:11px;}
-  .policy-body{padding:14px 18px;font-size:13px;max-height:36vh;}
+  .policy-title{font-size:13px;}
+  .policy-body{padding:14px 18px;font-size:15px;max-height:36vh;}
   .policy-signoff{padding:14px 18px;gap:12px;}
   .policy-actions{padding:12px 18px 16px;}
   .policy-actions .btn{flex:1;min-width:0;}
@@ -2806,8 +2840,8 @@ body.gacha-hidden .dr-banner-link { display: none !important; }
     <div class="menu-card daily" id="menuCardDaily" onclick="handleTileTap('daily')">
       <span class="menu-emoji">📅</span>
       <div class="grad-wrap"><div class="menu-name grad-text grad-green">DAILY<br>ACTIVITIES</div></div>
-      <div class="menu-desc">Complete challenges to earn gacha eggs and points.</div>
-      <span class="menu-count">Earn eggs &amp; points</span>
+      <div class="menu-desc">Practice your Korean every day.</div>
+      <span class="menu-count">Let's Practice!</span>
     </div>
     <div class="menu-card shop" id="menuCardShop" onclick="handleTileTap('shop')">
       <span class="menu-emoji" id="menuShopEmoji">🎟️</span>
@@ -2945,8 +2979,9 @@ body.gacha-hidden .dr-banner-link { display: none !important; }
 
 <!-- ═══ INBOX ═══ -->
 <div id="inboxScreen" class="sub-screen hidden">
-  <div class="back-row">
+  <div class="back-row" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;">
     <button class="btn btn-ghost btn-sm" onclick="goBackToMenu()">← BACK TO MENU</button>
+    <button class="btn btn-cyan btn-sm" id="inboxMarkAllBtn" onclick="_inboxMarkAllRead()">✓ MARK ALL READ</button>
   </div>
   <div class="section-head daily">
     <div class="sh-title">📬 INBOX</div>
@@ -4264,8 +4299,13 @@ function _updateDailyTile(){
     tile.onclick = function(){ /* no-op; gated in WIP mode */ };
   } else {
     tile.classList.remove('wip');
-    if (desc) desc.textContent = 'Complete challenges to earn gacha eggs and points.';
-    if (count) count.textContent = 'Earn eggs & points';
+    if (_gachaFrameworkEnabled){
+      if (desc) desc.textContent = 'Complete challenges to earn gacha eggs and points.';
+      if (count) count.textContent = 'Earn eggs & points';
+    } else {
+      if (desc) desc.textContent = 'Practice your Korean every day.';
+      if (count) count.textContent = "Let's Practice!";
+    }
     tile.onclick = function(){ handleTileTap('daily'); };
   }
 }
@@ -4310,6 +4350,7 @@ function _applyGachaFramework(){
   if (document.body) document.body.classList.toggle('gacha-hidden', hidden);
   // Re-render surfaces that build dynamic strings (egg badges, banners, counts).
   try { if (typeof updateCounts === 'function' && user) updateCounts(); } catch(e){}
+  try { if (typeof _updateDailyTile === 'function') _updateDailyTile(); } catch(e){}
   try { if (typeof _renderDailyPicker === 'function') _renderDailyPicker(); } catch(e){}
   try { if (typeof renderDaily === 'function') renderDaily(); } catch(e){}
 }
@@ -8764,7 +8805,7 @@ function _drawShop(){
     // summary row alone (title + badge + chevron) communicates status. Tap
     // to expand for the meta (start/end/level) and the cancel controls.
     statusHtml =
-      '<details class="enroll-card">' +
+      '<details class="enroll-card' + (enr.status === 'active' ? ' enroll-card--active' : '') + '"' + (enr.status === 'active' ? ' open' : '') + '>' +
         '<summary>' +
           '<div class="enroll-title">' + (_isTut ? '🧑‍🏫 YOUR 1:1 TUTORING SESSION' : '📚 YOUR 6-WEEK ENROLLMENT') + '</div>' +
           '<div class="enroll-status ' + enr.status + '">' + enr.status.toUpperCase() + '</div>' +
@@ -9586,20 +9627,9 @@ async function cancelEnrollment(){
       }
 
       toast('Tutoring session cancelled.', 'var(--gold)');
-      fireWebhook('enrollment.cancelled', {
-        uid: user.id,
-        name: user.displayName || user.username || '',
-        email: user.username || user.displayName || '',
-        sourceSlotId: null,
-        classType: cancelledTut.classLevel || '1:1 Tutoring (Miss Wonjoo)',
-        classDate: cancelledTut.startDate || null,
-        item: 'tutoring_session',
-        pointsSpent: 0,
-        refund: 0,
-        fee: 0,
-        enrollment: cancelledTut,
-        remainingPoints: user.points
-      });
+      // (Cancel webhook intentionally NOT fired — no Discord DM on cancel.
+      // Class Manager removal is handled by the tutoringRequestBridge function
+      // consuming the tutoring_requests status:'cancelled' flip above.)
       updateTopBar(); updateCounts(); _drawShop();
     } catch(e){
       toast('Cancel failed. Try again.', 'var(--pink)');
@@ -9659,19 +9689,9 @@ async function cancelEnrollment(){
     }
 
     toast('Enrollment cancelled. +' + refund + ' pts refunded.', 'var(--gold)');
-    fireWebhook('enrollment.cancelled', {
-      uid: user.id,
-      name: user.displayName || user.username || '',
-      email: user.username || user.displayName || '',
-      sourceSlotId: slotId,
-      classType: cancelled.classLevel || null,
-      classDate: cancelled.startDate || null,
-      pointsSpent: -refund, // negative = they got points back
-      refund: refund,
-      fee: CANCEL_FEE_POINTS,
-      enrollment: cancelled,
-      remainingPoints: user.points
-    });
+    // (Cancel webhook intentionally NOT fired — no Discord DM on cancel.
+    // Class Manager removal is handled by the enrollmentRequestBridge function
+    // consuming the enrollment_requests status:'cancelled' flip above.)
     updateTopBar(); updateCounts(); _drawShop();
   } catch(e){
     toast('Cancel failed. Try again.', 'var(--pink)');
@@ -10227,32 +10247,47 @@ async function adminForceCancel(userId){
       points: firebase.firestore.FieldValue.increment(refund),
       enrollment: cancelled
     });
-    // Fire webhook with the affected student's details (not the admin's)
-    if (MAKE_WEBHOOK_URL){
+    // Release the arcade seat + flip the enrollment_requests doc so the
+    // enrollmentRequestBridge removes the student from the Class Manager slot.
+    var aSlotId = cur.sourceSlotId || null;
+    if (aSlotId){
       try {
-        var body = {
-          event: 'enrollment.cancelled',
-          who: data.displayName || data.username || null,
-          email: data.username || null,
-          classDate: cancelled.startDate || null,
-          pointsSpent: -refund,
-          classType: cancelled.classLevel || null,
-          timestamp: new Date().toISOString(),
-          userId: userId,
-          refund: refund,
-          fee: CANCEL_FEE_POINTS,
-          enrollment: cancelled,
-          cancelledBy: 'admin',
-          adminEmail: user.username || null
-        };
-        fetch(MAKE_WEBHOOK_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
-        }).catch(function(e){ console.warn('Webhook failed:', e); });
-      } catch(e){ console.warn('Webhook error:', e); }
+        await db.collection('open_classes').doc(aSlotId).update({
+          gachaSeatsTaken: firebase.firestore.FieldValue.increment(-1)
+        });
+      } catch(e){ console.warn('admin seat release:', e); }
+      try {
+        var aReqs = await db.collection('enrollment_requests')
+          .where('uid', '==', userId)
+          .where('sourceSlotId', '==', aSlotId)
+          .get();
+        if (!aReqs.empty){
+          var arb = db.batch();
+          aReqs.forEach(function(d){
+            arb.update(d.ref, { status: 'cancelled', cancelledAt: firebase.firestore.FieldValue.serverTimestamp() });
+          });
+          await arb.commit();
+        }
+      } catch(e){ console.warn('admin cancel enrollment_request:', e); }
     }
+    // Tutoring admin-cancel: flip tutoring_requests so the bridge deletes the slot.
+    if (cur.type === 'tutoring'){
+      try {
+        var aTreqs = await db.collection('tutoring_requests')
+          .where('uid', '==', userId)
+          .where('status', '==', 'pending')
+          .get();
+        if (!aTreqs.empty){
+          var atb = db.batch();
+          aTreqs.forEach(function(d){
+            atb.update(d.ref, { status: 'cancelled', cancelledAt: firebase.firestore.FieldValue.serverTimestamp() });
+          });
+          await atb.commit();
+        }
+      } catch(e){ console.warn('admin cancel tutoring_request:', e); }
+    }
+    // (Cancel webhook intentionally NOT fired — no Discord DM on cancel,
+    // including admin force-cancels. Removal handled via Firestore bridge.)
     toast('Cancelled · refunded ' + refund + ' pts', 'var(--pink)');
     renderAdmin();
   } catch(e){ alert('Error: ' + e.message); }
@@ -16109,6 +16144,42 @@ async function _inboxRender(){
   }
 }
 window._inboxRender = _inboxRender;
+
+// Mark every unread inbox message as read in one batch. Clears the badge.
+async function _inboxMarkAllRead(){
+  if (!user || !user.id) return;
+  var btn = document.getElementById('inboxMarkAllBtn');
+  if (btn) btn.disabled = true;
+  try {
+    var snap = await db.collection(TC).doc(user.id).collection(INBOX_SUBCOL)
+      .where('read', '==', false).get();
+    if (snap.empty){
+      toast('No unread messages.', 'var(--cyan)');
+      if (btn) btn.disabled = false;
+      return;
+    }
+    // Firestore batches cap at 500 writes; chunk to be safe.
+    var docs = snap.docs;
+    for (var i = 0; i < docs.length; i += 450){
+      var batch = db.batch();
+      docs.slice(i, i + 450).forEach(function(d){
+        batch.update(d.ref, { read: true, readAt: firebase.firestore.FieldValue.serverTimestamp() });
+      });
+      await batch.commit();
+    }
+    _inboxUnreadCount = 0;
+    _inboxUpdateBadge();
+    if (typeof _inboxRender === 'function') _inboxRender();
+    playSelect();
+    toast('All messages marked as read.', 'var(--green)');
+  } catch(e){
+    console.error('mark all read:', e);
+    toast('Couldn\'t mark all read. Try again.', 'var(--pink)');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+window._inboxMarkAllRead = _inboxMarkAllRead;
 
 // Fade the host back to visible after its content is swapped in.
 function _inboxFadeIn(host){ if (!host) return; void host.offsetWidth; host.classList.remove('inbox-fading'); }
