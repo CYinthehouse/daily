@@ -2831,7 +2831,7 @@ body.gacha-hidden .dr-banner-link { display: none !important; }
   <div class="menu-header">
     <div style="display:flex;align-items:center;justify-content:center;gap:16px;">
       <span style="font-size:clamp(20px,3vw,28px);">🎮</span>
-      <div class="grad-wrap"><div class="grad-text grad-cyan" style="font-family:var(--ps);font-size:clamp(14px,3vw,22px);">GACHA ARCADE</div></div>
+      <div class="grad-wrap"><div id="arcadeTitle" class="grad-text grad-cyan" style="font-family:var(--ps);font-size:clamp(14px,3vw,22px);">LEARNIN ARCADE</div></div>
       <span style="font-size:clamp(20px,3vw,28px);">🎮</span>
     </div>
     <div id="menuWelcome" style="font-size:16px;color:#eee;margin-top:10px;">Pick where you want to go!</div>
@@ -4362,6 +4362,9 @@ function _refreshShopModeToggleUi(){
 function _applyGachaFramework(){
   var hidden = !_gachaFrameworkEnabled;
   if (document.body) document.body.classList.toggle('gacha-hidden', hidden);
+  // Arcade title: "GACHA ARCADE" when gacha is on, "LEARNIN ARCADE" when off.
+  var at = document.getElementById('arcadeTitle');
+  if (at) at.textContent = _gachaFrameworkEnabled ? 'GACHA ARCADE' : 'LEARNIN ARCADE';
   // Re-render surfaces that build dynamic strings (egg badges, banners, counts).
   try { if (typeof updateCounts === 'function' && user) updateCounts(); } catch(e){}
   try { if (typeof _updateDailyTile === 'function') _updateDailyTile(); } catch(e){}
