@@ -2801,6 +2801,10 @@ body.gacha-hidden .dr-banner-link { display: none !important; }
         <input class="inp" type="email" id="signupEmail" placeholder="your@email.com" autocomplete="email">
       </div>
       <div class="login-field">
+        <label>FULL NAME</label>
+        <input class="inp" type="text" id="signupName" placeholder="Your full name" autocomplete="name">
+      </div>
+      <div class="login-field">
         <label>PASSWORD</label>
         <input class="inp" type="password" id="signupPass" placeholder="6+ characters" autocomplete="new-password">
       </div>
@@ -4070,11 +4074,13 @@ window.doLogin = doLogin;
 async function doSignup(){
   _silentAudio.play().catch(()=>{});
   var email = ($('signupEmail').value || '').trim();
+  var fullName = ($('signupName').value || '').trim();
   var pass = $('signupPass').value || '';
   var confirm = $('signupConfirm').value || '';
   var err = $('signupErr');
   if (!email || !pass){ err.style.color = '#ff4444'; err.textContent = 'Enter email and password.'; return; }
   if (email.indexOf('@') < 1 || email.indexOf('.') < 3){ err.style.color = '#ff4444'; err.textContent = 'Please enter a valid email.'; return; }
+  if (fullName.length < 2){ err.style.color = '#ff4444'; err.textContent = 'Please enter your full name.'; return; }
   if (pass.length < 6){ err.style.color = '#ff4444'; err.textContent = 'Password must be 6+ characters.'; return; }
   if (pass !== confirm){ err.style.color = '#ff4444'; err.textContent = 'Passwords do not match.'; return; }
   var emailLower = email.toLowerCase();
@@ -4107,7 +4113,7 @@ async function doSignup(){
     var uid = cred.user.uid;
     await db.collection(TC).doc(uid).set({
       username: emailLower,
-      displayName: email,
+      displayName: fullName,
       emoji: 0,
       level: '',
       goal: '',
@@ -4120,7 +4126,7 @@ async function doSignup(){
       isAdmin: _isAdminEmail(emailLower),
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    fireSignupWebhook({ email: emailLower, displayName: email, userId: uid });
+    fireSignupWebhook({ email: emailLower, displayName: fullName, userId: uid });
     await _loadUserProfile(cred.user);
     playSfx(SOUND_WIN, 0.9);
     enterApp();
@@ -8838,12 +8844,13 @@ function _wonjooFreeSlots(){
 
 function _seatsLeft(c){
   if (!c) return 0;
-  // Every arcade class is gacha-capped, counting ONLY gacha purchases: Miss
-  // Wonjoo's classes seat up to 5, everyone else's up to 2 — all levels (see
-  // _gachaSeatCap). Students added by hand in the Class Manager bump seatsTaken
-  // (not gachaSeatsTaken), so they don't consume these arcade seats.
-  var gachaTaken = (typeof c.gachaSeatsTaken === 'number') ? c.gachaSeatsTaken : 0;
-  return Math.max(0, _gachaSeatCap(c) - gachaTaken);
+  // Arcade seats counted against the cap include EVERYONE enrolled — gacha
+  // purchases AND students added by hand in the Class Manager — so a class
+  // filled from the roster shows fewer arcade seats. seatsTaken is the total
+  // enrolled (the mirror keeps it in sync); fall back to gachaSeatsTaken only
+  // for older docs that predate seatsTaken in the mirror payload.
+  var taken = (typeof c.seatsTaken === 'number') ? c.seatsTaken : (c.gachaSeatsTaken || 0);
+  return Math.max(0, _gachaSeatCap(c) - taken);
 }
 // Class meeting day + clock-time, as synced from the Class Manager: `day` is a
 // weekday name ("Saturday"); `time` is stored WITHOUT "EST" (clean "7:00 PM" or
@@ -8977,7 +8984,7 @@ function _drawShop(){
       '<details class="enroll-card' + (enr.status === 'active' ? ' enroll-card--active' : '') + '"' + (enr.status === 'active' ? ' open' : '') + '>' +
         '<summary>' +
           '<div class="enroll-title">' + (_isTut ? '🧑‍🏫 YOUR 1:1 TUTORING SESSION' : '📚 YOUR 6-WEEK ENROLLMENT') + '</div>' +
-          '<div class="enroll-status ' + enr.status + '">' + enr.status.toUpperCase() + '</div>' +
+          '<div class="enroll-status ' + enr.status + '">' + (enr.status === 'active' ? 'CONFIRMED' : enr.status.toUpperCase()) + '</div>' +
           '<span class="enroll-chevron" aria-hidden="true">▾</span>' +
         '</summary>' +
         '<div class="enroll-body">' +
@@ -9578,7 +9585,9 @@ async function _confirmTutoringEnroll(){
       item: 'tutoring_session',
       enrollment: enrollment,
       remainingPoints: user.points,
-      signedName: signedName
+      signedName: signedName,
+      who: signedName + ' (' + (user.username || '') + ')',   // name + email
+      displayName: signedName
     });
     updateTopBar(); updateCounts(); _drawShop();
   } catch(e){
@@ -9730,7 +9739,8 @@ async function _confirmSixWeekPurchase(slotId){
     // gacha enrollments touch gachaSeatsTaken; the open_classes onSnapshot then
     // re-renders the shop with the reduced seat count.
     batch.update(db.collection('open_classes').doc(chosen.id), {
-      gachaSeatsTaken: firebase.firestore.FieldValue.increment(1)
+      gachaSeatsTaken: firebase.firestore.FieldValue.increment(1),
+      seatsTaken: firebase.firestore.FieldValue.increment(1)
     });
     await batch.commit();
     user.points -= cost;
@@ -9747,7 +9757,9 @@ async function _confirmSixWeekPurchase(slotId){
       item: 'six_week_program',
       enrollment: enrollment,
       remainingPoints: user.points,
-      signedName: signedName
+      signedName: signedName,
+      who: signedName + ' (' + (user.username || '') + ')',   // name + email
+      displayName: signedName
     });
     updateTopBar(); updateCounts(); _drawShop();
   } catch(e){
@@ -9860,7 +9872,8 @@ async function cancelEnrollment(){
     if (slotId){
       try {
         await db.collection('open_classes').doc(slotId).update({
-          gachaSeatsTaken: firebase.firestore.FieldValue.increment(-1)
+          gachaSeatsTaken: firebase.firestore.FieldValue.increment(-1),
+          seatsTaken: firebase.firestore.FieldValue.increment(-1)
         });
       } catch(e){ console.warn('seat release:', e); }
       try {
@@ -9951,6 +9964,7 @@ function _acctRowHtml(r){
       '<span style="color:#ffd76b !important;">⭐ ' + r.points + ' pts</span></div>' +
     '<div class="drm-row-actions">' +
       '<button class="btn btn-cyan" onclick="_acctAdjustPoints(\'' + r.id + '\')">⭐ ADJUST POINTS</button>' +
+      '<button class="btn btn-ghost" onclick="_acctEditName(\'' + r.id + '\')">✏️ EDIT NAME</button>' +
       disableBtn +
       '<button class="btn btn-danger" onclick="_acctDelete(\'' + r.id + '\')">🗑 DELETE</button>' +
     '</div>' +
@@ -10044,6 +10058,22 @@ async function _acctAdjustPoints(uid){
   } catch(e){ toast('Update failed: ' + (e.message || e), 'var(--pink)'); }
 }
 window._acctAdjustPoints = _acctAdjustPoints;
+
+async function _acctEditName(uid){
+  var r = _acctCache.find(function(x){ return x.id === uid; });
+  if (!r) return;
+  var raw = prompt('Edit display name for ' + (r.username || 'this account') + '.\n\nThis shows in the top bar and is sent as the display name to the registration webhook.', r.displayName || '');
+  if (raw === null) return;
+  var name = raw.trim();
+  if (name.length < 2){ toast('Name must be at least 2 characters.', 'var(--pink)'); return; }
+  try {
+    await db.collection(TC).doc(uid).update({ displayName: name });
+    r.displayName = name;
+    _acctRerender();
+    toast('Name updated to "' + name + '"', 'var(--green)');
+  } catch(e){ toast('Update failed: ' + (e.message || e), 'var(--pink)'); }
+}
+window._acctEditName = _acctEditName;
 
 async function _acctToggleDisabled(uid, disable){
   var r = _acctCache.find(function(x){ return x.id === uid; });
@@ -10168,7 +10198,7 @@ function _drawAdmin(rows){
   var summary =
     '<div class="admin-summary">' +
       '<span class="chip gold">Pending ' + counts.pending + '</span>' +
-      '<span class="chip cyan">Active ' + counts.active + '</span>' +
+      '<span class="chip cyan">Confirmed ' + counts.active + '</span>' +
       '<span class="chip" style="border-color:#888;color:#888;">Done ' + counts.completed + '</span>' +
       '<span class="chip" style="border-color:#ff7777;color:#ff7777;">Cancelled ' + counts.cancelled + '</span>' +
     '</div>';
@@ -10182,7 +10212,7 @@ function _drawAdmin(rows){
     var level = e.classLevel || '—';
     var statusCls = e.status || 'pending';
     var statusLabel = statusCls === 'pending'   ? 'Pending'
-                    : statusCls === 'active'    ? 'Active'
+                    : statusCls === 'active'    ? 'Confirmed'
                     : statusCls === 'completed' ? 'Done'
                     : statusCls === 'cancelled' ? 'Cancelled'
                     : statusCls.charAt(0).toUpperCase() + statusCls.slice(1);
@@ -10195,8 +10225,13 @@ function _drawAdmin(rows){
       var overrideLabel = e.adminOverride ? '🔓 Remove override' : '🔑 Grant override';
       // Unique menu ID per row so multiple menus don't conflict
       var menuId = 'arMenu_' + r.id;
+      // Standalone Confirm on pending rows: flips pending -> active ("Confirmed").
+      var confirmBtn = (e.status === 'pending')
+        ? '<button class="btn btn-gold btn-sm" onclick="adminConfirmEnrollment(\'' + r.id + '\')">✅ Confirm</button>'
+        : '';
       actionsHtml =
         '<div class="ar-action-wrap">' +
+          confirmBtn +
           '<button class="btn btn-cyan btn-sm" onclick="adminSetStartDate(\'' + r.id + '\')">📅 Set start date</button>' +
           '<div class="ar-more-btn">' +
             '<button class="btn btn-ghost btn-sm" onclick="_arToggleMenu(event, \'' + menuId + '\')">⋯ More</button>' +
@@ -10224,7 +10259,9 @@ function _drawAdmin(rows){
     '</div>';
   }).join('');
 
-  body.innerHTML = summary + '<div class="admin-list">' + tableRows + '</div>';
+  body.innerHTML = summary +
+    '<div style="margin:0 0 14px;"><button class="btn btn-gold btn-sm" onclick="adminAssignEnrollmentOpen()">➕ Assign enrollment</button></div>' +
+    '<div class="admin-list">' + tableRows + '</div>';
 }
 
 /* ─── ENROLLMENT ROW: dropdown menu helpers ───
@@ -10414,6 +10451,117 @@ async function adminMarkComplete(userId){
 }
 window.adminMarkComplete = adminMarkComplete;
 
+/* Standalone confirm: pending -> active ("Confirmed"). No date change — the
+ * start date is already set by the time admins confirm. */
+async function adminConfirmEnrollment(userId){
+  if (!user || !user.isAdmin) return;
+  try {
+    await db.collection(TC).doc(userId).update({ 'enrollment.status': 'active' });
+    toast('Enrollment confirmed.', 'var(--green)');
+    renderAdmin();
+  } catch(e){ toast('Error: ' + (e.message || e), 'var(--pink)'); console.error('adminConfirmEnrollment:', e); }
+}
+window.adminConfirmEnrollment = adminConfirmEnrollment;
+
+/* Assign a 6-week enrollment to a student's account. Sets ONLY the enrollment
+ * record (so the student sees their card); it does NOT add them to the Class
+ * Manager roster or touch seat counts — admins add them to the roster manually.
+ * Created as 'pending' so it flows through the same Confirm step. */
+var _adminAssignClasses = {};
+async function adminAssignEnrollmentOpen(){
+  if (!user || !user.isAdmin) return;
+  _closeEaModal();
+  var ov = document.createElement('div');
+  ov.id = 'eaModalOverlay';
+  ov.className = 'ea-modal';
+  ov.innerHTML =
+    '<div class="ea-modal-inner" role="dialog" aria-labelledby="eaTitle" style="max-width:520px;">' +
+      '<div class="ea-modal-title" id="eaTitle">➕ Assign 6-week enrollment</div>' +
+      '<div class="ea-modal-sub">Sets the enrollment record on the student\'s account (they\'ll see the card). This does NOT add them to the Class Manager roster or consume a seat — add them in the Class Manager yourself.</div>' +
+      '<div class="policy-name-label" style="margin:10px 0 4px;">STUDENT</div>' +
+      '<select class="ea-modal-input" id="eaAssignStudent"><option value="">Loading students…</option></select>' +
+      '<div class="policy-name-label" style="margin:12px 0 4px;">CLASS</div>' +
+      '<select class="ea-modal-input" id="eaAssignClass"><option value="">Loading classes…</option></select>' +
+      '<div class="ea-modal-actions">' +
+        '<button class="btn btn-ghost" onclick="_closeEaModal()">Cancel</button>' +
+        '<button class="btn btn-gold" id="eaAssignConfirm">Assign</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(ov);
+  requestAnimationFrame(function(){ ov.classList.add('open'); });
+  ov.addEventListener('click', function(ev){ if (ev.target === ov) _closeEaModal(); });
+  document.addEventListener('keydown', _eaEscHandler);
+  document.getElementById('eaAssignConfirm').addEventListener('click', _adminAssignEnrollmentConfirm);
+
+  // Students
+  try {
+    var accSnap = await db.collection(TC).get();
+    var accs = [];
+    accSnap.forEach(function(doc){ var d = doc.data() || {}; accs.push({ id: doc.id, name: d.displayName || d.username || '(no name)', email: d.username || '' }); });
+    accs.sort(function(a, b){ return (a.name || '').localeCompare(b.name || ''); });
+    var sSel = document.getElementById('eaAssignStudent');
+    if (sSel) sSel.innerHTML = '<option value="">— pick a student —</option>' + accs.map(function(a){
+      return '<option value="' + esc(a.id) + '">' + esc(a.name) + (a.email ? ' (' + esc(a.email) + ')' : '') + '</option>';
+    }).join('');
+  } catch(e){ var s2 = document.getElementById('eaAssignStudent'); if (s2) s2.innerHTML = '<option value="">Error loading students</option>'; }
+
+  // Classes (all open_classes, including full ones, so any class is assignable)
+  try {
+    var clsSnap = await db.collection('open_classes').get();
+    var cls = [];
+    clsSnap.forEach(function(doc){ var c = Object.assign({ id: doc.id }, doc.data() || {}); if (c.classType === 'tutoring' || c.isTutoring === true) return; cls.push(c); });
+    cls.sort(function(a, b){ return String(a.startISO || a.startDate || '').localeCompare(String(b.startISO || b.startDate || '')); });
+    _adminAssignClasses = {};
+    cls.forEach(function(c){ _adminAssignClasses[c.id] = c; });
+    var cSel = document.getElementById('eaAssignClass');
+    if (cSel) cSel.innerHTML = '<option value="">— pick a class —</option>' + cls.map(function(c){
+      return '<option value="' + esc(c.id) + '">' + esc(_classLabel(c)) + '</option>';
+    }).join('');
+  } catch(e){ var c2 = document.getElementById('eaAssignClass'); if (c2) c2.innerHTML = '<option value="">Error loading classes</option>'; }
+}
+window.adminAssignEnrollmentOpen = adminAssignEnrollmentOpen;
+
+async function _adminAssignEnrollmentConfirm(){
+  var sSel = document.getElementById('eaAssignStudent');
+  var cSel = document.getElementById('eaAssignClass');
+  var uid = sSel && sSel.value;
+  var slotId = cSel && cSel.value;
+  if (!uid){ toast('Pick a student.', 'var(--pink)'); return; }
+  if (!slotId){ toast('Pick a class.', 'var(--pink)'); return; }
+  var c = _adminAssignClasses[slotId];
+  if (!c){ toast('Class not found — reopen and try again.', 'var(--pink)'); return; }
+  try {
+    var snap = await db.collection(TC).doc(uid).get();
+    if (!snap.exists){ toast('Student not found.', 'var(--pink)'); return; }
+    var sd = snap.data() || {};
+    var existing = sd.enrollment || null;
+    if (existing && (existing.status === 'pending' || existing.status === 'active')){
+      if (!confirm('This student already has a ' + existing.status + ' enrollment (' + (existing.classLevel || '?') + '). Replace it?')) return;
+    }
+    var enrollment = {
+      type: 'six_week',
+      classLevel: c.level || c.classType || 'Class',
+      teacher: _classTeacher(c),
+      sourceSlotId: c.id,
+      status: 'pending',
+      startDate: c.startISO || c.startDate || null,
+      endDate: c.endISO || null,
+      classDay: c.day || null,
+      classTime: c.time || null,
+      pricePaid: 0,
+      assignedByAdmin: true,
+      adminOverride: true,
+      signedName: sd.displayName || sd.username || '',
+      purchasedAt: new Date().toISOString()
+    };
+    await db.collection(TC).doc(uid).set({ enrollment: enrollment }, { merge: true });
+    _closeEaModal();
+    toast('Enrollment assigned (pending). Hit Confirm to activate.', 'var(--green)');
+    renderAdmin();
+  } catch(e){ toast('Error: ' + (e.message || e), 'var(--pink)'); console.error('assign enrollment:', e); }
+}
+window._adminAssignEnrollmentConfirm = _adminAssignEnrollmentConfirm;
+
 async function adminForceCancel(userId){
   if (!user || !user.isAdmin) return;
   var aPointsOn = _gachaFrameworkEnabled;
@@ -10454,7 +10602,8 @@ async function adminForceCancel(userId){
     if (aSlotId){
       try {
         await db.collection('open_classes').doc(aSlotId).update({
-          gachaSeatsTaken: firebase.firestore.FieldValue.increment(-1)
+          gachaSeatsTaken: firebase.firestore.FieldValue.increment(-1),
+          seatsTaken: firebase.firestore.FieldValue.increment(-1)
         });
       } catch(e){ console.warn('admin seat release:', e); }
       try {
