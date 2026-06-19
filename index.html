@@ -8845,10 +8845,9 @@ function _wonjooFreeSlots(){
 function _seatsLeft(c){
   if (!c) return 0;
   // Arcade seats counted against the cap include EVERYONE enrolled — gacha
-  // purchases AND students added by hand in the Class Manager — so a class
-  // filled from the roster shows fewer arcade seats. seatsTaken is the total
-  // enrolled (the mirror keeps it in sync); fall back to gachaSeatsTaken only
-  // for older docs that predate seatsTaken in the mirror payload.
+  // purchases AND students added by hand in the Class Manager. seatsTaken is the
+  // total enrolled: the mirror keeps it authoritative, and the client bumps it
+  // optimistically on purchase/cancel (allowed by the open_classes seat rule).
   var taken = (typeof c.seatsTaken === 'number') ? c.seatsTaken : (c.gachaSeatsTaken || 0);
   return Math.max(0, _gachaSeatCap(c) - taken);
 }
