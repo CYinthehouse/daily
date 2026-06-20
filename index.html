@@ -9709,7 +9709,7 @@ async function _confirmSixWeekPurchase(slotId){
       teacher: _classTeacher(chosen) || '',
       pricePaid: cost,
       sourceSlotId: chosen.id,
-      status: 'pending',
+      status: 'active',          // auto-confirmed on registration (no "pending" step)
       purchasedAt: new Date().toISOString(),
       startDate: chosen.startISO || null,
       endDate: chosen.endISO || null,
@@ -10465,7 +10465,7 @@ window.adminConfirmEnrollment = adminConfirmEnrollment;
 /* Assign a 6-week enrollment to a student's account. Sets ONLY the enrollment
  * record (so the student sees their card); it does NOT add them to the Class
  * Manager roster or touch seat counts — admins add them to the roster manually.
- * Created as 'pending' so it flows through the same Confirm step. */
+ * Created already confirmed (status 'active') — no "pending" step. */
 var _adminAssignClasses = {};
 async function adminAssignEnrollmentOpen(){
   if (!user || !user.isAdmin) return;
@@ -10542,7 +10542,7 @@ async function _adminAssignEnrollmentConfirm(){
       classLevel: c.level || c.classType || 'Class',
       teacher: _classTeacher(c),
       sourceSlotId: c.id,
-      status: 'pending',
+      status: 'active',          // auto-confirmed on assignment (no "pending" step)
       startDate: c.startISO || c.startDate || null,
       endDate: c.endISO || null,
       classDay: c.day || null,
@@ -10555,7 +10555,7 @@ async function _adminAssignEnrollmentConfirm(){
     };
     await db.collection(TC).doc(uid).set({ enrollment: enrollment }, { merge: true });
     _closeEaModal();
-    toast('Enrollment assigned (pending). Hit Confirm to activate.', 'var(--green)');
+    toast('Enrollment assigned & confirmed.', 'var(--green)');
     renderAdmin();
   } catch(e){ toast('Error: ' + (e.message || e), 'var(--pink)'); console.error('assign enrollment:', e); }
 }
