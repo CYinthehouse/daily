@@ -2793,7 +2793,6 @@ body.gacha-hidden .dr-banner-link { display: none !important; }
       </div>
       <div class="login-err" id="loginErr"></div>
       <button class="btn btn-gold btn-lg sparkle-btn _authbtn" style="width:100%;" onclick="doLogin()"><span class="_authic">▶</span><span>LOG IN</span></button>
-      <button type="button" onclick="_authForgot()" style="display:block;margin:10px auto 0;background:none;border:none;color:var(--cyan,#41c0ff);font-family:inherit;font-size:12px;text-decoration:underline;cursor:pointer;padding:4px;">Forgot password?</button>
     </div>
     <!-- Signup form -->
     <div id="signupForm" style="display:none;">
@@ -4067,34 +4066,6 @@ async function doLogin(){
   }
 }
 window.doLogin = doLogin;
-
-/* ── Forgot password ── Firebase emails the student a reset link directly. */
-async function _authForgot(){
-  var err = $('loginErr');
-  var email = ($('loginEmail').value || '').trim();
-  if (!email){
-    email = (window.prompt('Enter your account email and we\'ll send a reset link:', '') || '').trim();
-  }
-  if (!email || email.indexOf('@') < 1){
-    err.style.color = '#ff4444'; err.textContent = 'Enter your email above first, then tap "Forgot password?"'; return;
-  }
-  if (!auth){ err.style.color = '#ff4444'; err.textContent = 'Connection error. Refresh and try again.'; return; }
-  err.style.color = '#888'; err.textContent = 'Sending reset link…';
-  try {
-    await auth.sendPasswordResetEmail(email.toLowerCase());
-    err.style.color = '#39ff14';
-    err.textContent = 'Reset link sent! Check your email (and spam folder).';
-  } catch(e){
-    if (e && e.code === 'auth/user-not-found'){
-      err.style.color = '#39ff14';
-      err.textContent = 'If that email has an account, a reset link is on its way.';
-    } else {
-      err.style.color = '#ff4444';
-      err.textContent = 'Couldn\'t send: ' + (e.message || e.code || 'try again');
-    }
-  }
-}
-window._authForgot = _authForgot;
 
 /* ═══ SIGNUP ═══
  * Pure Firebase Auth, no homegrown hashing. Creates the auth account first,
@@ -8671,7 +8642,7 @@ function _isWonjooClass(c){ return _classTeacherId(c) === WONJOO_TEACHER_ID || _
 function _sixWeekPremium(c){ return _isMrCalvinClass(c) ? MR_CALVIN_PREMIUM : 0; }
 // Gacha seat cap per class: Miss Wonjoo's classes seat up to 5 arcade students;
 // everyone else's cap at 2. (Real seats / Class-Manager students are separate.)
-function _gachaSeatCap(c){ return _isWonjooClass(c) ? 5 : 2; }
+function _gachaSeatCap(c){ return _isWonjooClass(c) ? 5 : (_isMrCalvinClass(c) ? 3 : 2); }
 // The free first-purchase benefit applies ONLY to Miss Wonjoo's classes. Mr.
 // Calvin's classes always carry the +450 premium and are never free.
 function _sixWeekIsFreeFor(c){ return _sixWeekIsFirstFree() && _isWonjooClass(c); }
@@ -9532,28 +9503,6 @@ function _showTutoringPolicyModal(){
 }
 window._showTutoringBookModal = _showTutoringBookModal;
 
-/* When an account signs for a class, backfill its displayName from the signed
- * name — but ONLY if it currently has no real name (empty, or still the email).
- * Saves the FIRST WORD ONLY (e.g. "Calvin Yin" -> "Calvin"). Does NOT touch the
- * registration webhook, which still receives the full signed name elsewhere.
- *
- * Returns an object to MERGE into the account doc's existing batch.update map
- * (so we don't issue a second write to the same doc), plus mutates local
- * `user.displayName` so the UI/leaderboard/boss-battle reflect it right away.
- * Returns {} when no backfill is needed. */
-function _firstWord(s){ return ((s || '').trim().split(/\s+/)[0] || '').trim(); }
-function _needsDisplayNameBackfill(name){
-  var n = (name || '').trim();
-  return !n || n.indexOf('@') !== -1;
-}
-function _displayNameBackfillPatch(signedName){
-  if (!user || !_needsDisplayNameBackfill(user.displayName)) return {};
-  var first = _firstWord(signedName);
-  if (first.length < 2) return {};          // nothing usable to set
-  user.displayName = first;                 // keep local state in sync immediately
-  return { displayName: first };
-}
-
 async function _confirmTutoringEnroll(){
   if (!user) return;
   if (!_canBuySixWeek()){ toast('Finish your current enrollment first.', 'var(--pink)'); _closePolicyModal(); return; }
@@ -9612,10 +9561,10 @@ async function _confirmTutoringEnroll(){
       status: 'pending',
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    batch.update(db.collection(TC).doc(user.id), Object.assign({
+    batch.update(db.collection(TC).doc(user.id), {
       enrollment: enrollment,
       tutoringEnrollments: firebase.firestore.FieldValue.increment(1)
-    }, _displayNameBackfillPatch(signedName)));
+    });
     await batch.commit();
 
     user.enrollment = enrollment;
@@ -9772,11 +9721,11 @@ async function _confirmSixWeekPurchase(slotId){
       signedPolicyVersion: '2026-04-30'
     };
     var batch = db.batch();
-    batch.update(db.collection(TC).doc(user.id), Object.assign({
+    batch.update(db.collection(TC).doc(user.id), {
       points: firebase.firestore.FieldValue.increment(-cost),
       enrollment: enrollment,
       sixWeekPurchases: firebase.firestore.FieldValue.increment(1)
-    }, _displayNameBackfillPatch(signedName)));
+    });
     batch.set(db.collection('enrollment_requests').doc(), {
       uid: user.id,
       sourceSlotId: chosen.id,
