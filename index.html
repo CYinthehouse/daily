@@ -8614,6 +8614,8 @@ function _sixWeekIsFirstFree(){ return !!user && (user.sixWeekPurchases || 0) ==
 // Mr. Calvin's classes carry a +450-point premium. A class's teacher comes from
 // the open_classes doc (synced from Class Manager); read it defensively.
 var MR_CALVIN_PREMIUM = 450;
+// Set to false to let students register for Mr. Calvin's classes again.
+var BLOCK_CALVIN_REGISTRATION = true;
 function _classTeacherId(c){ return c ? String(c.teacherId || c.teacher_id || c.teacherID || '') : ''; }
 // Known scheduler_teachers doc IDs (korean-ta-evaluator) → student-facing name.
 // Synced open_classes docs reliably carry teacherId but are often missing a
@@ -8792,7 +8794,11 @@ function _subOpenClasses(){
           // Tutoring slots are a separate 1:1 product (booked via the Tutoring
           // card), not cohort classes — never list them in the 6-Week selector
           // even if syncPrescheduledToGacha mirrors them into open_classes.
-          .filter(function(c){ return c.classType !== 'tutoring' && c.isTutoring !== true; });
+          .filter(function(c){
+            if (c.classType === 'tutoring' || c.isTutoring === true) return false;
+            if (BLOCK_CALVIN_REGISTRATION && _isMrCalvinClass(c)) return false;
+            return true;
+          });
         OPEN_CLASSES.sort(function(a, b){ return String(a.startISO || '').localeCompare(String(b.startISO || '')); });
         _drawShop(); // no-op when the shop isn't on screen ($('shopGrid') guard)
       }, function(e){ console.warn('open_classes sub:', e); });
@@ -9263,6 +9269,10 @@ async function buySixWeek(){
   var slotId = sel ? sel.value : '';
   var chosen = (typeof OPEN_CLASSES !== 'undefined' ? OPEN_CLASSES : []).filter(function(c){ return c.id === slotId; })[0];
   if (!chosen){ toast('Pick a class to enroll in.', 'var(--pink)'); return; }
+  if (BLOCK_CALVIN_REGISTRATION && _isMrCalvinClass(chosen)){
+    toast('That class isn\'t open for registration right now.', 'var(--pink)');
+    _drawShop(); return;
+  }
   if (_seatsLeft(chosen) <= 0){ toast('That class is full.', 'var(--pink)'); return; }
   var cost = _sixWeekCost(chosen);
   if (cost > 0 && (user.points||0) < cost){ toast('Not enough points.', 'var(--pink)'); return; }
@@ -9690,6 +9700,10 @@ async function _confirmSixWeekPurchase(slotId){
   if (!_canBuySixWeek()){ toast('Finish your current enrollment first.', 'var(--pink)'); _closePolicyModal(); return; }
   var chosen = (typeof OPEN_CLASSES !== 'undefined' ? OPEN_CLASSES : []).filter(function(c){ return c.id === slotId; })[0];
   if (!chosen){ toast('That class is no longer available.', 'var(--pink)'); _closePolicyModal(); _drawShop(); return; }
+  if (BLOCK_CALVIN_REGISTRATION && _isMrCalvinClass(chosen)){
+    toast('That class isn\'t open for registration right now.', 'var(--pink)');
+    _closePolicyModal(); _drawShop(); return;
+  }
   var cost = _sixWeekCost(chosen);
   if (cost > 0 && (user.points||0) < cost){ toast('Not enough points.', 'var(--pink)'); _closePolicyModal(); return; }
   if (_seatsLeft(chosen) <= 0){ toast('That class just filled up.', 'var(--pink)'); _closePolicyModal(); _drawShop(); return; }
