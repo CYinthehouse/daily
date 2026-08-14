@@ -89,6 +89,12 @@ html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:var(--vt)
 .login-field{margin-bottom:16px;}
 .login-field label{display:block;font-family:var(--ps);font-size:11px;color:#fff;margin-bottom:8px;font-weight:600;}
 .login-err{color:#ff4444;font-size:14px;min-height:20px;margin-bottom:14px;text-align:center;}
+/* Forgot-password link under the LOG IN button. Deliberately quiet: it is a
+ * recovery path, not a primary action, so it reads as a text link rather than
+ * competing with the gold LOG IN button above it. */
+.forgot-link{display:block;width:fit-content;margin:14px auto 0;background:none;border:none;color:var(--cyan);font-family:var(--vt);font-size:15px;letter-spacing:0.5px;cursor:pointer;text-decoration:underline;text-decoration-color:rgba(65,192,255,0.4);text-underline-offset:3px;padding:4px 8px;transition:color 0.15s,text-decoration-color 0.15s;}
+.forgot-link:hover{color:#a8e4ff;text-decoration-color:var(--cyan);}
+.forgot-link:focus{outline:none;color:#a8e4ff;text-decoration-color:var(--cyan);}
 
 .disclaimer{background:rgba(255,215,0,0.08);border:2px solid rgba(255,215,0,0.35);border-radius:2px;padding:12px 14px;margin-bottom:20px;font-family:var(--vt);font-size:13px;color:#e8e0c8;line-height:1.55;box-shadow:2px 2px 0 rgba(0,0,0,0.8);}
 .disclaimer strong{color:var(--gold);font-family:var(--ps);font-size:9px;display:inline-block;margin-right:4px;text-shadow:var(--ps-outline-sm);}
@@ -2793,6 +2799,7 @@ body.gacha-hidden .dr-banner-link { display: none !important; }
       </div>
       <div class="login-err" id="loginErr"></div>
       <button class="btn btn-gold btn-lg sparkle-btn _authbtn" style="width:100%;" onclick="doLogin()"><span class="_authic">▶</span><span>LOG IN</span></button>
+      <button type="button" class="forgot-link" onclick="doForgotPassword()">Forgot password?</button>
     </div>
     <!-- Signup form -->
     <div id="signupForm" style="display:none;">
@@ -3331,6 +3338,13 @@ try {
 
 /* ═══ CONSTANTS ═══ */
 const TC = 'tevello_accounts';
+// Client-side legacy migration is OFF. Reading tevello_accounts now requires an
+// authenticated session, and the migration lookup runs BEFORE sign-in, so the
+// query can only ever come back permission-denied. See doLogin for the full
+// explanation. Turn this back on only if that read rule is reopened, or move
+// the migration into a callable Cloud Function that verifies the old hash
+// with the admin SDK.
+const LEGACY_MIGRATION_ENABLED = false;
 // Hardcoded admin allowlist, these emails are always treated as admin regardless
 // of the isAdmin/role fields on their Firestore doc. Emails are compared case-insensitively.
 const ADMIN_EMAILS = ['calvin@koreanlearnin.com'];
@@ -4019,8 +4033,36 @@ async function doLogin(){
       }
     }
     // ── Step 2: legacy account migration ──
+    // Firebase folds wrong-password and user-not-found into one ambiguous
+    // 'auth/invalid-credential' code, so EVERY mistyped password lands here.
+    // The lookup below reads tevello_accounts while the student is still
+    // unauthenticated, which the security rules deny, and the outer catch
+    // printed the raw error: 'Missing or insufficient permissions.' A typo
+    // should read as a typo, so skip the doomed query entirely.
+    if (!LEGACY_MIGRATION_ENABLED){
+      err.style.color = '#ff4444';
+      err.textContent = 'Incorrect email or password. Use the Forgot password link below to reset it.';
+      return;
+    }
     err.textContent = 'Checking account...';
-    var legacy = await db.collection(TC).where('username','==',email).limit(1).get();
+    var legacy;
+    try {
+      legacy = await db.collection(TC).where('username','==',email).limit(1).get();
+    } catch(qErr){
+      // Separate the two failure modes. permission-denied is the expected
+      // outcome of a bad credential; anything else is a real fault and must
+      // NOT be disguised as a wrong password, or an outage looks like every
+      // student suddenly forgetting their login.
+      if (qErr && qErr.code === 'permission-denied'){
+        err.style.color = '#ff4444';
+        err.textContent = 'Incorrect email or password. Use the Forgot password link below to reset it.';
+      } else {
+        console.warn('Legacy lookup failed:', qErr);
+        err.style.color = '#ff4444';
+        err.textContent = 'Could not reach the server. Check your connection and try again.';
+      }
+      return;
+    }
     if (legacy.empty){
       err.style.color = '#ff4444'; err.textContent = 'Account not found. Try signing up!'; return;
     }
@@ -4066,6 +4108,44 @@ async function doLogin(){
   }
 }
 window.doLogin = doLogin;
+
+/* ═══ FORGOT PASSWORD ═══
+ * Ported from the main KoreanLearnin app. Sends the Firebase Auth reset
+ * email to whatever is typed in the EMAIL field above.
+ *
+ * Note: this only works for accounts that exist in Firebase Auth. A student
+ * whose account was never migrated off the old passwordHash scheme has no
+ * Auth user, so they get 'No account with that email' and need you to create
+ * the account for them from the Firebase console. */
+async function doForgotPassword(){
+  var email = ($('loginEmail').value || '').trim().toLowerCase();
+  var err = $('loginErr');
+  if (!email){
+    err.style.color = '#ff4444';
+    err.textContent = 'Type your email above first, then tap Forgot password.';
+    return;
+  }
+  err.style.color = '#888';
+  err.textContent = 'Sending reset email...';
+  try {
+    await auth.sendPasswordResetEmail(email);
+    err.style.color = 'var(--green)';
+    err.textContent = 'Reset email sent! Check your inbox (and spam).';
+    playSelect();
+  } catch(e){
+    err.style.color = '#ff4444';
+    if (e.code === 'auth/user-not-found'){
+      err.textContent = 'No account with that email. Try signing up!';
+    } else if (e.code === 'auth/invalid-email'){
+      err.textContent = 'Please enter a valid email.';
+    } else if (e.code === 'auth/too-many-requests'){
+      err.textContent = 'Too many attempts. Wait a few minutes and try again.';
+    } else {
+      err.textContent = 'Error: ' + (e.message || e.code);
+    }
+  }
+}
+window.doForgotPassword = doForgotPassword;
 
 /* ═══ SIGNUP ═══
  * Pure Firebase Auth, no homegrown hashing. Creates the auth account first,
