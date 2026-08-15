@@ -2460,6 +2460,19 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 /* "Not enough points" / locked-reason explanation. Bumped from 12px to 15px
  * so it's readable without straining. */
 .shop-card .shop-locked-reason{font-size:15px;color:#ff9090;margin-top:10px;text-align:center;font-style:italic;font-family:var(--vt);line-height:1.5;}
+/* Not every locked state is a failure. When the button is locked because the
+ * student just successfully enrolled, the reason line is a CONFIRMATION and
+ * must not be styled as an error — red italic on the button they just pressed
+ * is what made students think registration had failed. */
+.shop-card .shop-locked-reason.enrolled{color:var(--green);font-style:normal;}
+/* Enrollment confirmation modal. Shares the motivational-tip modal's shell
+ * (.mtip-*) for the backdrop blur and pixel frame; these rules only add the
+ * detail rows. */
+.es-rows{display:flex;flex-direction:column;gap:10px;margin:4px 0 22px;text-align:left;}
+.es-row{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:10px 14px;background:rgba(0,0,0,0.3);border:1px solid #2a3650;border-radius:6px;}
+.es-row .es-k{font-family:var(--ps);font-size:9px;color:#9aa3b8;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;}
+.es-row .es-v{font-family:var(--vt);font-size:18px;color:#fff;text-align:right;}
+.es-note{font-family:var(--vt);font-size:17px;color:#cdd8ec;line-height:1.6;margin-bottom:22px;}
 .shop-level-wrap{width:100%;display:flex;flex-direction:column;gap:8px;align-items:stretch;margin-top:4px;}
 /* Invisible spacers, occupy a subgrid row so cards line up element-for-element
  * even when one card doesn't have a level dropdown or locked-reason. */
@@ -2496,6 +2509,10 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .enroll-card > summary::-webkit-details-marker{display:none;}
 .enroll-card[open] > summary{padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.08);}
 .enroll-card .enroll-title{font-family:var(--ps);font-size:12px;color:#fff;text-shadow:var(--ps-outline-sm);letter-spacing:1px;}
+/* NEW pill, first three views of a fresh enrollment. Sits left of the title so
+ * it is the first thing read on the row. Retires itself, see _enrollIsNew. */
+.enroll-card .enroll-new{font-family:var(--ps);font-size:9px;letter-spacing:1px;color:#000;background:var(--green);border:2px solid #22aa00;border-radius:2px;padding:5px 8px;flex-shrink:0;box-shadow:2px 2px 0 rgba(0,0,0,0.7);animation:enrollNewPulse 1.6s ease-in-out infinite;}
+@keyframes enrollNewPulse{0%,100%{opacity:1;}50%{opacity:0.5;}}
 .enroll-card .enroll-status{display:inline-block;font-family:var(--ps);font-size:9px;padding:4px 10px;border-radius:2px;letter-spacing:1px;flex-shrink:0;}
 .enroll-card .enroll-status.pending{background:rgba(245,200,66,0.15);color:var(--gold);border:1px solid var(--gold);}
 .enroll-card .enroll-status.active{background:rgba(57,255,20,0.15);color:var(--green);border:1px solid var(--green);}
@@ -8778,13 +8795,123 @@ window._sixWeekRefreshPrice = function(){
     else { badgeEl.textContent = ''; badgeEl.style.marginBottom = '0'; }
   }
   if (reasonEl){
-    var reason = '';
-    if (!enrollOk) reason = 'You already have an active enrollment. Finish it first.';
+    var reason = '', reasonOk = false;
+    if (!enrollOk){ var _m = _enrollBlockMsg(); reason = _m.text; reasonOk = _m.ok; }
     else if (!seatsOk) reason = 'That class is full.';
     else if (!afford) reason = 'Not enough points.';
     reasonEl.textContent = reason;
+    reasonEl.classList.toggle('enrolled', reasonOk);
   }
 };
+
+/* Message shown under a LOCKED button when the student can't register because
+ * they already hold an enrollment. This is the exact state a student lands in
+ * the SECOND a purchase succeeds, so it has to read as a confirmation, not a
+ * scolding. Returns .ok=true when it should be styled as success (green).
+ * Falls back to the old wording only if there is somehow no enrollment on
+ * file, which would be a genuine anomaly worth surfacing plainly. */
+/* "NEW" pill on the enrollment status card. Shows the first 3 times a student
+ * opens Get Class after registering, then retires itself, enough to pull the
+ * eye to the card while the signup is still fresh without becoming permanent
+ * furniture. Counted per enrollment (keyed on purchasedAt), so a later
+ * registration starts the count over.
+ *
+ * Counting happens once per SHOP VISIT, not once per render: _drawShop also
+ * re-runs on every open_classes snapshot and on shop-mode changes, which would
+ * otherwise burn all 3 views in the first few seconds. renderShop clears the
+ * guard on entry. Stored in localStorage, so it is per-device on purpose,
+ * a Firestore write on every shop open is not worth it for a cosmetic pill. */
+var _enrollViewCounted = false;
+function _enrollIsNew(enr){
+  if (!enr) return false;
+  var key = 'klg_enrollSeen_' + (enr.purchasedAt || enr.sourceSlotId || 'x');
+  var n = 0;
+  try { n = parseInt(localStorage.getItem(key) || '0', 10) || 0; } catch(e){}
+  if (!_enrollViewCounted){
+    _enrollViewCounted = true;
+    if (n < 4){ n++; try { localStorage.setItem(key, String(n)); } catch(e){} }
+  }
+  return n <= 3;
+}
+
+function _enrollBlockMsg(){
+  var e = (user && user.enrollment) || null;
+  if (!e) return { text: 'You already have an active enrollment. Finish it first.', ok: false };
+  var label = (e.type === 'tutoring')
+    ? 'your 1:1 tutoring session with Miss Wonjoo'
+    : (e.classLevel ? e.classLevel : 'a 6-Week Program');
+  var msg = "\u2705 You're enrolled in " + label;
+  if (e.startDate) msg += ', starting ' + _fmtDate(e.startDate) + '.';
+  else msg += '.';
+  if (!e.startDate){
+    msg += ' Your start date is being confirmed. You can sign up again once this class finishes.';
+  } else if (e.type !== 'tutoring' && e.endDate){
+    msg += ' You can sign up for another class after it ends on ' + _fmtDate(e.endDate) + '.';
+  } else {
+    msg += ' You can sign up again once it finishes.';
+  }
+  return { text: msg, ok: true };
+}
+
+/* Post-purchase confirmation. Replaces the old 2.6-second toast, which
+ * vanished before most students looked up from the button they had just
+ * pressed — and that button had meanwhile turned grey and LOCKED. This stays
+ * on screen until dismissed, and dismissing scrolls the enrollment card into
+ * view so the green CONFIRMED card is what they land on. */
+function _showEnrollSuccess(enr){
+  var old = document.getElementById('enrollSuccessModal');
+  if (old) old.remove();
+  var rows = '';
+  function row(k, v){
+    if (!v) return;
+    rows += '<div class="es-row"><span class="es-k">' + esc(k) + '</span>'
+         +  '<span class="es-v">' + esc(v) + '</span></div>';
+  }
+  var isTut = enr.type === 'tutoring';
+  if (isTut){
+    row('Session', '1:1 with Miss Wonjoo');
+    row('When', [enr.day || '', enr.time || ''].filter(Boolean).join(' @ '));
+    row('Date', enr.startDate ? _fmtDate(enr.startDate) : 'Being confirmed');
+  } else {
+    row('Class', enr.classLevel || '6-Week Program');
+    row('Teacher', enr.teacher || '');
+    row('Meets', _classWhen({ day: enr.classDay, time: enr.classTime }));
+    row('Starts', enr.startDate ? _fmtDate(enr.startDate) : 'Being confirmed');
+    row('Ends', enr.endDate ? _fmtDate(enr.endDate) : '');
+  }
+  var modal = document.createElement('div');
+  modal.id = 'enrollSuccessModal';
+  modal.className = 'mtip-modal';
+  modal.innerHTML =
+    '<div class="mtip-inner" style="border-color:var(--green);box-shadow:6px 6px 0 rgba(0,0,0,0.6),0 0 0 1px rgba(57,255,20,0.18);">' +
+      '<button class="mtip-close" onclick="_closeEnrollSuccess()" aria-label="Close">\u2715</button>' +
+      '<div class="mtip-title" style="background-image:linear-gradient(180deg,#ccff99 0%,#39ff14 100%);">\uD83C\uDF89 YOU\u2019RE ENROLLED!</div>' +
+      '<div class="es-rows">' + rows + '</div>' +
+      '<div class="es-note">You\u2019re all set \u2014 nothing else to do.</div>' +
+      '<button class="mtip-btn" onclick="_closeEnrollSuccess()">GOT IT!</button>' +
+    '</div>';
+  modal.addEventListener('click', function(e){ if (e.target === modal) _closeEnrollSuccess(); });
+  document.body.appendChild(modal);
+  modal.classList.add('show');
+  requestAnimationFrame(function(){ requestAnimationFrame(function(){ modal.classList.add('visible'); }); });
+}
+window._showEnrollSuccess = _showEnrollSuccess;
+
+function _closeEnrollSuccess(){
+  var modal = document.getElementById('enrollSuccessModal');
+  if (!modal) return;
+  modal.classList.remove('visible');
+  setTimeout(function(){
+    if (modal && modal.parentNode) modal.parentNode.removeChild(modal);
+    // Land them on the status card rather than the locked button.
+    var card = document.querySelector('.enroll-card');
+    if (card){
+      try { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      catch(e){ card.scrollIntoView(); }
+    }
+  }, 240);
+}
+window._closeEnrollSuccess = _closeEnrollSuccess;
 
 function _canBuySixWeek(){
   var st = _enrollmentState();
@@ -8832,6 +8959,8 @@ function _enrollmentStartDateTime(e){
 
 function renderShop(){
   if (!user) return;
+  // New shop visit: let the NEW pill count this render (see _enrollIsNew).
+  _enrollViewCounted = false;
   _subOpenClasses();
   _subWonjooBusy();
   // Refresh the top-10 points leaderboard banner (independent of enrollment).
@@ -9068,6 +9197,7 @@ function _drawShop(){
     statusHtml =
       '<details class="enroll-card' + (enr.status === 'active' ? ' enroll-card--active' : '') + '"' + (enr.status === 'active' ? ' open' : '') + '>' +
         '<summary>' +
+          (_enrollIsNew(enr) ? '<span class="enroll-new">NEW</span>' : '') +
           '<div class="enroll-title">' + (_isTut ? '🧑‍🏫 YOUR 1:1 TUTORING SESSION' : '📚 YOUR 6-WEEK ENROLLMENT') + '</div>' +
           '<div class="enroll-status ' + enr.status + '">' + (enr.status === 'active' ? 'CONFIRMED' : enr.status.toUpperCase()) + '</div>' +
           '<span class="enroll-chevron" aria-hidden="true">▾</span>' +
@@ -9127,8 +9257,8 @@ function _drawShop(){
   var _defCost = _sixWeekCost(_defClass);
   var _defAfford = (pts >= _defCost);
   var canBuy6All = canBrowse && _defAfford;
-  var sixReason = '';
-  if (!canBuy6) sixReason = 'You already have an active enrollment. Finish it first.';
+  var sixReason = '', sixReasonOk = false;
+  if (!canBuy6){ var _sm = _enrollBlockMsg(); sixReason = _sm.text; sixReasonOk = _sm.ok; }
   else if (!hasOpen) sixReason = 'No classes are open for enrollment right now.';
   else if (!_defAfford) sixReason = 'Not enough points.';
 
@@ -9166,7 +9296,7 @@ function _drawShop(){
       '<button id="sixWeekBuyBtn" class="btn btn-gold btn-md ' + (canBuy6All ? 'sparkle-btn' : '') + '" onclick="buySixWeek()" ' + (canBuy6All ? '' : 'disabled') + '>' +
         (canBuy6All ? 'PURCHASE' : 'LOCKED') +
       '</button>' +
-      '<div class="shop-locked-reason" id="sixWeekReason">' + esc(sixReason) + '</div>' +
+      '<div class="shop-locked-reason' + (sixReasonOk ? ' enrolled' : '') + '" id="sixWeekReason">' + esc(sixReason) + '</div>' +
     '</div>';
 
   // ── 1:1 Tutoring with Miss Wonjoo card (free mode only) ──
@@ -9178,8 +9308,8 @@ function _drawShop(){
   var _freeSlots = _wonjooFreeSlots();
   var _hasFreeSlots = _freeSlots.length > 0;
   var canBuyTutoring = canBuy6 && WONJOO_BUSY_LOADED && _hasFreeSlots;
-  var tutoringReason = '';
-  if (!canBuy6) tutoringReason = 'You already have an active enrollment. Finish it first.';
+  var tutoringReason = '', tutoringReasonOk = false;
+  if (!canBuy6){ var _tm = _enrollBlockMsg(); tutoringReason = _tm.text; tutoringReasonOk = _tm.ok; }
   else if (!WONJOO_BUSY_LOADED) tutoringReason = 'Loading available times…';
   else if (!_hasFreeSlots) tutoringReason = 'No open tutoring times right now. Check back soon.';
   var tutoringBtnLabel = canBuyTutoring ? 'BOOK A TIME' : (!canBuy6 ? 'LOCKED' : (!WONJOO_BUSY_LOADED ? 'LOADING…' : 'NONE OPEN'));
@@ -9194,7 +9324,7 @@ function _drawShop(){
         tutoringBtnLabel +
       '</button>' +
       (tutoringReason
-        ? '<div class="shop-locked-reason">' + esc(tutoringReason) + '</div>'
+        ? '<div class="shop-locked-reason' + (tutoringReasonOk ? ' enrolled' : '') + '">' + esc(tutoringReason) + '</div>'
         : '<div class="shop-locked-spacer" aria-hidden="true"></div>') +
     '</div>';
 
@@ -9840,7 +9970,9 @@ async function _confirmSixWeekPurchase(slotId){
     user.sixWeekPurchases = (user.sixWeekPurchases || 0) + 1;
     user.enrollment = enrollment;
     _closePolicyModal();
-    toast('ENROLLED in ' + (chosen.level || 'your class') + '! Calvin will message you soon.', 'var(--gold)');
+    // A toast was too easy to miss: it cleared in 2.6s while the button the
+    // student was looking at turned grey and LOCKED, which read as failure.
+    _showEnrollSuccess(enrollment);
     playSfx(SOUND_WIN, 0.95);
     fireWebhook('purchase.six_week', {
       classType: chosen.level || chosen.classType || '',
