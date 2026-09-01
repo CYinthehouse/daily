@@ -2692,6 +2692,93 @@ body:has(#adminScreen:not(.hidden)) .bg-stars { opacity: 0.25 !important; }
 .policy-actions{padding:16px 24px 20px;display:flex;gap:12px;justify-content:flex-end;border-top:2px solid rgba(255,215,0,0.15);background:#0a0a1a;flex-wrap:wrap;flex-shrink:0;}
 .policy-actions .btn{min-width:130px;}
 
+/* ── 6-WEEK SCHEDULE CHECK (pre-policy popup) ──
+ * Shown BEFORE the enrollment policy. The student must see the 6 class dates on
+ * a real calendar before agreeing to anything. Shares .policy-overlay/.policy-
+ * modal for the shell; the calendar itself is styled like Google Calendar's
+ * dark month view (Noto Sans, thin grid, "today" circle, event chips). */
+.sched-body{padding:18px 24px;overflow-y:auto;flex:1 1 auto;min-height:0;font-family:var(--ns);color:#ddd;scrollbar-width:thin;scrollbar-color:var(--gold) rgba(255,215,0,0.08);}
+.sched-body::-webkit-scrollbar{width:10px;}
+.sched-body::-webkit-scrollbar-track{background:rgba(255,215,0,0.06);border-left:1px solid rgba(255,215,0,0.15);}
+.sched-body::-webkit-scrollbar-thumb{background:linear-gradient(180deg,#ffe066,#cc9900);border:2px solid #0d0d1f;}
+.gcal{background:#1f1f1f;border:1px solid #3c4043;border-radius:8px;overflow:hidden;font-family:var(--ns);user-select:none;}
+.gcal-top{display:flex;align-items:center;gap:6px;padding:10px 12px;border-bottom:1px solid #3c4043;background:#1f1f1f;}
+.gcal-nav{width:34px;height:34px;border-radius:50%;border:none;background:transparent;color:#e8eaed;font-family:var(--ns);font-size:20px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;transition:background 0.15s;}
+.gcal-nav:hover{background:rgba(232,234,237,0.08);}
+.gcal-nav:active{background:rgba(232,234,237,0.16);}
+.gcal-month{font-family:var(--ns);font-size:19px;font-weight:600;color:#e8eaed;flex:1;text-align:center;letter-spacing:0.2px;}
+.gcal-today-btn{font-family:var(--ns);font-size:13px;font-weight:600;color:#e8eaed;background:transparent;border:1px solid #5f6368;border-radius:4px;padding:6px 12px;cursor:pointer;transition:background 0.15s;}
+.gcal-today-btn:hover{background:rgba(232,234,237,0.08);}
+.gcal-dow{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid #3c4043;}
+.gcal-dow div{font-family:var(--ns);font-size:11px;font-weight:600;letter-spacing:0.8px;color:#9aa0a6;text-align:center;padding:8px 0 6px;text-transform:uppercase;}
+.gcal-grid{display:grid;grid-template-columns:repeat(7,1fr);}
+.gcal-cell{min-height:var(--gcal-cell,64px);border-right:1px solid #3c4043;border-bottom:1px solid #3c4043;padding:4px 3px 3px;display:flex;flex-direction:column;align-items:center;gap:3px;background:#1f1f1f;}
+.gcal-cell:nth-child(7n){border-right:none;}
+.gcal-cell.out{background:#181818;}
+.gcal-cell.out .gcal-num{color:#5f6368;}
+.gcal-num{font-family:var(--ns);font-size:13px;font-weight:500;color:#e8eaed;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;}
+.gcal-cell.today .gcal-num{background:#8ab4f8;color:#202124;font-weight:700;}
+.gcal-cell.past .gcal-num{color:#80868b;}
+.gcal-evt{width:calc(100% - 4px);background:var(--gold);color:#000;border-radius:4px;padding:2px 4px;font-family:var(--ns);font-size:10px;font-weight:700;line-height:1.3;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;box-shadow:0 1px 0 rgba(0,0,0,0.6);}
+.gcal-evt .gcal-evt-n{display:block;}
+.gcal-evt .gcal-evt-t{display:block;font-weight:600;font-size:10px;opacity:0.9;}
+.gcal-cell.hascls{background:rgba(255,215,0,0.06);}
+.gcal-legend{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 12px;border-top:1px solid #3c4043;font-family:var(--ns);font-size:12px;color:#9aa0a6;}
+.gcal-legend .sw{width:12px;height:12px;border-radius:3px;background:var(--gold);display:inline-block;}
+.sched-msg{font-family:var(--vt);font-size:18px;line-height:1.55;text-align:center;margin-top:16px;color:#fff;}
+.sched-msg b{color:var(--gold);}
+.sched-alarm{font-family:var(--vt);font-size:18px;line-height:1.55;text-align:center;margin-top:12px;color:#ff5555;font-weight:700;}
+.sched-alarm b{color:#ff8888;}
+.sched-dates{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-top:14px;}
+.sched-dates span{font-family:var(--ns);font-size:12px;font-weight:600;color:#e8eaed;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:3px 10px;}
+.sched-dates span.done{color:#80868b;text-decoration:line-through;}
+/* DESKTOP: everything on one screen, no inner scroll. The modal is wider so
+ * the grid is shorter, cell height tracks viewport height, chips go single-line,
+ * and the copy tightens up. Ordered so the tablet/desktop rule wins over the
+ * generic .policy-modal max-width. */
+@media (min-width:700px){
+  .policy-modal.sched-modal{max-width:760px;max-height:calc(100vh - 24px);}
+  .sched-modal .policy-head{padding:14px 24px 10px;}
+  .sched-modal .policy-title{font-size:13px;}
+  .sched-modal .policy-sub{font-size:14px;margin-top:5px;}
+  .sched-body{padding:12px 20px 10px;overflow:visible;--gcal-cell:clamp(38px,6vh,52px);}
+  .gcal-top{padding:6px 10px;}
+  .gcal-nav{width:30px;height:30px;font-size:18px;}
+  .gcal-month{font-size:16px;}
+  .gcal-today-btn{font-size:12px;padding:4px 10px;}
+  .gcal-dow div{padding:5px 0 4px;font-size:10px;}
+  .gcal-cell{padding:2px 3px 3px;gap:2px;}
+  .gcal-num{width:22px;height:22px;font-size:12px;}
+  .gcal-evt{display:flex;justify-content:center;gap:4px;font-size:10px;padding:2px 5px;}
+  .gcal-evt .gcal-evt-n::after{content:' ·';}
+  .gcal-evt .gcal-evt-t{font-size:10px;}
+  .gcal-legend{padding:5px 10px;font-size:11px;}
+  .sched-dates{margin-top:8px;gap:5px;}
+  .sched-dates span{font-size:11px;padding:2px 9px;}
+  .sched-msg{font-size:16px;line-height:1.45;margin-top:10px;}
+  .sched-alarm{font-size:16px;line-height:1.45;margin-top:8px;}
+  .sched-modal .policy-actions{padding:10px 20px 14px;}
+}
+/* Very short desktop windows: drop the chip row, the calendar already lists the dates. */
+@media (min-width:700px) and (max-height:640px){
+  .sched-body{--gcal-cell:clamp(30px,5vh,40px);}
+  .sched-dates{display:none;}
+  .gcal-evt .gcal-evt-t{display:none;}
+  .gcal-evt .gcal-evt-n::after{content:'';}
+}
+@media (max-width:699px){
+  .sched-body{--gcal-cell:58px;}
+}
+@media (max-width:480px){
+  .sched-body{padding:14px 12px;--gcal-cell:52px;}
+  .gcal-cell{min-height:54px;padding:3px 2px 2px;}
+  .gcal-num{width:22px;height:22px;font-size:12px;}
+  .gcal-evt{font-size:9px;padding:2px 3px;}
+  .gcal-evt .gcal-evt-t{font-size:9px;}
+  .gcal-month{font-size:16px;}
+  .sched-msg,.sched-alarm{font-size:16px;}
+}
+
 /* ── MOBILE ── */
 @media(max-width:768px){
   html,body{font-size:16px;}
@@ -9487,8 +9574,9 @@ async function buySixWeek(){
   var cost = _sixWeekCost(chosen);
   if (cost > 0 && (user.points||0) < cost){ toast('Not enough points.', 'var(--pink)'); return; }
   playSelect();
-  // Open policy modal, actual purchase happens after sign-off
-  _showSixWeekPolicyModal(slotId);
+  // Schedule check first (calendar of the 6 class dates), THEN the policy
+  // modal. Actual purchase happens after policy sign-off.
+  _showSixWeekScheduleModal(slotId);
 }
 window.buySixWeek = buySixWeek;
 
@@ -9816,6 +9904,155 @@ async function _confirmTutoringEnroll(){
   }
 }
 window._confirmTutoringEnroll = _confirmTutoringEnroll;
+
+/* ═══ 6-WEEK SCHEDULE CHECK MODAL ═══
+ * Step 1 of enrollment. Renders a Google-Calendar-style month view with the
+ * six weekly class dates as event chips, computed live from the open class's
+ * startISO/startDate + day + time (America/New_York). NEXT → policy modal. */
+var SCHED_WEEKS = 6;
+var _schedEsc = null;
+// NY-local Y/M/D for an ISO instant (or YYYY-MM-DD string).
+function _schedNYParts(iso){
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso || '').trim());
+  if (m) return { y: +m[1], m: +m[2] - 1, d: +m[3] };
+  var dt = new Date(iso);
+  if (isNaN(dt)) return null;
+  var p = {};
+  new Intl.DateTimeFormat('en-US', { timeZone: CLASS_TIMEZONE, year: 'numeric', month: '2-digit', day: '2-digit' })
+    .formatToParts(dt).forEach(function(x){ p[x.type] = x.value; });
+  return { y: +p.year, m: +p.month - 1, d: +p.day };
+}
+function _schedTodayParts(){ return _schedNYParts(new Date().toISOString()); }
+function _schedKey(y, m, d){ return y + '-' + (m + 1) + '-' + d; }
+// First clock time from "7:00 PM" or legacy "6:10 PM-7:10 PM".
+function _schedTime(c){
+  var t = /(\d{1,2}:\d{2}\s*[AP]M)/i.exec(String((c && c.time) || ''));
+  return t ? t[1].replace(/\s+/, ' ').toUpperCase() : '';
+}
+// The 6 class dates as {y,m,d} (calendar-day math, DST-safe).
+function _schedClassDates(c){
+  var start = _schedNYParts(c.startISO || c.startDate);
+  if (!start) return [];
+  var base = new Date(start.y, start.m, start.d, 12, 0, 0);
+  // If the synced weekday disagrees with the start date, snap forward to it.
+  var DOW = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var want = DOW.indexOf(String(c.day || '').trim());
+  if (want >= 0 && base.getDay() !== want){
+    base.setDate(base.getDate() + ((want - base.getDay() + 7) % 7));
+  }
+  var out = [];
+  for (var i = 0; i < SCHED_WEEKS; i++){
+    var d = new Date(base); d.setDate(base.getDate() + i * 7);
+    out.push({ y: d.getFullYear(), m: d.getMonth(), d: d.getDate(), dow: d.getDay() });
+  }
+  return out;
+}
+function _schedFmt(p, withYear){
+  var d = new Date(p.y, p.m, p.d, 12);
+  return d.toLocaleDateString('en-US', withYear ? { month: 'short', day: 'numeric', year: 'numeric' } : { month: 'short', day: 'numeric' });
+}
+function _schedRenderMonth(y, m, dates, timeStr){
+  var today = _schedTodayParts();
+  var todayNum = new Date(today.y, today.m, today.d).getTime();
+  var byKey = {};
+  dates.forEach(function(p, i){ byKey[_schedKey(p.y, p.m, p.d)] = i + 1; });
+  var first = new Date(y, m, 1);
+  var lead = first.getDay();
+  var daysIn = new Date(y, m + 1, 0).getDate();
+  var cells = [];
+  var cur = new Date(y, m, 1 - lead);
+  var total = Math.ceil((lead + daysIn) / 7) * 7;
+  for (var i = 0; i < total; i++){
+    var cy = cur.getFullYear(), cm = cur.getMonth(), cd = cur.getDate();
+    var k = _schedKey(cy, cm, cd);
+    var cls = 'gcal-cell';
+    if (cm !== m) cls += ' out';
+    var t = new Date(cy, cm, cd).getTime();
+    if (t === todayNum) cls += ' today';
+    else if (t < todayNum) cls += ' past';
+    var evt = '';
+    if (byKey[k]){
+      cls += ' hascls';
+      evt = '<div class="gcal-evt" title="Korean class ' + esc(timeStr) + '"><span class="gcal-evt-n">Class ' + byKey[k] + '/' + SCHED_WEEKS + '</span>' +
+        (timeStr ? '<span class="gcal-evt-t">' + esc(timeStr) + '</span>' : '') + '</div>';
+    }
+    cells.push('<div class="' + cls + '"><div class="gcal-num">' + cd + '</div>' + evt + '</div>');
+    cur.setDate(cd + 1);
+  }
+  var label = new Date(y, m, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  return '<div class="gcal-top">' +
+      '<button type="button" class="gcal-nav" aria-label="Previous month" onclick="_schedNav(-1)">&#8249;</button>' +
+      '<div class="gcal-month">' + esc(label) + '</div>' +
+      '<button type="button" class="gcal-nav" aria-label="Next month" onclick="_schedNav(1)">&#8250;</button>' +
+      '<button type="button" class="gcal-today-btn" onclick="_schedNav(0)">Today</button>' +
+    '</div>' +
+    '<div class="gcal-dow"><div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div></div>' +
+    '<div class="gcal-grid">' + cells.join('') + '</div>' +
+    '<div class="gcal-legend"><span class="sw"></span> Your Korean class' + (timeStr ? ' · ' + esc(timeStr) + ' EST' : '') + '</div>';
+}
+var _schedState = null; // { y, m, dates, timeStr }
+window._schedNav = function(dir){
+  if (!_schedState) return;
+  var cal = document.getElementById('schedCal');
+  if (!cal) return;
+  if (dir === 0){ var t = _schedTodayParts(); _schedState.y = t.y; _schedState.m = t.m; }
+  else {
+    var d = new Date(_schedState.y, _schedState.m + dir, 1);
+    _schedState.y = d.getFullYear(); _schedState.m = d.getMonth();
+  }
+  cal.innerHTML = _schedRenderMonth(_schedState.y, _schedState.m, _schedState.dates, _schedState.timeStr);
+};
+function _showSixWeekScheduleModal(slotId){
+  var chosen = (typeof OPEN_CLASSES !== 'undefined' ? OPEN_CLASSES : []).filter(function(c){ return c.id === slotId; })[0];
+  if (!chosen){ toast('Pick a class to enroll in.', 'var(--pink)'); return; }
+  var ex = document.getElementById('policyModalOverlay');
+  if (ex) ex.remove();
+  var dates = _schedClassDates(chosen);
+  if (!dates.length){ _showSixWeekPolicyModal(slotId); return; } // no start date yet — skip straight to policy
+  var timeStr = _schedTime(chosen);
+  var DOW = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var dayName = String(chosen.day || '').trim() || DOW[dates[0].dow];
+  var whenStr = dayName + 's' + (timeStr ? ' at ' + timeStr + ' EST' : '');
+  var startStr = _schedFmt(dates[0], true);
+  var today = _schedTodayParts();
+  var todayNum = new Date(today.y, today.m, today.d).getTime();
+  _schedState = { y: dates[0].y, m: dates[0].m, dates: dates, timeStr: timeStr };
+
+  var chips = dates.map(function(p, i){
+    var done = new Date(p.y, p.m, p.d).getTime() < todayNum;
+    return '<span' + (done ? ' class="done"' : '') + '>Week ' + (i + 1) + ': ' + esc(_schedFmt(p, false)) + '</span>';
+  }).join('');
+
+  var ov = document.createElement('div');
+  ov.id = 'policyModalOverlay';
+  ov.className = 'policy-overlay';
+  ov.innerHTML =
+    '<div class="policy-modal sched-modal" role="dialog" aria-labelledby="schedTitle">' +
+      '<div class="policy-head">' +
+        '<div class="policy-title" id="schedTitle">📅 CHECK YOUR SCHEDULE</div>' +
+        '<div class="policy-sub">' + esc(chosen.level || chosen.classType || 'Class') + (_classTeacher(chosen) ? ' · ' + esc(_classTeacher(chosen)) : '') + ' · starts ' + esc(startStr) + '</div>' +
+      '</div>' +
+      '<div class="sched-body">' +
+        '<div class="gcal" id="schedCal">' + _schedRenderMonth(dates[0].y, dates[0].m, dates, timeStr) + '</div>' +
+        '<div class="sched-dates">' + chips + '</div>' +
+        '<div class="sched-msg">Before signing up, please make sure you can make time on <b>' + esc(whenStr) + '</b> for the next 6 weeks. If not, don\'t worry! More class times will open soon.</div>' +
+        '<div class="sched-alarm">Please set an alarm for <b>' + esc(whenStr) + '</b> so you remember to come to class!</div>' +
+      '</div>' +
+      '<div class="policy-actions">' +
+        '<button class="btn btn-ghost btn-md" onclick="_closePolicyModal()">CANCEL</button>' +
+        '<button class="btn btn-gold btn-md sparkle-btn" onclick="_schedNext(\'' + esc(slotId) + '\')">NEXT ▶</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click', function(e){ if (e.target === ov) _closePolicyModal(); });
+  document.addEventListener('keydown', _policyEscHandler);
+}
+window._showSixWeekScheduleModal = _showSixWeekScheduleModal;
+window._schedNext = function(slotId){
+  if (typeof playSelect === 'function') playSelect();
+  _closePolicyModal();
+  _showSixWeekPolicyModal(slotId);
+};
 
 function _showSixWeekPolicyModal(slotId){
   var chosen = (typeof OPEN_CLASSES !== 'undefined' ? OPEN_CLASSES : []).filter(function(c){ return c.id === slotId; })[0] || {};
