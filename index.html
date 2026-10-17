@@ -3586,7 +3586,30 @@ const MAKE_WEBHOOK_URL = 'https://hook.us1.make.com/mk2cas4gre8l7e5hgzw4up0462cl
 // Paste your Make webhook URL between the quotes to turn this on. While it's
 // empty, the signup ping simply no-ops (no failed requests).
 const SIGNUP_WEBHOOK = 'https://hook.us1.make.com/01h4hrr4c7tkhsvloil36kx5aj1m5kjl';
-const CLASS_LEVELS = ['Novice', 'Beginner', 'Advanced Beginner'];
+/* ===== CLASS LEVEL IDs → EXTERNAL NAMES (as of 10/16/26) =====
+   In this app the STORED level values are internal IDs and must NOT be renamed:
+     - enrollment.classLevel uses the old names ('Novice' / 'Beginner' / 'Advanced Beginner')
+     - open_classes.level (from Class Manager / syncPrescheduledToGacha) uses ids or old names
+       (e.g. 'novice', 'novicecolors', 'Novice')
+   Internal ID / stored value          →  External name (what people see)
+     absolute     | 'Absolute Beginner' →  Absolute Beginner   (unchanged)
+     novice       | 'Novice'            →  Advanced Beginner
+     beginner     | 'Beginner'          →  Pre-Intermediate
+     advanced     | 'Advanced Beginner' →  Intermediate
+     intermediate | 'Intermediate'      →  Upper Advanced
+   klLevelDisplay() turns a stored value into its external name, for display only. */
+const CLASS_LEVELS = ['Novice', 'Beginner', 'Advanced Beginner']; // stored values (old names) — do not rename
+function klLevelDisplay(v){
+  if (v == null) return v;
+  var MAP = { 'Absolute Beginner':'Absolute Beginner', 'Advanced Beginner':'Intermediate', 'Novice':'Advanced Beginner',
+              'Beginner':'Pre-Intermediate', 'Intermediate':'Upper Advanced',
+              absolute:'Absolute Beginner', novice:'Advanced Beginner', beginner:'Pre-Intermediate',
+              advanced:'Intermediate', intermediate:'Upper Advanced' };
+  // One pass, longest names first, so a renamed value is never renamed a second time.
+  // (^|[^\w-]) instead of a lookbehind so older iOS Safari can still parse it, and so "Pre-Intermediate" is left alone.
+  return String(v).replace(/(^|[^\w-])(Absolute Beginner|Advanced Beginner|Novice|Beginner|Intermediate|absolute|novice|beginner|advanced|intermediate)\b/g,
+    function(all, pre, m){ return pre + MAP[m]; });
+}
 const PRICE_EXTRA_HELP = 300;     // Friday Extra Help (one session)
 const PRICE_SIX_WEEK = 1850;      // 6-week program
 const SIX_WEEK_DURATION_DAYS = 35; // startDate counts as week 1, so +5 weeks = 35 days
@@ -5043,7 +5066,7 @@ function _renderDailyPicker(){
     : '<div class="menu-count">UP TO +6 EGGS</div>';
   grid.innerHTML =
     '<div class="menu-card daily yoda" onclick="_dailyOpen(\'yoda\')">' +
-      '<span class="daily-ribbon green">NOVICE</span>' +
+      '<span class="daily-ribbon green">ADV. BEGINNER</span>' +
       '<span class="menu-emoji">🔀</span>' +
       '<div class="grad-wrap"><div class="menu-name grad-text grad-purple">YODAFICATION</div></div>' +
       '<div class="menu-desc">Rewrite sentences in every valid word order.</div>' +
@@ -7161,14 +7184,14 @@ const DR_KEYWORDS_FN = 'https://generatekeywords-enxui54vmq-uc.a.run.app';
  * point to the prompt textarea as a "Grammar focus: <point>" line.
  */
 const DR_GRAMMAR_POINTS = {
-  'Novice': [
+  'Advanced Beginner': [
     'Subject/Topic particles: 이/가, 은/는',
     'Object particle: 을/를',
     'With: Noun(이)랑 / Noun하고 / Noun와/과',
     'Location particles: (으)로, 에서, 에',
     'Am/is/are: 이에요 / 예요'
   ],
-  'Beginner': [
+  'Pre-Intermediate': [
     '이에요/예요 vs 이었어요/였어요 vs 있어요 vs 있었어요',
     '있어요',
     'Noun + Conjunction: Noun(이)고 / Noun(이)ㄴ데 / Noun(이)면',
@@ -7178,7 +7201,7 @@ const DR_GRAMMAR_POINTS = {
     'Gerund/Noun + 같아요',
     '~는데'
   ],
-  'Advanced Beginner': [
+  'Intermediate': [
     'Present modifier: ROOT는',
     'Past modifier: ROOT은 / ROOTㄴ',
     'Future modifier: ROOT을 / ROOTㄹ',
@@ -7214,9 +7237,9 @@ const DR_GRAMMAR_POINTS = {
 };
 
 const DR_GRAMMAR_LEVEL_COLORS = {
-  'Novice': '#f97316',
-  'Beginner': '#4ade80',
-  'Advanced Beginner': '#a78bfa'
+  'Advanced Beginner': '#f97316',
+  'Pre-Intermediate': '#4ade80',
+  'Intermediate': '#a78bfa'
 };
 
 // ─── BATCHIM RULES CATALOG ───
@@ -8926,7 +8949,7 @@ function _enrollBlockMsg(){
   if (!e) return { text: 'You already have an active enrollment. Finish it first.', ok: false };
   var label = (e.type === 'tutoring')
     ? 'your 1:1 tutoring session with Miss Wonjoo'
-    : (e.classLevel ? e.classLevel : 'a 6-Week Program');
+    : (e.classLevel ? klLevelDisplay(e.classLevel) : 'a 6-Week Program');
   var msg = "\u2705 You're enrolled in " + label;
   if (e.startDate) msg += ', starting ' + _fmtDate(e.startDate) + '.';
   else msg += '.';
@@ -8960,7 +8983,7 @@ function _showEnrollSuccess(enr){
     row('When', [enr.day || '', enr.time || ''].filter(Boolean).join(' @ '));
     row('Date', enr.startDate ? _fmtDate(enr.startDate) : 'Being confirmed');
   } else {
-    row('Class', enr.classLevel || '6-Week Program');
+    row('Class', klLevelDisplay(enr.classLevel) || '6-Week Program');
     row('Teacher', enr.teacher || '');
     row('Meets', _classWhen({ day: enr.classDay, time: enr.classTime }));
     row('Starts', enr.startDate ? _fmtDate(enr.startDate) : 'Being confirmed');
@@ -9179,15 +9202,16 @@ function _classLabel(c){
  * The student first picks a LEVEL, then only that level's open classes appear
  * in the class select. The 4 levels are a fixed set; each open class is sorted
  * under a level by KEYWORD MATCH on its name (the `level` field, e.g.
- * "novicecolors" / "Novice" both → Novice). Order matters: "Absolute Beginner"
- * and "Advanced Beginner" are checked before plain "Beginner" so they aren't
- * swallowed by it. Anything with no keyword match falls under "Other" so a
+ * "novicecolors" / "Novice" both → Advanced Beginner). Order matters: "absolute"
+ * and "advanced" are checked before plain "beginner" so they aren't
+ * swallowed by it. kw = internal id / old stored name (DO NOT change);
+ * name = external name shown to students (renamed 10/16/26). Anything with no keyword match falls under "Other" so a
  * class can never silently disappear from the shop. */
 var LEVEL_FILTERS = [
-  { name: 'Absolute Beginner', kw: 'absolute' },
-  { name: 'Advanced Beginner', kw: 'advanced' },
-  { name: 'Novice',            kw: 'novice'   },
-  { name: 'Beginner',          kw: 'beginner' }
+  { name: 'Absolute Beginner', kw: 'absolute' },   // id absolute
+  { name: 'Intermediate',      kw: 'advanced' },   // id advanced (was "Advanced Beginner")
+  { name: 'Advanced Beginner', kw: 'novice'   },   // id novice   (was "Novice")
+  { name: 'Pre-Intermediate',  kw: 'beginner' }    // id beginner (was "Beginner")
 ];
 function _classFilterLevel(c){
   var s = String((c && (c.level || c.classType)) || '').toLowerCase();
@@ -9209,7 +9233,7 @@ function _sixWeekOpenForLevel(level){
 function _sixWeekClassOptions(level){
   return _sixWeekOpenForLevel(level).map(function(c){
     var left = _seatsLeft(c);
-    var nm = String(c.level || c.classType || 'Class');
+    var nm = klLevelDisplay(String(c.level || c.classType || 'Class'));
     var tch = _classTeacher(c);
     var when = _classWhen(c);
     var prem = (_shopPaidMode && !_sixWeekIsFirstFree() && _isMrCalvinClass(c)) ? ' · +' + MR_CALVIN_PREMIUM + ' pts' : '';
@@ -9256,7 +9280,7 @@ function _drawShop(){
               ? 'Class starts: <b>' + _fmtDate(enr.startDate) + '</b>'
               : '<span class="awaiting">⏳ Awaiting start date from admin</span>'));
     var endLine = (!_isTut && enr.endDate) ? '<br>Ends: <b>' + _fmtDate(enr.endDate) + '</b>' : '';
-    var levelLine = (!_isTut && enr.classLevel) ? '<br>Level: <b>' + esc(enr.classLevel) + '</b>' : '';
+    var levelLine = (!_isTut && enr.classLevel) ? '<br>Level: <b>' + esc(klLevelDisplay(enr.classLevel)) + '</b>' : '';
 
     // Cancel button + fee. Fee is plain text under the button (no box).
     // Tutoring is free, so it carries no point fee — just the redeem warning.
@@ -10671,7 +10695,7 @@ function _drawAdmin(rows){
     var started = e.startDate ? _fmtDate(e.startDate) : '—';
     var ends = e.endDate ? _fmtDate(e.endDate) : '—';
     var purchased = e.purchasedAt ? _fmtDate(e.purchasedAt) : '—';
-    var level = e.classLevel || '—';
+    var level = klLevelDisplay(e.classLevel) || '—';
     var statusCls = e.status || 'pending';
     var statusLabel = statusCls === 'pending'   ? 'Pending'
                     : statusCls === 'active'    ? 'Confirmed'
@@ -10858,7 +10882,7 @@ async function adminSetClassLevel(userId){
   ov.className = 'ea-modal';
   var options = CLASS_LEVELS.map(function(lv){
     var sel = (lv === existing) ? ' selected' : '';
-    return '<option value="' + esc(lv) + '"' + sel + '>' + esc(lv) + '</option>';
+    return '<option value="' + esc(lv) + '"' + sel + '>' + esc(klLevelDisplay(lv)) + '</option>';
   }).join('');
   ov.innerHTML =
     '<div class="ea-modal-inner" role="dialog" aria-labelledby="eaTitle">' +
@@ -10893,7 +10917,7 @@ async function _confirmAdminSetClassLevel(userId){
   try {
     await db.collection(TC).doc(userId).update({ 'enrollment.classLevel': clean });
     _closeEaModal();
-    toast('Level set to ' + clean, 'var(--cyan)');
+    toast('Level set to ' + klLevelDisplay(clean), 'var(--cyan)');
     renderAdmin();
   } catch(e){
     toast('Error: ' + (e.message || e), 'var(--pink)');
@@ -10998,7 +11022,7 @@ async function _adminAssignEnrollmentConfirm(){
     var sd = snap.data() || {};
     var existing = sd.enrollment || null;
     if (existing && (existing.status === 'pending' || existing.status === 'active')){
-      if (!confirm('This student already has a ' + existing.status + ' enrollment (' + (existing.classLevel || '?') + '). Replace it?')) return;
+      if (!confirm('This student already has a ' + existing.status + ' enrollment (' + (klLevelDisplay(existing.classLevel) || '?') + '). Replace it?')) return;
     }
     var enrollment = {
       type: 'six_week',
